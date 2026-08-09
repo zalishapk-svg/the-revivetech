@@ -2,24 +2,26 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { checkFirebaseAdminHealth } from "../_lib/shopify-server";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const health = await checkFirebaseAdminHealth();
-  if (health.connected) {
+  try {
+    const health = await checkFirebaseAdminHealth();
     return res.status(200).json({
-      status: "ok",
+      status: health.connected ? "ok" : "unconfigured",
       firebase: {
-        connected: true,
-        projectId: health.projectId,
-        firestore: true,
+        connected: health.connected,
+        projectId: health.projectId || null,
+        firestore: health.firestore,
       },
+      error: health.error || null,
     });
-  } else {
-    return res.status(500).json({
+  } catch (err: any) {
+    return res.status(200).json({
       status: "error",
       firebase: {
         connected: false,
         firestore: false,
       },
-      error: health.error || "Firebase Admin SDK initialization failed",
+      error: err?.message || "Unexpected error checking Firebase health",
     });
   }
 }
+
