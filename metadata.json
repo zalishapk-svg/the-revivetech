@@ -1,0 +1,6 @@
+{
+  "name": "TheReviveTech Headless Storefront",
+  "description": "Premium Headless Shopify Storefront for High-End Tech, Gaming & PC Hardware with Storefront API Integration, Lenis Smooth Scroll, and Custom Mega Menu",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

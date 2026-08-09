@@ -1,0 +1,298 @@
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import { Heart, Layers, ShoppingBag, Star, ShieldCheck, Truck, RotateCcw, Check, Sparkles, Share2, Eye } from "lucide-react";
+import { useShopify } from "../../context/ShopifyContext";
+import { formatMoney, calculateDiscount } from "../../lib/utils";
+
+interface ProductPageProps {
+  handle: string;
+}
+
+export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
+  const {
+    products,
+    addToCart,
+    toggleWishlist,
+    isInWishlist,
+    toggleCompare,
+    isInCompare,
+    navigateToProduct,
+    showToast,
+  } = useShopify();
+
+  const product = products.find((p) => p.handle === handle) || products[0];
+
+  const [selectedImageIdx, setSelectedImageIdx] = useState(0);
+  const [selectedVariantId, setSelectedVariantId] = useState(product.variants[0]?.id);
+  const [quantity, setQuantity] = useState(1);
+  const [activeTab, setActiveTab] = useState<"overview" | "specs" | "reviews" | "shipping">("overview");
+
+  const images = product.images?.length ? product.images : product.featuredImage ? [product.featuredImage] : [];
+  const isWishlisted = isInWishlist(product.handle);
+  const isCompared = isInCompare(product.handle);
+
+  const priceAmount = product.priceRange.minVariantPrice.amount;
+  const compareAtAmount = product.compareAtPriceRange?.minVariantPrice?.amount;
+  const discountPercent = calculateDiscount(priceAmount, compareAtAmount);
+
+  const relatedProducts = products.filter((p) => p.handle !== product.handle).slice(0, 4);
+
+  return (
+    <div className="bg-[#030e07] text-slate-100 min-h-screen py-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+        
+        {/* Breadcrumb */}
+        <div className="text-xs font-mono text-slate-400 flex items-center gap-2">
+          <a href="#" onClick={(e) => { e.preventDefault(); window.location.hash = ""; }} className="hover:text-emerald-400">Home</a>
+          <span>/</span>
+          <span className="text-emerald-400 font-bold">{product.vendor}</span>
+          <span>/</span>
+          <span className="text-white line-clamp-1">{product.title}</span>
+        </div>
+
+        {/* Product Hero Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+          
+          {/* Gallery Column */}
+          <div className="lg:col-span-7 space-y-4">
+            <div className="relative rounded-3xl overflow-hidden bg-slate-900 border border-emerald-800/50 aspect-square shadow-2xl">
+              {images[selectedImageIdx] && (
+                <img
+                  src={images[selectedImageIdx].url}
+                  alt={product.title}
+                  referrerPolicy="no-referrer"
+                  className="w-full h-full object-cover"
+                />
+              )}
+              {discountPercent > 0 && (
+                <span className="absolute top-4 left-4 bg-rose-500 text-white font-black text-xs px-3 py-1 rounded-full uppercase tracking-wider shadow-lg">
+                  SAVE {discountPercent}% NOW
+                </span>
+              )}
+            </div>
+
+            {/* Thumbnail Row */}
+            {images.length > 1 && (
+              <div className="flex gap-3 overflow-x-auto pb-2">
+                {images.map((img, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setSelectedImageIdx(idx)}
+                    className={`w-20 h-20 rounded-xl overflow-hidden border-2 bg-slate-900 shrink-0 transition-all ${
+                      selectedImageIdx === idx ? "border-emerald-400 scale-105" : "border-emerald-900/40 hover:border-emerald-700"
+                    }`}
+                  >
+                    <img src={img.url} alt="" className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Details Column */}
+          <div className="lg:col-span-5 space-y-6 bg-[#071910] border border-emerald-800/50 p-6 sm:p-8 rounded-3xl shadow-xl">
+            <div>
+              <span className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-widest bg-emerald-950 px-2.5 py-1 rounded border border-emerald-800/40">
+                {product.vendor}
+              </span>
+              <h1 className="text-2xl sm:text-3xl font-black text-white mt-2 leading-tight">{product.title}</h1>
+
+              {/* Rating */}
+              <div className="flex items-center gap-2 mt-3 text-xs">
+                <div className="flex text-amber-400">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-amber-400" />
+                  ))}
+                </div>
+                <span className="font-bold text-white">{product.rating || 4.9}</span>
+                <span className="text-slate-400">({product.reviewsCount} verified reviews)</span>
+              </div>
+            </div>
+
+            {/* Price Box */}
+            <div className="p-4 bg-slate-950/80 rounded-2xl border border-emerald-900/40 flex items-baseline gap-3">
+              <span className="text-3xl font-black text-emerald-400 font-mono">
+                {formatMoney(priceAmount)}
+              </span>
+              {compareAtAmount && (
+                <span className="text-sm line-through text-slate-500 font-mono">
+                  {formatMoney(compareAtAmount)}
+                </span>
+              )}
+              <span className="ml-auto text-[11px] text-emerald-400 font-mono font-bold bg-emerald-950 px-2 py-0.5 rounded border border-emerald-800">
+                In Stock & Ready to Dispatch
+              </span>
+            </div>
+
+            {/* Variant Selector */}
+            {product.options && product.options.map((opt, oIdx) => (
+              <div key={oIdx} className="space-y-2">
+                <label className="text-xs font-bold text-slate-300 uppercase font-mono">{opt.name}:</label>
+                <div className="flex flex-wrap gap-2">
+                  {opt.values.map((val, vIdx) => (
+                    <button
+                      key={vIdx}
+                      onClick={() => setSelectedVariantId(product.variants[vIdx]?.id)}
+                      className={`px-3.5 py-2 text-xs font-bold rounded-xl border transition-all ${
+                        selectedVariantId === product.variants[vIdx]?.id || vIdx === 0
+                          ? "bg-emerald-500 text-slate-950 border-emerald-400 shadow-md"
+                          : "bg-slate-950 text-slate-300 border-emerald-900/40 hover:border-emerald-700"
+                      }`}
+                    >
+                      {val}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+
+            {/* Quantity & CTA Buttons */}
+            <div className="space-y-3 pt-2">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center border border-emerald-800/60 rounded-xl bg-slate-950 overflow-hidden px-2 py-1">
+                  <button onClick={() => setQuantity((q) => Math.max(1, q - 1))} className="px-2 text-slate-300 font-bold hover:text-white">-</button>
+                  <span className="px-3 font-mono font-bold text-xs text-white">{quantity}</span>
+                  <button onClick={() => setQuantity((q) => q + 1)} className="px-2 text-slate-300 font-bold hover:text-white">+</button>
+                </div>
+
+                <button
+                  onClick={() => addToCart(product, selectedVariantId, quantity)}
+                  className="flex-1 py-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl transition-colors flex items-center justify-center gap-2 shadow-xl shadow-emerald-950/60"
+                >
+                  <ShoppingBag className="w-4 h-4" /> Add to Cart ({quantity})
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => toggleWishlist(product.handle)}
+                  className={`flex-1 py-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-colors ${
+                    isWishlisted ? "bg-rose-950/60 border-rose-500 text-rose-400" : "bg-slate-950 border-emerald-900/40 text-slate-300 hover:text-white"
+                  }`}
+                >
+                  <Heart className={`w-4 h-4 ${isWishlisted ? "fill-rose-400" : ""}`} /> Wishlist
+                </button>
+
+                <button
+                  onClick={() => toggleCompare(product.handle)}
+                  className={`flex-1 py-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-colors ${
+                    isCompared ? "bg-amber-950/60 border-amber-500 text-amber-400" : "bg-slate-950 border-emerald-900/40 text-slate-300 hover:text-white"
+                  }`}
+                >
+                  <Layers className="w-4 h-4" /> Compare Specs
+                </button>
+              </div>
+            </div>
+
+            {/* Badges */}
+            <div className="grid grid-cols-3 gap-2 pt-4 border-t border-emerald-900/40 text-[11px] text-slate-400 text-center">
+              <div className="p-2 bg-slate-950/60 rounded-xl border border-emerald-900/30">
+                <Truck className="w-4 h-4 text-emerald-400 mx-auto mb-1" />
+                <span>Express Shipping</span>
+              </div>
+              <div className="p-2 bg-slate-950/60 rounded-xl border border-emerald-900/30">
+                <ShieldCheck className="w-4 h-4 text-emerald-400 mx-auto mb-1" />
+                <span>3-Year Warranty</span>
+              </div>
+              <div className="p-2 bg-slate-950/60 rounded-xl border border-emerald-900/30">
+                <RotateCcw className="w-4 h-4 text-emerald-400 mx-auto mb-1" />
+                <span>30-Day Returns</span>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* Product Specs & Tabs */}
+        <div className="bg-[#071910] border border-emerald-800/50 rounded-3xl p-6 sm:p-8 space-y-6">
+          <div className="flex border-b border-emerald-900/40 gap-6 text-sm font-bold font-mono">
+            <button
+              onClick={() => setActiveTab("overview")}
+              className={`pb-3 border-b-2 transition-colors ${
+                activeTab === "overview" ? "border-emerald-400 text-emerald-400" : "border-transparent text-slate-400 hover:text-white"
+              }`}
+            >
+              Overview & Architecture
+            </button>
+            <button
+              onClick={() => setActiveTab("specs")}
+              className={`pb-3 border-b-2 transition-colors ${
+                activeTab === "specs" ? "border-emerald-400 text-emerald-400" : "border-transparent text-slate-400 hover:text-white"
+              }`}
+            >
+              Full Specifications
+            </button>
+            <button
+              onClick={() => setActiveTab("reviews")}
+              className={`pb-3 border-b-2 transition-colors ${
+                activeTab === "reviews" ? "border-emerald-400 text-emerald-400" : "border-transparent text-slate-400 hover:text-white"
+              }`}
+            >
+              Verified Reviews ({product.reviewsCount})
+            </button>
+          </div>
+
+          <div className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+            {activeTab === "overview" && (
+              <p>{product.description}</p>
+            )}
+
+            {activeTab === "specs" && product.specs && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 font-mono">
+                {Object.entries(product.specs).map(([key, val]) => (
+                  <div key={key} className="flex justify-between p-3 bg-slate-950 rounded-xl border border-emerald-900/30">
+                    <span className="text-slate-400">{key}:</span>
+                    <span className="text-emerald-400 font-bold">{val}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {activeTab === "reviews" && (
+              <div className="space-y-4">
+                <div className="p-4 bg-slate-950 rounded-2xl border border-emerald-900/30 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="flex text-amber-400">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="w-3.5 h-3.5 fill-amber-400" />
+                      ))}
+                    </div>
+                    <span className="font-bold text-white">Alexey V.</span>
+                    <span className="text-[10px] text-emerald-400 font-mono">Verified Buyer</span>
+                  </div>
+                  <p className="text-xs text-slate-300">
+                    Remarkable build quality. Zero creaking or flex under hard grip. The optical switches feel tactile and insanely fast.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Related Products */}
+        <div className="space-y-6">
+          <h3 className="text-xl font-bold text-white font-mono uppercase">You Might Also Need</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {relatedProducts.map((p) => (
+              <div
+                key={p.id}
+                onClick={() => navigateToProduct(p.handle)}
+                className="bg-[#071910] border border-emerald-900/40 rounded-2xl p-4 cursor-pointer hover:border-emerald-500/50 transition-all"
+              >
+                <div className="aspect-square bg-slate-900 rounded-xl overflow-hidden mb-3">
+                  <img src={p.featuredImage?.url} alt={p.title} className="w-full h-full object-cover" />
+                </div>
+                <h4 className="text-xs font-bold text-white line-clamp-1">{p.title}</h4>
+                <span className="font-mono text-xs font-bold text-emerald-400 block mt-1">
+                  {formatMoney(p.priceRange.minVariantPrice.amount)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+};
