@@ -1,7 +1,9 @@
-import React, { useState } from "react";
-import { SlidersHorizontal, ShoppingBag, Heart, Layers, Eye, Star, Check } from "lucide-react";
+import React, { useState, useEffect, useMemo } from "react";
+import { SlidersHorizontal, ShoppingBag, Heart, Layers, Eye, Star, Check, Loader2 } from "lucide-react";
 import { useShopify } from "../../context/ShopifyContext";
+import { getCollectionByHandleFromShopify } from "../../lib/shopify";
 import { formatMoney, calculateDiscount } from "../../lib/utils";
+import { Collection, Product } from "../../types";
 
 interface CollectionPageProps {
   handle: string;
@@ -21,14 +23,51 @@ export const CollectionPage: React.FC<CollectionPageProps> = ({ handle }) => {
     navigateToCollection,
   } = useShopify();
 
-  const collection = collections.find((c) => c.handle === handle) || collections[0];
+  const [liveCollection, setLiveCollection] = useState<Collection | null>(null);
+  const [isLoadingCollection, setIsLoadingCollection] = useState<boolean>(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (handle) {
+      setIsLoadingCollection(true);
+      getCollectionByHandleFromShopify(handle).then((res) => {
+        if (isMounted && res) {
+          setLiveCollection(res);
+        }
+        if (isMounted) setIsLoadingCollection(false);
+      });
+    }
+    return () => { isMounted = false; };
+  }, [handle]);
+
+  const collection = liveCollection || collections.find((c) => c.handle === handle) || collections[0];
+  
+  // Use products specific to this collection
+  const baseProducts = (liveCollection?.products && liveCollection.products.length > 0)
+    ? liveCollection.products
+    : (collection?.products && collection.products.length > 0)
+    ? collection.products
+    : products;
 
   const [selectedVendor, setSelectedVendor] = useState<string>("all");
-  const [maxPrice, setMaxPrice] = useState<number>(1500);
   const [sortBy, setSortBy] = useState<"featured" | "price-asc" | "price-desc" | "rating">("featured");
 
+  const maxProductPriceInCollection = useMemo(() => {
+    if (baseProducts.length === 0) return 200000;
+    return Math.max(...baseProducts.map((p) => parseFloat(p.priceRange.minVariantPrice.amount) || 0));
+  }, [baseProducts]);
+
+  const [maxPrice, setMaxPrice] = useState<number>(1000000);
+
+  // Update maxPrice when collection changes so all items show by default
+  useEffect(() => {
+    if (maxProductPriceInCollection > 0) {
+      setMaxPrice(Math.max(500000, maxProductPriceInCollection));
+    }
+  }, [maxProductPriceInCollection]);
+
   // Filtering products
-  let collectionProducts = products;
+  let collectionProducts = [...baseProducts];
   if (selectedVendor !== "all") {
     collectionProducts = collectionProducts.filter((p) => p.vendor === selectedVendor);
   }
@@ -45,7 +84,7 @@ export const CollectionPage: React.FC<CollectionPageProps> = ({ handle }) => {
     collectionProducts.sort((a, b) => (b.rating || 0) - (a.rating || 0));
   }
 
-  const vendors = Array.from(new Set(products.map((p) => p.vendor)));
+  const vendors = Array.from(new Set(baseProducts.map((p) => p.vendor)));
 
   return (
     <div className="bg-[#030e07] text-slate-100 min-h-screen py-10">
@@ -92,13 +131,15 @@ export const CollectionPage: React.FC<CollectionPageProps> = ({ handle }) => {
             <div className="space-y-2">
               <div className="flex justify-between text-xs font-bold font-mono">
                 <span className="text-slate-300">Max Price:</span>
-                <span className="text-emerald-400">${maxPrice}</span>
+                <span className="text-emerald-400">
+                  {formatMoney(maxPrice.toString(), baseProducts[0]?.priceRange?.minVariantPrice?.currencyCode || "PKR")}
+                </span>
               </div>
               <input
                 type="range"
-                min="50"
-                max="1500"
-                step="25"
+                min="0"
+                max={Math.max(500000, maxProductPriceInCollection)}
+                step="5000"
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(Number(e.target.value))}
                 className="w-full accent-emerald-500 cursor-pointer"

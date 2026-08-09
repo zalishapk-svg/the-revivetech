@@ -100,14 +100,97 @@ export const STOREFRONT_QUERIES = {
             title
             description
             image { id url altText }
-            products(first: 12) {
+            products(first: 20) {
               edges {
                 node {
                   id
                   handle
                   title
-                  priceRange { minVariantPrice { amount currencyCode } }
-                  featuredImage { id url altText }
+                  description
+                  descriptionHtml
+                  vendor
+                  productType
+                  tags
+                  availableForSale
+                  priceRange {
+                    minVariantPrice { amount currencyCode }
+                    maxVariantPrice { amount currencyCode }
+                  }
+                  compareAtPriceRange {
+                    minVariantPrice { amount currencyCode }
+                    maxVariantPrice { amount currencyCode }
+                  }
+                  featuredImage { id url altText width height }
+                  images(first: 8) {
+                    edges { node { id url altText width height } }
+                  }
+                  options { id name values }
+                  variants(first: 10) {
+                    edges {
+                      node {
+                        id
+                        title
+                        sku
+                        availableForSale
+                        price { amount currencyCode }
+                        compareAtPrice { amount currencyCode }
+                        selectedOptions { name value }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  `,
+
+  GET_COLLECTION_BY_HANDLE: `
+    query getCollectionByHandle($handle: String!, $first: Int = 30) {
+      collection(handle: $handle) {
+        id
+        handle
+        title
+        description
+        image { id url altText }
+        products(first: $first) {
+          edges {
+            node {
+              id
+              handle
+              title
+              description
+              descriptionHtml
+              vendor
+              productType
+              tags
+              availableForSale
+              priceRange {
+                minVariantPrice { amount currencyCode }
+                maxVariantPrice { amount currencyCode }
+              }
+              compareAtPriceRange {
+                minVariantPrice { amount currencyCode }
+                maxVariantPrice { amount currencyCode }
+              }
+              featuredImage { id url altText width height }
+              images(first: 8) {
+                edges { node { id url altText width height } }
+              }
+              options { id name values }
+              variants(first: 10) {
+                edges {
+                  node {
+                    id
+                    title
+                    sku
+                    availableForSale
+                    price { amount currencyCode }
+                    compareAtPrice { amount currencyCode }
+                    selectedOptions { name value }
+                  }
                 }
               }
             }
@@ -785,18 +868,104 @@ export async function getCollectionsFromShopify(): Promise<Collection[]> {
   if (result && result.data && result.data.collections && result.data.collections.edges) {
     const liveCollections: Collection[] = result.data.collections.edges.map((edge: any) => {
       const node = edge.node;
+      const prods: Product[] = node.products?.edges?.map((pEdge: any) => {
+        const pNode = pEdge.node;
+        return {
+          id: pNode.id,
+          handle: pNode.handle,
+          title: pNode.title,
+          description: pNode.description || "",
+          descriptionHtml: pNode.descriptionHtml || pNode.description || "",
+          vendor: pNode.vendor || "TheReviveTech",
+          productType: pNode.productType || "Hardware",
+          tags: pNode.tags || [],
+          availableForSale: pNode.availableForSale,
+          priceRange: {
+            minVariantPrice: pNode.priceRange?.minVariantPrice || { amount: "0.00", currencyCode: "USD" },
+            maxVariantPrice: pNode.priceRange?.maxVariantPrice || { amount: "0.00", currencyCode: "USD" },
+          },
+          compareAtPriceRange: pNode.compareAtPriceRange,
+          featuredImage: pNode.featuredImage || (pNode.images?.edges[0]?.node ? pNode.images.edges[0].node : null),
+          images: pNode.images?.edges?.map((e: any) => e.node) || [],
+          options: pNode.options || [],
+          variants: pNode.variants?.edges?.map((e: any) => ({
+            id: e.node.id,
+            title: e.node.title,
+            sku: e.node.sku,
+            availableForSale: e.node.availableForSale,
+            price: e.node.price,
+            compareAtPrice: e.node.compareAtPrice,
+            selectedOptions: e.node.selectedOptions,
+          })) || [],
+          rating: 4.8,
+          reviewsCount: 12,
+        };
+      }) || [];
+
       return {
         id: node.id,
         handle: node.handle,
         title: node.title,
         description: node.description || "",
         image: node.image,
-        productsCount: node.products?.edges?.length || 0,
+        productsCount: prods.length,
+        products: prods,
       };
     });
     return liveCollections;
   }
   return [];
+}
+
+export async function getCollectionByHandleFromShopify(handle: string): Promise<Collection | null> {
+  const result = await fetchShopifyGraphQL(STOREFRONT_QUERIES.GET_COLLECTION_BY_HANDLE, { handle, first: 30 });
+  if (result && result.data && result.data.collection) {
+    const node = result.data.collection;
+    const prods: Product[] = node.products?.edges?.map((pEdge: any) => {
+      const pNode = pEdge.node;
+      return {
+        id: pNode.id,
+        handle: pNode.handle,
+        title: pNode.title,
+        description: pNode.description || "",
+        descriptionHtml: pNode.descriptionHtml || pNode.description || "",
+        vendor: pNode.vendor || "TheReviveTech",
+        productType: pNode.productType || "Hardware",
+        tags: pNode.tags || [],
+        availableForSale: pNode.availableForSale,
+        priceRange: {
+          minVariantPrice: pNode.priceRange?.minVariantPrice || { amount: "0.00", currencyCode: "USD" },
+          maxVariantPrice: pNode.priceRange?.maxVariantPrice || { amount: "0.00", currencyCode: "USD" },
+        },
+        compareAtPriceRange: pNode.compareAtPriceRange,
+        featuredImage: pNode.featuredImage || (pNode.images?.edges[0]?.node ? pNode.images.edges[0].node : null),
+        images: pNode.images?.edges?.map((e: any) => e.node) || [],
+        options: pNode.options || [],
+        variants: pNode.variants?.edges?.map((e: any) => ({
+          id: e.node.id,
+          title: e.node.title,
+          sku: e.node.sku,
+          availableForSale: e.node.availableForSale,
+          price: e.node.price,
+          compareAtPrice: e.node.compareAtPrice,
+          selectedOptions: e.node.selectedOptions,
+        })) || [],
+        rating: 4.8,
+        reviewsCount: 12,
+      };
+    }) || [];
+
+    return {
+      id: node.id,
+      handle: node.handle,
+      title: node.title,
+      description: node.description || "",
+      image: node.image,
+      productsCount: prods.length,
+      products: prods,
+    };
+  }
+  return null;
 }
 
 export async function getBlogArticlesFromShopify(): Promise<BlogArticle[]> {

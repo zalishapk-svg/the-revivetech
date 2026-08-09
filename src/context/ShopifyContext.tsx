@@ -89,10 +89,104 @@ interface ShopifyContextType {
   showToast: (msg: string) => void;
 }
 
+export function parseUrlToViewState(path: string, search: string): ViewState {
+  const cleanPath = path.replace(/\/$/, "");
+  if (!cleanPath || cleanPath === "") return { type: "home" };
+  if (cleanPath === "/shop") return { type: "shop" };
+  if (cleanPath === "/collections" || cleanPath === "/collections/") return { type: "collections_list" };
+  if (cleanPath.startsWith("/collections/")) {
+    const handle = cleanPath.replace("/collections/", "");
+    if (handle) return { type: "collection", handle };
+  }
+  if (cleanPath.startsWith("/products/")) {
+    const handle = cleanPath.replace("/products/", "");
+    if (handle) return { type: "product", handle };
+  }
+  if (cleanPath === "/cart") return { type: "cart" };
+  if (cleanPath === "/search") {
+    const query = new URLSearchParams(search).get("q") || "";
+    return { type: "search", query };
+  }
+  if (cleanPath === "/about") return { type: "about" };
+  if (cleanPath === "/contact") return { type: "contact" };
+  if (cleanPath === "/blog") return { type: "blog" };
+  if (cleanPath.startsWith("/blog/")) {
+    const handle = cleanPath.replace("/blog/", "");
+    if (handle) return { type: "article", handle };
+  }
+  if (cleanPath === "/account") return { type: "account" };
+  if (cleanPath === "/faq") return { type: "faq" };
+  if (cleanPath.startsWith("/page/")) {
+    const handle = cleanPath.replace("/page/", "");
+    if (handle) return { type: "page", handle };
+  }
+  return { type: "home" };
+}
+
+export function viewStateToUrl(view: ViewState): string {
+  switch (view.type) {
+    case "home":
+      return "/";
+    case "shop":
+      return "/shop";
+    case "collections_list":
+      return "/collections";
+    case "collection":
+      return `/collections/${view.handle}`;
+    case "product":
+      return `/products/${view.handle}`;
+    case "cart":
+      return "/cart";
+    case "search":
+      return view.query ? `/search?q=${encodeURIComponent(view.query)}` : "/search";
+    case "about":
+      return "/about";
+    case "contact":
+      return "/contact";
+    case "blog":
+      return "/blog";
+    case "article":
+      return `/blog/${view.handle}`;
+    case "account":
+      return "/account";
+    case "faq":
+      return "/faq";
+    case "page":
+      return `/page/${view.handle}`;
+    default:
+      return "/";
+  }
+}
+
 const ShopifyContext = createContext<ShopifyContextType | undefined>(undefined);
 
 export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [viewState, setViewState] = useState<ViewState>({ type: "home" });
+  const [viewState, setViewStateInternal] = useState<ViewState>(() => {
+    if (typeof window !== "undefined") {
+      return parseUrlToViewState(window.location.pathname, window.location.search);
+    }
+    return { type: "home" };
+  });
+
+  const setViewState = (view: ViewState, pushHistory = true) => {
+    setViewStateInternal(view);
+    if (pushHistory && typeof window !== "undefined") {
+      const targetUrl = viewStateToUrl(view);
+      if (window.location.pathname + window.location.search !== targetUrl) {
+        window.history.pushState(view, "", targetUrl);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handlePopState = () => {
+      const newView = parseUrlToViewState(window.location.pathname, window.location.search);
+      setViewStateInternal(newView);
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
   const [products, setProducts] = useState<Product[]>([]);
   const [collections, setCollections] = useState<Collection[]>([]);
   const [articles, setArticles] = useState<BlogArticle[]>([]);

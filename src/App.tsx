@@ -1,5 +1,6 @@
 import React from "react";
 import { ShopifyProvider, useShopify } from "./context/ShopifyContext";
+import { SEOHead } from "./components/common/SEOHead";
 import { CustomCursor } from "./components/common/CustomCursor";
 import { LenisSmoothScroll } from "./components/common/LenisSmoothScroll";
 import { AnnouncementBar } from "./components/common/AnnouncementBar";
@@ -16,6 +17,7 @@ import { ShopifyConfigModal } from "./components/common/ShopifyConfigModal";
 import { HomePage } from "./components/home/HomePage";
 import { ProductPage } from "./components/product/ProductPage";
 import { CollectionPage } from "./components/collection/CollectionPage";
+import { CollectionsListPage } from "./components/collection/CollectionsListPage";
 import { BlogPage } from "./components/blog/BlogPage";
 import { AccountPage } from "./components/account/AccountPage";
 import { ShopPage } from "./components/shop/ShopPage";
@@ -34,6 +36,7 @@ const MainLayout: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#030e07] text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-slate-950">
+      <SEOHead />
       <CustomCursor />
       <LenisSmoothScroll />
 
@@ -48,7 +51,7 @@ const MainLayout: React.FC = () => {
         {currentType === "shop" && <ShopPage />}
         {currentType === "product" && <ProductPage handle={activeHandle} />}
         {currentType === "collection" && <CollectionPage handle={activeHandle} />}
-        {currentType === "collections_list" && <CollectionPage handle={activeHandle || "gaming-mice"} />}
+        {currentType === "collections_list" && <CollectionsListPage />}
         {currentType === "blog" && <BlogPage />}
         {currentType === "article" && <BlogPage articleHandle={activeHandle} />}
         {currentType === "account" && <AccountPage />}
