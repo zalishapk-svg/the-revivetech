@@ -4,7 +4,8 @@ import crypto from "crypto";
 import { createServer as createViteServer } from "vite";
 import { 
   getConfig, shopifyStorage, getAppBaseUrl, 
-  STABLE_ADMIN_API_VERSION, REQUIRED_ADMIN_SCOPES 
+  STABLE_ADMIN_API_VERSION, STABLE_STOREFRONT_API_VERSION, REQUIRED_ADMIN_SCOPES,
+  checkFirebaseAdminHealth, checkShopifyStorefrontHealth
 } from "./api/_lib/shopify-server";
 
 const app = express();
@@ -31,6 +32,55 @@ app.get("/api/health", async (req, res) => {
     storeDomain: config.storeDomain,
     hasAdminToken: Boolean(token || session?.accessToken),
   });
+});
+
+// Firebase Health Check Endpoint
+app.get("/api/health/firebase", async (req, res) => {
+  const health = await checkFirebaseAdminHealth();
+  if (health.connected) {
+    res.json({
+      status: "ok",
+      firebase: {
+        connected: true,
+        projectId: health.projectId,
+        firestore: true,
+      },
+    });
+  } else {
+    res.status(500).json({
+      status: "error",
+      firebase: {
+        connected: false,
+        firestore: false,
+      },
+      error: health.error || "Firebase Admin SDK initialization failed",
+    });
+  }
+});
+
+// Shopify Storefront Health Check Endpoint
+app.get("/api/health/shopify-storefront", async (req, res) => {
+  const health = await checkShopifyStorefrontHealth();
+  if (health.connected) {
+    res.json({
+      status: "ok",
+      storefront: {
+        connected: true,
+        store: health.storeDomain,
+        apiVersion: health.apiVersion,
+      },
+    });
+  } else {
+    res.status(500).json({
+      status: "error",
+      storefront: {
+        connected: false,
+        store: health.storeDomain,
+        apiVersion: health.apiVersion,
+      },
+      error: health.error || "Failed to communicate with Shopify Storefront API",
+    });
+  }
 });
 
 // Configuration Endpoints
@@ -216,22 +266,17 @@ app.post("/api/shopify/graphql", async (req, res) => {
     }
 
     const config = getConfig();
-    const domain = config.storeDomain || "mock.shop";
+    const domain = config.storeDomain || "dbbys1-nd.myshopify.com";
     const token = config.storefrontToken;
 
-    let endpoint = "";
+    const endpoint = `https://${domain}/api/${STABLE_STOREFRONT_API_VERSION}/graphql.json`;
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
       Accept: "application/json",
     };
 
-    if (domain === "mock.shop" || domain.includes("mock.shop")) {
-      endpoint = "https://mock.shop/api";
-    } else {
-      endpoint = `https://${domain}/api/${STABLE_ADMIN_API_VERSION}/graphql.json`;
-      if (token) {
-        headers["X-Shopify-Storefront-Access-Token"] = token;
-      }
+    if (token) {
+      headers["X-Shopify-Storefront-Access-Token"] = token;
     }
 
     const response = await fetch(endpoint, {

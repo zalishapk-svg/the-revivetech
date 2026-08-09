@@ -1,7 +1,10 @@
 import crypto from "crypto";
+import { initializeApp, cert, getApps } from "firebase-admin/app";
+import { getFirestore, Firestore } from "firebase-admin/firestore";
 
-// Centralized Shopify API Version (Current Stable Release: 2026-07)
+// Centralized Shopify API Versions (Current Stable Release: 2026-07)
 export const STABLE_ADMIN_API_VERSION = "2026-07";
+export const STABLE_STOREFRONT_API_VERSION = "2026-07";
 
 // Exact required Admin API scopes based on functional analysis
 export const REQUIRED_ADMIN_SCOPES = [
@@ -32,10 +35,161 @@ export interface ShopifySessionRecord {
 }
 
 /**
- * Serverless-Ready Shopify Session & Token Storage
- * -----------------------------------------------
- * Automatically fetches and manages Admin API access tokens using 
- * Shopify's Client Credentials flow (SHOPIFY_CLIENT_ID + SHOPIFY_CLIENT_SECRET).
+ * Initialize Firebase Admin SDK for Server-Side Firestore Access
+ */
+function getFirestoreDb(): Firestore | null {
+  if (!getApps().length) {
+    try {
+      const serviceAccountStr = process.env.FIREBASE_SERVICE_ACCOUNT_KEY || process.env.FIREBASE_SERVICE_ACCOUNT;
+      const projectId = process.env.FIREBASE_PROJECT_ID || process.env.GCP_PROJECT || process.env.GOOGLE_CLOUD_PROJECT;
+      const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+      const privateKeyRaw = process.env.FIREBASE_PRIVATE_KEY;
+
+      if (serviceAccountStr) {
+        let creds: any;
+        try {
+          creds = JSON.parse(serviceAccountStr);
+        } catch {
+          creds = serviceAccountStr;
+        }
+        initializeApp({
+          credential: cert(creds),
+        });
+      } else if (clientEmail && privateKeyRaw && projectId) {
+        const privateKey = privateKeyRaw.replace(/^["']|["']$/g, "").replace(/\\n/g, "\n");
+        initializeApp({
+          credential: cert({
+            projectId,
+            clientEmail,
+            privateKey,
+          }),
+        });
+      } else if (projectId) {
+        initializeApp({ projectId });
+      } else {
+        initializeApp();
+      }
+    } catch (err) {
+      console.warn("[Firebase Admin Init] Server initialization note:", err);
+    }
+  }
+
+  try {
+    return getFirestore();
+  } catch (err) {
+    console.warn("[Firebase Admin] Firestore instance unavailable:", err);
+    return null;
+  }
+}
+
+/**
+ * Health check helper for Firebase Admin SDK and Firestore connection
+ */
+export async function checkFirebaseAdminHealth(): Promise<{ connected: boolean; projectId?: string; firestore: boolean; error?: string }> {
+  try {
+    const db = getFirestoreDb();
+    if (!db) {
+      return {
+        connected: false,
+        firestore: false,
+        error: "Firebase Admin SDK initialization failed",
+      };
+    }
+    // Attempt lightweight Firestore check
+    await db.collection("shopify_tokens").doc("__health_check__").get();
+    const projectId = process.env.FIREBASE_PROJECT_ID || process.env.GCP_PROJECT || process.env.GOOGLE_CLOUD_PROJECT || "configured";
+    return {
+      connected: true,
+      projectId,
+      firestore: true,
+    };
+  } catch (err: any) {
+    return {
+      connected: false,
+      firestore: false,
+      error: "Firestore operation failed or unconfigured",
+    };
+  }
+}
+
+/**
+ * Health check helper for Shopify Storefront API connection
+ */
+export async function checkShopifyStorefrontHealth(): Promise<{ connected: boolean; storeDomain: string; apiVersion: string; error?: string }> {
+  const config = getConfig();
+  const domain = config.storeDomain || "dbbys1-nd.myshopify.com";
+  const apiVersion = STABLE_STOREFRONT_API_VERSION;
+  const endpoint = `https://${domain}/api/${apiVersion}/graphql.json`;
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  };
+  if (config.storefrontToken) {
+    headers["X-Shopify-Storefront-Access-Token"] = config.storefrontToken;
+  }
+
+  try {
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        query: `{ shop { name description } }`,
+      }),
+    });
+
+    if (!res.ok) {
+      let msg = `Storefront API returned HTTP ${res.status}`;
+      if (res.status === 401 || res.status === 403) {
+        msg = "Storefront Access Token required or invalid permissions on Shopify";
+      }
+      return {
+        connected: false,
+        storeDomain: domain,
+        apiVersion,
+        error: msg,
+      };
+    }
+
+    const data = await res.json();
+    if (data.errors && data.errors.length > 0) {
+      return {
+        connected: false,
+        storeDomain: domain,
+        apiVersion,
+        error: data.errors[0]?.message || "GraphQL Storefront Error",
+      };
+    }
+
+    if (data.data?.shop) {
+      return {
+        connected: true,
+        storeDomain: domain,
+        apiVersion,
+      };
+    }
+
+    return {
+      connected: false,
+      storeDomain: domain,
+      apiVersion,
+      error: "Unexpected response format from Storefront API",
+    };
+  } catch (err: any) {
+    return {
+      connected: false,
+      storeDomain: domain,
+      apiVersion,
+      error: err?.message || "Failed to connect to Shopify Storefront API",
+    };
+  }
+}
+
+/**
+ * Serverless-Ready Shopify Session & Token Storage backed by Firebase Firestore
+ * ----------------------------------------------------------------------------
+ * Automatically manages Admin API access tokens using Shopify's Client Credentials flow
+ * (SHOPIFY_CLIENT_ID + SHOPIFY_CLIENT_SECRET) and caches them in Firestore collection "shopify_tokens".
  */
 class ShopifyDatabaseSessionStorage {
   private inMemorySessions: Map<string, ShopifySessionRecord> = new Map();
@@ -46,44 +200,8 @@ class ShopifyDatabaseSessionStorage {
     return raw.trim().replace(/^https?:\/\//, "").replace(/\/$/, "");
   }
 
-  private getRedisCredentials(): { url: string; token: string } | null {
-    const url = (process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL || process.env.SHOPIFY_DATABASE_URL || "").trim();
-    const token = (process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || "").trim();
-
-    if (url && token) {
-      return { url, token };
-    }
-    return null;
-  }
-
-  private async redisCommand(cmd: any[]): Promise<any> {
-    const creds = this.getRedisCredentials();
-    if (!creds) return null;
-
-    try {
-      const res = await fetch(creds.url, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${creds.token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(cmd),
-      });
-
-      if (!res.ok) {
-        return null;
-      }
-      const data = await res.json();
-      return data?.result ?? null;
-    } catch (err) {
-      console.error("[Shopify Storage] Redis REST command error:", err);
-      return null;
-    }
-  }
-
   public async getSession(shopDomain?: string): Promise<ShopifySessionRecord | null> {
     const key = this.cleanDomain(shopDomain);
-    const redisKey = `shopify:admin:access_token:${key}`;
 
     // 1. Check in-memory cache first
     if (this.inMemorySessions.has(key)) {
@@ -94,19 +212,32 @@ class ShopifyDatabaseSessionStorage {
       }
     }
 
-    // 2. Check Vercel KV / Upstash Redis
-    const redisResult = await this.redisCommand(["GET", redisKey]);
-    if (redisResult) {
+    // 2. Check Firebase Firestore (collection: "shopify_tokens", doc: key)
+    const db = getFirestoreDb();
+    if (db) {
       try {
-        const record: ShopifySessionRecord = typeof redisResult === "string" ? JSON.parse(redisResult) : redisResult;
-        if (record && record.accessToken) {
-          this.inMemorySessions.set(key, record);
-          if (!record.expiresAt || record.expiresAt > Date.now() + 60000) {
-            return record;
+        const docRef = db.collection("shopify_tokens").doc(key);
+        const snap = await docRef.get();
+        if (snap.exists) {
+          const data = snap.data();
+          if (data && data.accessToken) {
+            const record: ShopifySessionRecord = {
+              shop: data.shop || key,
+              accessToken: data.accessToken,
+              scope: data.scope || REQUIRED_ADMIN_SCOPES.join(","),
+              installedAt: data.installedAt || new Date().toISOString(),
+              updatedAt: data.updatedAt || new Date().toISOString(),
+              expiresAt: data.expiresAt || undefined,
+              isOnline: false,
+            };
+            this.inMemorySessions.set(key, record);
+            if (!record.expiresAt || record.expiresAt > Date.now() + 60000) {
+              return record;
+            }
           }
         }
       } catch (e) {
-        console.error("[Shopify Storage] Error parsing cached token from Redis:", e);
+        console.error("[Shopify Storage] Error fetching cached token from Firestore:", e);
       }
     }
 
@@ -165,7 +296,6 @@ class ShopifyDatabaseSessionStorage {
 
         const expiresInSec = data.expires_in || 86400; // Default 24 hours
         const expiresAt = Date.now() + (expiresInSec - 300) * 1000; // Refresh 5 minutes before expiration
-        const ttlSec = Math.max(60, expiresInSec - 300);
 
         const record: ShopifySessionRecord = {
           shop: key,
@@ -179,9 +309,23 @@ class ShopifyDatabaseSessionStorage {
 
         this.inMemorySessions.set(key, record);
 
-        // Store in Redis with TTL so it auto-expires cleanly
-        const redisKey = `shopify:admin:access_token:${key}`;
-        await this.redisCommand(["SET", redisKey, JSON.stringify(record), "EX", ttlSec]);
+        // Save fresh token to Firestore
+        const db = getFirestoreDb();
+        if (db) {
+          try {
+            await db.collection("shopify_tokens").doc(key).set({
+              shop: key,
+              accessToken: record.accessToken,
+              scope: record.scope,
+              installedAt: record.installedAt,
+              updatedAt: record.updatedAt,
+              expiresAt: record.expiresAt || null,
+            }, { merge: true });
+            console.log(`[Shopify Storage] Token saved to Firestore (collection: "shopify_tokens", doc: "${key}")`);
+          } catch (err) {
+            console.error("[Shopify Storage] Failed writing token to Firestore:", err);
+          }
+        }
 
         console.log(`[Shopify Client Credentials Success] Admin API Token acquired for ${key}. Valid for ${expiresInSec}s.`);
 
@@ -235,8 +379,20 @@ class ShopifyDatabaseSessionStorage {
 
     this.inMemorySessions.set(key, record);
 
-    const redisKey = `shopify:admin:access_token:${key}`;
-    await this.redisCommand(["SET", redisKey, JSON.stringify(record), "EX", 82800]);
+    const db = getFirestoreDb();
+    if (db) {
+      try {
+        await db.collection("shopify_tokens").doc(key).set({
+          shop: key,
+          accessToken: record.accessToken,
+          scope: record.scope,
+          installedAt: record.installedAt,
+          updatedAt: record.updatedAt,
+        }, { merge: true });
+      } catch (err) {
+        console.error("[Shopify Storage] Failed writing session to Firestore:", err);
+      }
+    }
 
     return record;
   }
@@ -245,8 +401,14 @@ class ShopifyDatabaseSessionStorage {
     const key = this.cleanDomain(shopDomain);
     this.inMemorySessions.delete(key);
 
-    const redisKey = `shopify:admin:access_token:${key}`;
-    await this.redisCommand(["DEL", redisKey]);
+    const db = getFirestoreDb();
+    if (db) {
+      try {
+        await db.collection("shopify_tokens").doc(key).delete();
+      } catch (err) {
+        console.error("[Shopify Storage] Failed purging session from Firestore:", err);
+      }
+    }
   }
 }
 
@@ -274,3 +436,4 @@ export function getAppBaseUrl(req: any): string {
   const host = req.headers?.["x-forwarded-host"] || req.headers?.host || "localhost:3000";
   return `${protocol}://${host}`;
 }
+

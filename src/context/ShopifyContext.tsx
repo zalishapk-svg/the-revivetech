@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { Product, Collection, BlogArticle, CartLineItem, ViewState, Customer } from "../types";
-import { MOCK_TECH_PRODUCTS, getProductsFromShopify, getCollectionsFromShopify, getBlogArticlesFromShopify } from "../lib/shopify";
+import { getProductsFromShopify, getCollectionsFromShopify, getBlogArticlesFromShopify } from "../lib/shopify";
 
 interface ShopifyContextType {
   // Navigation View State
@@ -93,13 +93,13 @@ const ShopifyContext = createContext<ShopifyContextType | undefined>(undefined);
 
 export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [viewState, setViewState] = useState<ViewState>({ type: "home" });
-  const [products, setProducts] = useState<Product[]>(MOCK_TECH_PRODUCTS);
+  const [products, setProducts] = useState<Product[]>([]);
   const [collections, setCollections] = useState<Collection[]>([]);
   const [articles, setArticles] = useState<BlogArticle[]>([]);
   const [isLoadingData, setIsLoadingData] = useState<boolean>(true);
 
-  const [storeDomain, setStoreDomain] = useState<string>("mock.shop");
-  const [isMockShop, setIsMockShop] = useState<boolean>(true);
+  const [storeDomain, setStoreDomain] = useState<string>("dbbys1-nd.myshopify.com");
+  const [isMockShop, setIsMockShop] = useState<boolean>(false);
 
   // Cart State
   const [cartLines, setCartLines] = useState<CartLineItem[]>(() => {

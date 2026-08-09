@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { getConfig, STABLE_ADMIN_API_VERSION } from "../_lib/shopify-server";
+import { getConfig, STABLE_STOREFRONT_API_VERSION } from "../_lib/shopify-server";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") {
@@ -13,22 +13,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const config = getConfig();
-    const domain = config.storeDomain || "mock.shop";
+    const domain = config.storeDomain || "dbbys1-nd.myshopify.com";
     const token = config.storefrontToken;
 
-    let endpoint = "";
+    const endpoint = `https://${domain}/api/${STABLE_STOREFRONT_API_VERSION}/graphql.json`;
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
       Accept: "application/json",
     };
 
-    if (domain === "mock.shop" || domain.includes("mock.shop")) {
-      endpoint = "https://mock.shop/api";
-    } else {
-      endpoint = `https://${domain}/api/${STABLE_ADMIN_API_VERSION}/graphql.json`;
-      if (token) {
-        headers["X-Shopify-Storefront-Access-Token"] = token;
-      }
+    if (token) {
+      headers["X-Shopify-Storefront-Access-Token"] = token;
     }
 
     const response = await fetch(endpoint, {

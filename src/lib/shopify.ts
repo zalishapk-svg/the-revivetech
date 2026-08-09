@@ -715,8 +715,8 @@ export async function getProductsFromShopify(): Promise<Product[]> {
         tags: node.tags || [],
         availableForSale: node.availableForSale,
         priceRange: {
-          minVariantPrice: node.priceRange?.minVariantPrice || { amount: "99.99", currencyCode: "USD" },
-          maxVariantPrice: node.priceRange?.maxVariantPrice || { amount: "99.99", currencyCode: "USD" },
+          minVariantPrice: node.priceRange?.minVariantPrice || { amount: "0.00", currencyCode: "USD" },
+          maxVariantPrice: node.priceRange?.maxVariantPrice || { amount: "0.00", currencyCode: "USD" },
         },
         compareAtPriceRange: node.compareAtPriceRange,
         featuredImage: node.featuredImage || (node.images?.edges[0]?.node ? node.images.edges[0].node : null),
@@ -732,18 +732,15 @@ export async function getProductsFromShopify(): Promise<Product[]> {
           selectedOptions: e.node.selectedOptions,
         })) || [],
         rating: 4.8,
-        reviewsCount: 42,
+        reviewsCount: 12,
       };
     });
-    if (liveProducts.length > 0) {
-      return liveProducts;
-    }
+    return liveProducts;
   }
-  return MOCK_TECH_PRODUCTS;
+  return [];
 }
 
 export async function getProductByHandleFromShopify(handle: string): Promise<Product | null> {
-  const localFound = MOCK_TECH_PRODUCTS.find((p) => p.handle === handle);
   const result = await fetchShopifyGraphQL(STOREFRONT_QUERIES.GET_PRODUCT_BY_HANDLE, { handle });
   if (result && result.data && result.data.product) {
     const node = result.data.product;
@@ -758,8 +755,8 @@ export async function getProductByHandleFromShopify(handle: string): Promise<Pro
       tags: node.tags || [],
       availableForSale: node.availableForSale,
       priceRange: {
-        minVariantPrice: node.priceRange?.minVariantPrice || { amount: "99.99", currencyCode: "USD" },
-        maxVariantPrice: node.priceRange?.maxVariantPrice || { amount: "99.99", currencyCode: "USD" },
+        minVariantPrice: node.priceRange?.minVariantPrice || { amount: "0.00", currencyCode: "USD" },
+        maxVariantPrice: node.priceRange?.maxVariantPrice || { amount: "0.00", currencyCode: "USD" },
       },
       compareAtPriceRange: node.compareAtPriceRange,
       featuredImage: node.featuredImage || (node.images?.edges[0]?.node ? node.images.edges[0].node : null),
@@ -774,13 +771,13 @@ export async function getProductByHandleFromShopify(handle: string): Promise<Pro
         compareAtPrice: e.node.compareAtPrice,
         selectedOptions: e.node.selectedOptions,
       })) || [],
-      rating: localFound?.rating || 4.9,
-      reviewsCount: localFound?.reviewsCount || 54,
-      reviews: localFound?.reviews || [],
-      specs: localFound?.specs || {},
+      rating: 4.9,
+      reviewsCount: 15,
+      reviews: [],
+      specs: {},
     };
   }
-  return localFound || MOCK_TECH_PRODUCTS[0];
+  return null;
 }
 
 export async function getCollectionsFromShopify(): Promise<Collection[]> {
@@ -794,12 +791,12 @@ export async function getCollectionsFromShopify(): Promise<Collection[]> {
         title: node.title,
         description: node.description || "",
         image: node.image,
-        productsCount: node.products?.edges?.length || 10,
+        productsCount: node.products?.edges?.length || 0,
       };
     });
-    if (liveCollections.length > 0) return liveCollections;
+    return liveCollections;
   }
-  return MOCK_TECH_COLLECTIONS;
+  return [];
 }
 
 export async function getBlogArticlesFromShopify(): Promise<BlogArticle[]> {
@@ -821,7 +818,7 @@ export async function getBlogArticlesFromShopify(): Promise<BlogArticle[]> {
         readingTimeMinutes: 4,
       };
     });
-    if (liveArticles.length > 0) return liveArticles;
+    return liveArticles;
   }
-  return MOCK_BLOG_ARTICLES;
+  return [];
 }
