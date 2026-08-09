@@ -61,7 +61,7 @@ export const CompareDrawer: React.FC = () => {
                       </div>
                       <h4 className="font-bold text-white line-clamp-2 text-center text-xs mb-1">{p.title}</h4>
                       <p className="font-mono text-emerald-400 font-bold text-center text-xs mb-2">
-                        {formatMoney(p.priceRange.minVariantPrice.amount)}
+                        {formatMoney(p.priceRange?.minVariantPrice?.amount || "0")}
                       </p>
                       <button
                         onClick={() => addToCart(p)}

@@ -25,6 +25,10 @@ export const GamingSetupShowcase: React.FC = () => {
   const activeHotspot = HOTSPOTS.find((h) => h.id === activeHotspotId) || HOTSPOTS[0];
   const activeProduct = products.find((p) => p.handle === activeHotspot.productHandle) || products[0];
 
+  if (!activeProduct) {
+    return null;
+  }
+
   return (
     <section className="py-16 bg-[#030e07] border-b border-emerald-900/40 text-slate-100 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

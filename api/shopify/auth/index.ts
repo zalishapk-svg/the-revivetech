@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import crypto from "crypto";
-import { getConfig, shopifyStorage, getAppBaseUrl, REQUIRED_ADMIN_SCOPES } from "../_lib/shopify-server";
+import { getConfig, shopifyStorage, getAppBaseUrl, REQUIRED_ADMIN_SCOPES } from "../../_lib/shopify-server";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const config = getConfig();

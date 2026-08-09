@@ -76,7 +76,7 @@ export const WishlistDrawer: React.FC = () => {
                     <div className="flex-1 min-w-0">
                       <h4 className="text-xs font-bold text-white truncate">{product.title}</h4>
                       <p className="text-[11px] font-mono text-emerald-400 font-bold mt-0.5">
-                        {formatMoney(product.priceRange.minVariantPrice.amount)}
+                        {formatMoney(product.priceRange?.minVariantPrice?.amount || "0")}
                       </p>
                       <div className="flex items-center gap-2 mt-2">
                         <button

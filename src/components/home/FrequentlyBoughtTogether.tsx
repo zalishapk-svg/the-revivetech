@@ -8,19 +8,23 @@ export const FrequentlyBoughtTogether: React.FC = () => {
 
   // Pick 3 bundle items
   const item1 = products[0]; // Mouse
-  const item2 = products[1]; // Keyboard
-  const item3 = products[4]; // Headset
+  const item2 = products[1] || products[0]; // Keyboard
+  const item3 = products[4] || products[2] || products[0]; // Headset
 
   const [selectedItems, setSelectedItems] = useState({ 1: true, 2: true, 3: true });
+
+  if (!item1 || !item2 || !item3) {
+    return null;
+  }
 
   const toggleItem = (num: 1 | 2 | 3) => {
     setSelectedItems((prev) => ({ ...prev, [num]: !prev[num] }));
   };
 
   const totalPrice =
-    (selectedItems[1] ? parseFloat(item1.priceRange.minVariantPrice.amount) : 0) +
-    (selectedItems[2] ? parseFloat(item2.priceRange.minVariantPrice.amount) : 0) +
-    (selectedItems[3] ? parseFloat(item3.priceRange.minVariantPrice.amount) : 0);
+    (selectedItems[1] ? parseFloat(item1.priceRange?.minVariantPrice?.amount || "0") : 0) +
+    (selectedItems[2] ? parseFloat(item2.priceRange?.minVariantPrice?.amount || "0") : 0) +
+    (selectedItems[3] ? parseFloat(item3.priceRange?.minVariantPrice?.amount || "0") : 0);
 
   const bundleDiscount = totalPrice * 0.15; // 15% bundle savings
   const finalBundleTotal = totalPrice - bundleDiscount;

@@ -23,15 +23,26 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
   const product = products.find((p) => p.handle === handle) || products[0];
 
   const [selectedImageIdx, setSelectedImageIdx] = useState(0);
-  const [selectedVariantId, setSelectedVariantId] = useState(product.variants[0]?.id);
+  const [selectedVariantId, setSelectedVariantId] = useState<string | undefined>(
+    product?.variants?.[0]?.id
+  );
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState<"overview" | "specs" | "reviews" | "shipping">("overview");
+
+  if (!product) {
+    return (
+      <div className="bg-[#030e07] text-slate-100 min-h-screen py-20 flex flex-col items-center justify-center space-y-4">
+        <div className="animate-spin w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full" />
+        <p className="text-sm font-mono text-emerald-400">Loading product hardware details...</p>
+      </div>
+    );
+  }
 
   const images = product.images?.length ? product.images : product.featuredImage ? [product.featuredImage] : [];
   const isWishlisted = isInWishlist(product.handle);
   const isCompared = isInCompare(product.handle);
 
-  const priceAmount = product.priceRange.minVariantPrice.amount;
+  const priceAmount = product.priceRange?.minVariantPrice?.amount || "0.00";
   const compareAtAmount = product.compareAtPriceRange?.minVariantPrice?.amount;
   const discountPercent = calculateDiscount(priceAmount, compareAtAmount);
 

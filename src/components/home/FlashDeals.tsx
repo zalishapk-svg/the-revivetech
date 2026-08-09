@@ -21,9 +21,13 @@ export const FlashDeals: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const flashDealProduct = products.find((p) => p.isFlashDeal || p.handle.includes("qd-oled")) || products[2];
+  const flashDealProduct = products.find((p) => p.isFlashDeal || p.handle.includes("qd-oled")) || products[2] || products[0];
 
-  const price = flashDealProduct.priceRange.minVariantPrice.amount;
+  if (!flashDealProduct) {
+    return null;
+  }
+
+  const price = flashDealProduct.priceRange?.minVariantPrice?.amount || "0.00";
   const compareAt = flashDealProduct.compareAtPriceRange?.minVariantPrice?.amount;
   const discountPercent = calculateDiscount(price, compareAt);
 

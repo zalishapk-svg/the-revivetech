@@ -37,7 +37,7 @@ export const NewArrivals: React.FC = () => {
           {newProducts.map((product) => {
             const isWishlisted = isInWishlist(product.handle);
             const isCompared = isInCompare(product.handle);
-            const price = product.priceRange.minVariantPrice.amount;
+            const price = product.priceRange?.minVariantPrice?.amount || "0.00";
             const compareAt = product.compareAtPriceRange?.minVariantPrice?.amount;
             const discountPercent = calculateDiscount(price, compareAt);
 
@@ -47,7 +47,7 @@ export const NewArrivals: React.FC = () => {
                 className="group bg-[#071910] rounded-2xl overflow-hidden border border-emerald-900/40 hover:border-emerald-500/50 transition-all duration-300 flex flex-col justify-between"
               >
                 <div className="relative aspect-square overflow-hidden bg-slate-900">
-                  {product.featuredImage && (
+                  {product.featuredImage?.url && (
                     <img
                       src={product.featuredImage.url}
                       alt={product.title}

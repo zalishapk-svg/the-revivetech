@@ -12,9 +12,12 @@ export const QuickViewModal: React.FC = () => {
   if (!quickViewHandle) return null;
 
   const product = products.find((p) => p.handle === quickViewHandle) || products[0];
+
+  if (!product) return null;
+
   const isWishlisted = isInWishlist(product.handle);
 
-  const priceAmount = product.priceRange.minVariantPrice.amount;
+  const priceAmount = product.priceRange?.minVariantPrice?.amount || "0.00";
   const compareAtAmount = product.compareAtPriceRange?.minVariantPrice?.amount;
   const discountPercent = calculateDiscount(priceAmount, compareAtAmount);
 

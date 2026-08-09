@@ -67,14 +67,17 @@ function getFirestoreDb(): Firestore | null {
       } else if (projectId) {
         initializeApp({ projectId });
       } else {
-        initializeApp();
+        // No Firebase configuration or Google Cloud project ID provided
+        return null;
       }
     } catch (err) {
       console.warn("[Firebase Admin Init] Server initialization note:", err);
+      return null;
     }
   }
 
   try {
+    if (!getApps().length) return null;
     return getFirestore();
   } catch (err) {
     console.warn("[Firebase Admin] Firestore instance unavailable:", err);

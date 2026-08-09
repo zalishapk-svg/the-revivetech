@@ -37,7 +37,7 @@ export const BestSellers: React.FC = () => {
           {bestSellerProducts.map((product) => {
             const isWishlisted = isInWishlist(product.handle);
             const isCompared = isInCompare(product.handle);
-            const price = product.priceRange.minVariantPrice.amount;
+            const price = product.priceRange?.minVariantPrice?.amount || "0.00";
             const compareAt = product.compareAtPriceRange?.minVariantPrice?.amount;
             const discountPercent = calculateDiscount(price, compareAt);
 
@@ -48,7 +48,7 @@ export const BestSellers: React.FC = () => {
               >
                 {/* Image Container & Floating Actions */}
                 <div className="relative aspect-square overflow-hidden bg-slate-900">
-                  {product.featuredImage && (
+                  {product.featuredImage?.url && (
                     <img
                       src={product.featuredImage.url}
                       alt={product.title}

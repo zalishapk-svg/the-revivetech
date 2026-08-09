@@ -195,7 +195,7 @@ export const CollectionPage: React.FC<CollectionPageProps> = ({ handle }) => {
               {collectionProducts.map((product) => {
                 const isWishlisted = isInWishlist(product.handle);
                 const isCompared = isInCompare(product.handle);
-                const price = product.priceRange.minVariantPrice.amount;
+                const price = product.priceRange?.minVariantPrice?.amount || "0.00";
                 const compareAt = product.compareAtPriceRange?.minVariantPrice?.amount;
                 const discountPercent = calculateDiscount(price, compareAt);
 

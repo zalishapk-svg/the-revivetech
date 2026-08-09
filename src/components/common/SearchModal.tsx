@@ -113,7 +113,7 @@ export const SearchModal: React.FC = () => {
                       className="flex items-center gap-3 p-2 rounded-xl bg-emerald-950/30 hover:bg-emerald-900/40 border border-emerald-900/30 hover:border-emerald-500/40 transition-all text-left group"
                     >
                       <div className="w-12 h-12 rounded-lg overflow-hidden bg-slate-900 shrink-0">
-                        {product.featuredImage ? (
+                        {product.featuredImage?.url ? (
                           <img
                             src={product.featuredImage.url}
                             alt={product.title}
