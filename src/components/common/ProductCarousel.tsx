@@ -25,33 +25,7 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isPaused, setIsPaused] = useState(false);
 
-  // Smooth continuous auto-scroll logic
-  useEffect(() => {
-    if (!scrollRef.current) return;
-    let animId: number;
-    let lastTime = performance.now();
-
-    const step = (now: number) => {
-      const delta = now - lastTime;
-      lastTime = now;
-
-      if (!isPaused && scrollRef.current) {
-        const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-        // Scroll speed ~ 40px/sec
-        const speed = (40 * delta) / 1000;
-        if (scrollLeft + clientWidth >= scrollWidth - 1) {
-          scrollRef.current.scrollLeft = 0;
-        } else {
-          scrollRef.current.scrollLeft += speed;
-        }
-      }
-      animId = requestAnimationFrame(step);
-    };
-
-    animId = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(animId);
-  }, [isPaused, products.length]);
-
+  // Manual navigation only (auto-scroll disabled per user requirement)
   const scroll = (direction: "left" | "right") => {
     if (!scrollRef.current) return;
     const amount = direction === "left" ? -340 : 340;
@@ -98,7 +72,7 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({
               )}
 
               {/* Controls */}
-              <div className="hidden sm:flex items-center gap-1.5 ml-2">
+              <div className="flex items-center gap-1.5 ml-2">
                 <button
                   onClick={() => scroll("left")}
                   aria-label="Scroll left"

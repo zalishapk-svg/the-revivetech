@@ -7,32 +7,7 @@ export const LatestBlog: React.FC = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isPaused, setIsPaused] = useState(false);
 
-  // Smooth continuous auto-scroll loop
-  useEffect(() => {
-    if (!scrollRef.current) return;
-    let animId: number;
-    let lastTime = performance.now();
-
-    const step = (now: number) => {
-      const delta = now - lastTime;
-      lastTime = now;
-
-      if (!isPaused && scrollRef.current) {
-        const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-        const speed = (35 * delta) / 1000;
-        if (scrollLeft + clientWidth >= scrollWidth - 1) {
-          scrollRef.current.scrollLeft = 0;
-        } else {
-          scrollRef.current.scrollLeft += speed;
-        }
-      }
-      animId = requestAnimationFrame(step);
-    };
-
-    animId = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(animId);
-  }, [isPaused, articles.length]);
-
+  // Manual navigation only (auto-scroll disabled per user requirement)
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {
       scrollRef.current.scrollBy({ left: direction === "left" ? -340 : 340, behavior: "smooth" });

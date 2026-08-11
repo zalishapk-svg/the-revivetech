@@ -12,7 +12,7 @@ export const MobileNav: React.FC<MobileNavProps> = ({ isOpen, onClose }) => {
   const {
     navigateToHome,
     navigateToShop,
-    navigateToExploreAll,
+    navigateToSale,
     navigateToCollection,
     navigateToCollectionsList,
     navigateToBlog,
@@ -106,19 +106,19 @@ export const MobileNav: React.FC<MobileNavProps> = ({ isOpen, onClose }) => {
                 }}
                 className="w-full text-left py-2 font-bold text-base border-b border-emerald-950 hover:text-emerald-400"
               >
-                Shop Catalog
+                Shop
               </button>
 
               <button
                 onClick={() => {
-                  navigateToExploreAll();
+                  navigateToSale();
                   onClose();
                 }}
-                className="w-full text-left py-2 font-bold text-base border-b border-emerald-950 text-emerald-400 flex items-center justify-between"
+                className="w-full text-left py-2 font-bold text-base border-b border-emerald-950 text-rose-400 flex items-center justify-between"
               >
-                <span>Explore All Products</span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 border border-emerald-800 text-emerald-400">
-                  ALL
+                <span>Sale Deals</span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-rose-950 border border-rose-800 text-rose-400 font-extrabold uppercase animate-pulse">
+                  DEALS
                 </span>
               </button>
 

@@ -10,15 +10,29 @@ import {
 
 interface ShopPageProps {
   isExploreAll?: boolean;
+  isSalePage?: boolean;
 }
 
-export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false }) => {
+export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSalePage = false }) => {
   const { 
     viewState, products, collections, addToCart, toggleWishlist, isInWishlist, 
     toggleCompare, isInCompare, setQuickViewHandle, navigateToProduct, navigateToCollection 
   } = useShopify();
 
   const isExplore = isExploreAll || viewState.type === "explore_all";
+  const isSale = isSalePage || viewState.type === "sale";
+
+  // Base Products List: Filter ONLY discounted items if on Sale page
+  const baseProducts = useMemo(() => {
+    if (isSale) {
+      return products.filter((p) => {
+        const price = parseFloat(p.priceRange?.minVariantPrice?.amount || "0");
+        const compareAt = parseFloat(p.compareAtPriceRange?.minVariantPrice?.amount || "0");
+        return compareAt > price;
+      });
+    }
+    return products;
+  }, [products, isSale]);
 
   // Filter States
   const [searchQuery, setSearchQuery] = useState("");
@@ -43,19 +57,19 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false }) => {
   // Extract unique vendors & categories
   const vendors = useMemo(() => {
     const set = new Set<string>();
-    products.forEach((p) => { if (p.vendor) set.add(p.vendor); });
+    baseProducts.forEach((p) => { if (p.vendor) set.add(p.vendor); });
     return Array.from(set).sort();
-  }, [products]);
+  }, [baseProducts]);
 
   const categories = useMemo(() => {
     const set = new Set<string>();
-    products.forEach((p) => { if (p.productType) set.add(p.productType); });
+    baseProducts.forEach((p) => { if (p.productType) set.add(p.productType); });
     return Array.from(set).sort();
-  }, [products]);
+  }, [baseProducts]);
 
   // Filter and Sort Logic
   const filteredProducts = useMemo(() => {
-    return products.filter((p) => {
+    return baseProducts.filter((p) => {
       // Search
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
@@ -96,7 +110,7 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false }) => {
       // Default: Featured
       return 0;
     });
-  }, [products, searchQuery, selectedCategory, selectedVendor, inStockOnly, onSaleOnly, maxPrice, sortBy]);
+  }, [baseProducts, searchQuery, selectedCategory, selectedVendor, inStockOnly, onSaleOnly, maxPrice, sortBy]);
 
   const resetFilters = () => {
     setSearchQuery("");
@@ -132,7 +146,7 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false }) => {
           </a>
           <ChevronRight className="w-3 h-3 text-slate-600" />
           <span className="text-emerald-400 font-semibold">
-            {isExplore ? "Complete Store Catalog" : "Shop Catalog"}
+            {isSale ? "Sale Deals" : isExplore ? "Complete Store Catalog" : "Shop"}
           </span>
         </nav>
 
@@ -142,17 +156,27 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false }) => {
           <div className="relative z-10 max-w-2xl">
             <span className="text-emerald-400 text-xs font-mono uppercase tracking-widest bg-emerald-950/80 px-3 py-1 rounded-full border border-emerald-800/60 inline-flex items-center gap-2 mb-3">
               <Sparkles className="w-3 h-3 text-emerald-400" />
-              {isExplore ? `Complete Store Catalog (${products.length} Items)` : "Official Hardware Store"}
+              {isSale ? (
+                `Shopify Sale & Discounted Hardware (${baseProducts.length} Items)`
+              ) : isExplore ? (
+                `Complete Store Catalog (${products.length} Items)`
+              ) : (
+                "Official Hardware Store"
+              )}
             </span>
             <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight leading-tight mb-4">
-              {isExplore ? (
+              {isSale ? (
+                <>On Sale <YellowTape text="DISCOUNTED GEAR" /></>
+              ) : isExplore ? (
                 <>Explore All <YellowTape text="STORE PRODUCTS" /></>
               ) : (
-                <>Explore Premium <YellowTape text="TECH CATALOG" /></>
+                <>Explore <YellowTape text="THE REVIVE TECH SHOP" /></>
               )}
             </h1>
             <p className="text-slate-300 text-sm md:text-base leading-relaxed">
-              {isExplore ? (
+              {isSale ? (
+                `Showing ONLY live discounted products directly from our Shopify store inventory with active compare-at prices. Deals update automatically.`
+              ) : isExplore ? (
                 `Viewing our complete Shopify store catalog (${products.length} products total). Every single item in our store is accessible below with full category filters, search, sorting, and pagination.`
               ) : (
                 `Browse our full collection of genuine gaming mice, custom mechanical keyboards, audiophile headsets, high-refresh displays, and battlestation accessories with official Pakistan warranty.`
