@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Heart, Layers, ShoppingBag, Star, ShieldCheck, Truck, RotateCcw, Check, Sparkles, Share2, Eye } from "lucide-react";
+import { ProductCarousel } from "../common/ProductCarousel";
 import { useShopify } from "../../context/ShopifyContext";
 import { formatMoney, calculateDiscount } from "../../lib/utils";
 
@@ -203,7 +204,7 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
               </div>
               <div className="p-2 bg-slate-950/60 rounded-xl border border-emerald-900/30">
                 <ShieldCheck className="w-4 h-4 text-emerald-400 mx-auto mb-1" />
-                <span>3-Year Warranty</span>
+                <span>Authentic Product</span>
               </div>
               <div className="p-2 bg-slate-950/60 rounded-xl border border-emerald-900/30">
                 <RotateCcw className="w-4 h-4 text-emerald-400 mx-auto mb-1" />
@@ -281,27 +282,17 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
           </div>
         </div>
 
-        {/* Related Products */}
-        <div className="space-y-6">
-          <h3 className="text-xl font-bold text-white font-mono uppercase">You Might Also Need</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {relatedProducts.map((p) => (
-              <div
-                key={p.id}
-                onClick={() => navigateToProduct(p.handle)}
-                className="bg-[#071910] border border-emerald-900/40 rounded-2xl p-4 cursor-pointer hover:border-emerald-500/50 transition-all"
-              >
-                <div className="aspect-square bg-slate-900 rounded-xl overflow-hidden mb-3">
-                  <img src={p.featuredImage?.url} alt={p.title} className="w-full h-full object-cover" />
-                </div>
-                <h4 className="text-xs font-bold text-white line-clamp-1">{p.title}</h4>
-                <span className="font-mono text-xs font-bold text-emerald-400 block mt-1">
-                  {formatMoney(p.priceRange.minVariantPrice.amount)}
-                </span>
-              </div>
-            ))}
+        {/* Related Products Carousel */}
+        {relatedProducts.length > 0 && (
+          <div className="pt-6">
+            <ProductCarousel
+              title="You Might Also Need"
+              subtitle="Complementary hardware and accessories frequently paired with this setup."
+              badgeText="RECOMMENDED ACCESSORIES"
+              products={relatedProducts}
+            />
           </div>
-        </div>
+        )}
 
       </div>
     </div>

@@ -141,7 +141,7 @@ export const MobileNav: React.FC<MobileNavProps> = ({ isOpen, onClose }) => {
                 }}
                 className="w-full text-left py-2 font-bold text-base border-b border-emerald-950 hover:text-emerald-400"
               >
-                Tech Journal & Articles
+                Blogs & Articles
               </button>
 
               <button

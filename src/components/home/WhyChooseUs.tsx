@@ -22,8 +22,8 @@ export const WhyChooseUs: React.FC = () => {
 
           <div className="bg-[#071910] border border-emerald-900/40 p-6 rounded-2xl text-center space-y-3">
             <ShieldCheck className="w-8 h-8 text-emerald-400 mx-auto" />
-            <h3 className="font-bold text-sm text-white uppercase">3-Year Full Warranty</h3>
-            <p className="text-xs text-slate-400">Includes burn-in protection on QD-OLED displays and switches.</p>
+            <h3 className="font-bold text-sm text-white uppercase">100% Authentic Products</h3>
+            <p className="text-xs text-slate-400">Guaranteed original hardware directly sourced from authorized brand channels.</p>
           </div>
 
           <div className="bg-[#071910] border border-emerald-900/40 p-6 rounded-2xl text-center space-y-3">

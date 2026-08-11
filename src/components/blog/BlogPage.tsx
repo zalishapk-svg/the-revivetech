@@ -20,7 +20,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({ articleHandle }) => {
             onClick={navigateToBlog}
             className="inline-flex items-center gap-2 text-xs font-mono font-bold text-emerald-400 hover:text-emerald-300"
           >
-            <ArrowLeft className="w-4 h-4" /> Back to Tech Journal
+            <ArrowLeft className="w-4 h-4" /> Back to Blogs
           </button>
 
           <div className="space-y-4">
@@ -55,9 +55,9 @@ export const BlogPage: React.FC<BlogPageProps> = ({ articleHandle }) => {
         
         <div className="bg-[#071910] border border-emerald-800/50 p-8 sm:p-12 rounded-3xl relative overflow-hidden">
           <span className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1.5 mb-2">
-            <BookOpen className="w-4 h-4" /> SHOPIFY BLOG API INTEGRATION
+            <BookOpen className="w-4 h-4" /> LIVE SHOPIFY BLOG API ({articles.length} ARTICLES)
           </span>
-          <h1 className="text-3xl sm:text-5xl font-black text-white">TheReviveTech Journal</h1>
+          <h1 className="text-3xl sm:text-5xl font-black text-white">TheReviveTech Blogs</h1>
           <p className="text-xs sm:text-sm text-slate-300 max-w-2xl mt-2">
             Deep dive engineering articles, hardware benchmark reports, firmware changelogs, and esports gear tuning guides.
           </p>

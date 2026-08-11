@@ -864,7 +864,7 @@ export async function getProductByHandleFromShopify(handle: string): Promise<Pro
 }
 
 export async function getCollectionsFromShopify(): Promise<Collection[]> {
-  const result = await fetchShopifyGraphQL(STOREFRONT_QUERIES.GET_COLLECTIONS, { first: 20 });
+  const result = await fetchShopifyGraphQL(STOREFRONT_QUERIES.GET_COLLECTIONS, { first: 50 });
   if (result && result.data && result.data.collections && result.data.collections.edges) {
     const liveCollections: Collection[] = result.data.collections.edges.map((edge: any) => {
       const node = edge.node;
@@ -969,7 +969,7 @@ export async function getCollectionByHandleFromShopify(handle: string): Promise<
 }
 
 export async function getBlogArticlesFromShopify(): Promise<BlogArticle[]> {
-  const result = await fetchShopifyGraphQL(STOREFRONT_QUERIES.GET_ARTICLES, { first: 10 });
+  const result = await fetchShopifyGraphQL(STOREFRONT_QUERIES.GET_ARTICLES, { first: 100 });
   if (result && result.data && result.data.articles && result.data.articles.edges) {
     const liveArticles: BlogArticle[] = result.data.articles.edges.map((edge: any) => {
       const node = edge.node;

@@ -137,7 +137,7 @@ export const Header: React.FC = () => {
                   : "text-slate-300"
               }`}
             >
-              Journal
+              Blogs
             </button>
           </nav>
 

@@ -43,8 +43,8 @@ export const Footer: React.FC = () => {
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="font-bold text-xs text-white uppercase">3-Year Official Warranty</h4>
-              <p className="text-[11px] text-slate-400">Complete hardware protection</p>
+              <h4 className="font-bold text-xs text-white uppercase">Authentic Products</h4>
+              <p className="text-[11px] text-slate-400">100% Genuine Hardware</p>
             </div>
           </div>
 
@@ -144,7 +144,7 @@ export const Footer: React.FC = () => {
               </li>
               <li>
                 <button onClick={navigateToBlog} className="hover:text-emerald-400 transition-colors">
-                  Tech Journal
+                  Blogs
                 </button>
               </li>
               <li>

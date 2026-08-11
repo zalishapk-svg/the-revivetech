@@ -44,7 +44,7 @@ export const AnnouncementBar: React.FC = () => {
           <div className="hidden sm:flex items-center gap-3 border-l border-emerald-800/40 pl-3">
             <span className="flex items-center gap-1 text-slate-300">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              Official 3-Year Warranty
+              100% Authentic Products
             </span>
             <span className="flex items-center gap-1 text-slate-300">
               <Globe className="w-3.5 h-3.5 text-emerald-400" />

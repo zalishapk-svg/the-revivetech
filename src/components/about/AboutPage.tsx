@@ -167,8 +167,8 @@ export const AboutPage: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="bg-[#05140b] border border-emerald-900/40 rounded-2xl p-6 space-y-3">
               <ShieldCheck className="w-8 h-8 text-emerald-400" />
-              <h4 className="font-bold text-white text-sm">3-Year Official Warranty</h4>
-              <p className="text-xs text-slate-400">All products come with genuine local warranty and hassle-free RMA replacement.</p>
+              <h4 className="font-bold text-white text-sm">Authentic Products</h4>
+              <p className="text-xs text-slate-400">All products are 100% genuine original hardware with direct brand verification.</p>
             </div>
 
             <div className="bg-[#05140b] border border-emerald-900/40 rounded-2xl p-6 space-y-3">
