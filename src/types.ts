@@ -189,6 +189,7 @@ export interface Customer {
 export type ViewState = 
   | { type: 'home' }
   | { type: 'shop' }
+  | { type: 'explore_all' }
   | { type: 'product'; handle: string }
   | { type: 'collection'; handle: string }
   | { type: 'collections_list' }

@@ -20,6 +20,7 @@ export const Header: React.FC = () => {
     viewState,
     navigateToHome,
     navigateToShop,
+    navigateToExploreAll,
     navigateToCollectionsList,
     navigateToBlog,
     navigateToAccount,
@@ -75,6 +76,18 @@ export const Header: React.FC = () => {
               }`}
             >
               Shop Catalog
+            </button>
+
+            <button
+              onClick={navigateToExploreAll}
+              className={`transition-colors hover:text-emerald-400 flex items-center gap-1 ${
+                viewState.type === "explore_all" ? "text-emerald-400 font-bold" : "text-slate-300"
+              }`}
+            >
+              <span>Explore All</span>
+              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/80">
+                ALL
+              </span>
             </button>
 
             {/* COLLECTIONS / MEGA MENU TRIGGER */}

@@ -32,7 +32,6 @@ export const DynamicCollectionSections: React.FC<DynamicCollectionSectionsProps>
           <ProductCarousel
             key={col.id}
             title={col.title}
-            subtitle={col.description || `Explore our authentic ${col.title} hardware & accessories directly from live store inventory.`}
             badgeText={`${productCount} ITEMS`}
             products={col.products || []}
             onViewAll={() => navigateToCollection(col.handle)}

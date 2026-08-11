@@ -8,6 +8,7 @@ interface ShopifyContextType {
   setViewState: (view: ViewState) => void;
   navigateToHome: () => void;
   navigateToShop: () => void;
+  navigateToExploreAll: () => void;
   navigateToProduct: (handle: string) => void;
   navigateToCollection: (handle: string) => void;
   navigateToCollectionsList: () => void;
@@ -93,6 +94,7 @@ export function parseUrlToViewState(path: string, search: string): ViewState {
   const cleanPath = path.replace(/\/$/, "");
   if (!cleanPath || cleanPath === "") return { type: "home" };
   if (cleanPath === "/shop") return { type: "shop" };
+  if (cleanPath === "/explore-all") return { type: "explore_all" };
   if (cleanPath === "/collections" || cleanPath === "/collections/") return { type: "collections_list" };
   if (cleanPath.startsWith("/collections/")) {
     const handle = cleanPath.replace("/collections/", "");
@@ -129,6 +131,8 @@ export function viewStateToUrl(view: ViewState): string {
       return "/";
     case "shop":
       return "/shop";
+    case "explore_all":
+      return "/explore-all";
     case "collections_list":
       return "/collections";
     case "collection":
@@ -347,6 +351,7 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
   // Navigation helpers
   const navigateToHome = () => setViewState({ type: "home" });
   const navigateToShop = () => setViewState({ type: "shop" });
+  const navigateToExploreAll = () => setViewState({ type: "explore_all" });
   const navigateToProduct = (handle: string) => {
     addRecentlyViewed(handle);
     setViewState({ type: "product", handle });
@@ -527,6 +532,7 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
         setViewState,
         navigateToHome,
         navigateToShop,
+        navigateToExploreAll,
         navigateToProduct,
         navigateToCollection,
         navigateToCollectionsList,

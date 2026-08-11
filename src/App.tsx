@@ -58,7 +58,9 @@ const MainLayout: React.FC = () => {
       <main className="flex-1">
         <Suspense fallback={<PageFallback />}>
           {currentType === "home" && <HomePage />}
-          {currentType === "shop" && <ShopPage />}
+          {(currentType === "shop" || currentType === "explore_all") && (
+            <ShopPage isExploreAll={currentType === "explore_all"} />
+          )}
           {currentType === "product" && <ProductPage handle={activeHandle} />}
           {currentType === "collection" && <CollectionPage handle={activeHandle} />}
           {currentType === "collections_list" && <CollectionsListPage />}

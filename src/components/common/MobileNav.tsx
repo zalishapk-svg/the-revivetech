@@ -11,6 +11,8 @@ interface MobileNavProps {
 export const MobileNav: React.FC<MobileNavProps> = ({ isOpen, onClose }) => {
   const {
     navigateToHome,
+    navigateToShop,
+    navigateToExploreAll,
     navigateToCollection,
     navigateToCollectionsList,
     navigateToBlog,
@@ -95,6 +97,29 @@ export const MobileNav: React.FC<MobileNavProps> = ({ isOpen, onClose }) => {
                 className="w-full text-left py-2 font-bold text-base border-b border-emerald-950 hover:text-emerald-400"
               >
                 Home
+              </button>
+
+              <button
+                onClick={() => {
+                  navigateToShop();
+                  onClose();
+                }}
+                className="w-full text-left py-2 font-bold text-base border-b border-emerald-950 hover:text-emerald-400"
+              >
+                Shop Catalog
+              </button>
+
+              <button
+                onClick={() => {
+                  navigateToExploreAll();
+                  onClose();
+                }}
+                className="w-full text-left py-2 font-bold text-base border-b border-emerald-950 text-emerald-400 flex items-center justify-between"
+              >
+                <span>Explore All Products</span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 border border-emerald-800 text-emerald-400">
+                  ALL
+                </span>
               </button>
 
               {/* Collections Accordion */}

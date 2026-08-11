@@ -3,9 +3,14 @@ import { Product, Collection, BlogArticle, Cart, Customer } from "../types";
 // GraphQL Query Strings for live Shopify Storefront API execution
 export const STOREFRONT_QUERIES = {
   GET_PRODUCTS: `
-    query getProducts($first: Int = 250) {
-      products(first: $first) {
+    query getProducts($first: Int = 250, $after: String) {
+      products(first: $first, after: $after) {
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
         edges {
+          cursor
           node {
             id
             handle
@@ -783,44 +788,72 @@ export async function fetchShopifyGraphQL(query: string, variables: Record<strin
 
 // Storefront API Functions for Products, Collections, Blogs, Search, and Cart
 export async function getProductsFromShopify(): Promise<Product[]> {
-  const result = await fetchShopifyGraphQL(STOREFRONT_QUERIES.GET_PRODUCTS, { first: 20 });
-  if (result && result.data && result.data.products && result.data.products.edges) {
-    const liveProducts: Product[] = result.data.products.edges.map((edge: any) => {
-      const node = edge.node;
-      return {
-        id: node.id,
-        handle: node.handle,
-        title: node.title,
-        description: node.description || "",
-        descriptionHtml: node.descriptionHtml || node.description || "",
-        vendor: node.vendor || "TheReviveTech",
-        productType: node.productType || "Hardware",
-        tags: node.tags || [],
-        availableForSale: node.availableForSale,
-        priceRange: {
-          minVariantPrice: node.priceRange?.minVariantPrice || { amount: "0.00", currencyCode: "USD" },
-          maxVariantPrice: node.priceRange?.maxVariantPrice || { amount: "0.00", currencyCode: "USD" },
-        },
-        compareAtPriceRange: node.compareAtPriceRange,
-        featuredImage: node.featuredImage || (node.images?.edges[0]?.node ? node.images.edges[0].node : null),
-        images: node.images?.edges?.map((e: any) => e.node) || [],
-        options: node.options || [],
-        variants: node.variants?.edges?.map((e: any) => ({
-          id: e.node.id,
-          title: e.node.title,
-          sku: e.node.sku,
-          availableForSale: e.node.availableForSale,
-          price: e.node.price,
-          compareAtPrice: e.node.compareAtPrice,
-          selectedOptions: e.node.selectedOptions,
-        })) || [],
-        rating: 4.8,
-        reviewsCount: 12,
-      };
+  let allProducts: Product[] = [];
+  let hasNextPage = true;
+  let cursor: string | null = null;
+  let safetyCounter = 0;
+
+  while (hasNextPage && safetyCounter < 20) {
+    safetyCounter++;
+    const result: any = await fetchShopifyGraphQL(STOREFRONT_QUERIES.GET_PRODUCTS, {
+      first: 250,
+      after: cursor,
     });
-    return liveProducts;
+
+    if (result && result.data && result.data.products && result.data.products.edges) {
+      const pageInfo = result.data.products.pageInfo;
+      const edges = result.data.products.edges;
+
+      const pageProducts: Product[] = edges.map((edge: any) => {
+        const node = edge.node;
+        return {
+          id: node.id,
+          handle: node.handle,
+          title: node.title,
+          description: node.description || "",
+          descriptionHtml: node.descriptionHtml || node.description || "",
+          vendor: node.vendor || "TheReviveTech",
+          productType: node.productType || "Hardware",
+          tags: node.tags || [],
+          availableForSale: node.availableForSale,
+          priceRange: {
+            minVariantPrice: node.priceRange?.minVariantPrice || { amount: "0.00", currencyCode: "USD" },
+            maxVariantPrice: node.priceRange?.maxVariantPrice || { amount: "0.00", currencyCode: "USD" },
+          },
+          compareAtPriceRange: node.compareAtPriceRange,
+          featuredImage: node.featuredImage || (node.images?.edges[0]?.node ? node.images.edges[0].node : null),
+          images: node.images?.edges?.map((e: any) => e.node) || [],
+          options: node.options || [],
+          variants: node.variants?.edges?.map((e: any) => ({
+            id: e.node.id,
+            title: e.node.title,
+            sku: e.node.sku,
+            availableForSale: e.node.availableForSale,
+            price: e.node.price,
+            compareAtPrice: e.node.compareAtPrice,
+            selectedOptions: e.node.selectedOptions,
+          })) || [],
+          rating: 4.8,
+          reviewsCount: 12,
+        };
+      });
+
+      allProducts = [...allProducts, ...pageProducts];
+
+      if (pageInfo && pageInfo.hasNextPage && pageInfo.endCursor) {
+        cursor = pageInfo.endCursor;
+      } else {
+        hasNextPage = false;
+      }
+    } else {
+      hasNextPage = false;
+    }
   }
-  return [];
+
+  if (allProducts.length > 0) {
+    return allProducts;
+  }
+  return MOCK_TECH_PRODUCTS;
 }
 
 export async function getProductByHandleFromShopify(handle: string): Promise<Product | null> {

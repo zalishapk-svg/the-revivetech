@@ -8,11 +8,17 @@ import {
   Eye, Heart, ArrowUpDown, ChevronRight, ShoppingBag, RefreshCw, Star, Tag, Sparkles
 } from "lucide-react";
 
-export const ShopPage: React.FC = () => {
+interface ShopPageProps {
+  isExploreAll?: boolean;
+}
+
+export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false }) => {
   const { 
-    products, collections, addToCart, toggleWishlist, isInWishlist, 
+    viewState, products, collections, addToCart, toggleWishlist, isInWishlist, 
     toggleCompare, isInCompare, setQuickViewHandle, navigateToProduct, navigateToCollection 
   } = useShopify();
+
+  const isExplore = isExploreAll || viewState.type === "explore_all";
 
   // Filter States
   const [searchQuery, setSearchQuery] = useState("");
@@ -125,21 +131,32 @@ export const ShopPage: React.FC = () => {
             Home
           </a>
           <ChevronRight className="w-3 h-3 text-slate-600" />
-          <span className="text-emerald-400 font-semibold">Shop Catalog</span>
+          <span className="text-emerald-400 font-semibold">
+            {isExplore ? "Complete Store Catalog" : "Shop Catalog"}
+          </span>
         </nav>
 
         {/* Shop Banner / Header */}
         <div className="relative rounded-3xl bg-gradient-to-r from-[#051a0d] via-[#082a15] to-[#030e07] border border-emerald-900/40 p-8 md:p-12 mb-10 overflow-hidden shadow-2xl">
           <div className="absolute -right-10 -bottom-10 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
           <div className="relative z-10 max-w-2xl">
-            <span className="text-emerald-400 text-xs font-mono uppercase tracking-widest bg-emerald-950/80 px-3 py-1 rounded-full border border-emerald-800/60 inline-block mb-3">
-              Official Hardware Store
+            <span className="text-emerald-400 text-xs font-mono uppercase tracking-widest bg-emerald-950/80 px-3 py-1 rounded-full border border-emerald-800/60 inline-flex items-center gap-2 mb-3">
+              <Sparkles className="w-3 h-3 text-emerald-400" />
+              {isExplore ? `Complete Store Catalog (${products.length} Items)` : "Official Hardware Store"}
             </span>
             <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight leading-tight mb-4">
-              Explore Premium <YellowTape text="TECH CATALOG" />
+              {isExplore ? (
+                <>Explore All <YellowTape text="STORE PRODUCTS" /></>
+              ) : (
+                <>Explore Premium <YellowTape text="TECH CATALOG" /></>
+              )}
             </h1>
             <p className="text-slate-300 text-sm md:text-base leading-relaxed">
-              Browse our full collection of genuine gaming mice, custom mechanical keyboards, audiophile headsets, high-refresh displays, and battlestation accessories with official Pakistan warranty.
+              {isExplore ? (
+                `Viewing our complete Shopify store catalog (${products.length} products total). Every single item in our store is accessible below with full category filters, search, sorting, and pagination.`
+              ) : (
+                `Browse our full collection of genuine gaming mice, custom mechanical keyboards, audiophile headsets, high-refresh displays, and battlestation accessories with official Pakistan warranty.`
+              )}
             </p>
           </div>
         </div>
