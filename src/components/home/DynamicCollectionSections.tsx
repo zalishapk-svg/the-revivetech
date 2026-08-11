@@ -11,7 +11,23 @@ export const DynamicCollectionSections: React.FC<DynamicCollectionSectionsProps>
   startIndex = 0,
   count = 4,
 }) => {
-  const { collections, navigateToCollection } = useShopify();
+  const { collections, isLoadingData, navigateToCollection } = useShopify();
+
+  if (isLoadingData) {
+    return (
+      <div className="space-y-4">
+        {[...Array(count)].map((_, idx) => (
+          <ProductCarousel
+            key={`dyn-skeleton-${idx}`}
+            title="Loading Collection..."
+            badgeText="SHOPIFY"
+            products={[]}
+            isLoading={true}
+          />
+        ))}
+      </div>
+    );
+  }
 
   if (!collections || collections.length === 0) return null;
 

@@ -5,7 +5,7 @@ import { formatMoney } from "../../lib/utils";
 import { ProductCarousel } from "../common/ProductCarousel";
 
 export const FrequentlyBoughtTogether: React.FC = () => {
-  const { products, addToCart, showToast } = useShopify();
+  const { products, isLoadingData, addToCart, showToast } = useShopify();
 
   // Pick 3 bundle items dynamically
   const item1 = products[0];
@@ -17,6 +17,22 @@ export const FrequentlyBoughtTogether: React.FC = () => {
     1: true,
     2: true,
   });
+
+  if (isLoadingData) {
+    return (
+      <section className="py-14 bg-slate-950/80 border-b border-emerald-900/30 text-slate-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+          <ProductCarousel
+            title="Complementary Hardware Upgrades"
+            subtitle="Top recommended companion accessories frequently paired together."
+            badgeText="MATCHING GEAR"
+            products={[]}
+            isLoading={true}
+          />
+        </div>
+      </section>
+    );
+  }
 
   if (!item1 || !item2 || !item3) return null;
 

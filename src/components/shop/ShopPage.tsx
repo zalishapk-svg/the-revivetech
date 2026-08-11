@@ -3,6 +3,7 @@ import { useShopify } from "../../context/ShopifyContext";
 import { formatMoney, calculateDiscount } from "../../lib/utils";
 import { YellowTape } from "../common/YellowTape";
 import { ProductCard } from "../common/ProductCard";
+import { ProductSkeletonCard } from "../common/ProductSkeletonCard";
 import { 
   Search, SlidersHorizontal, Grid, List, Check, X,
   Eye, Heart, ArrowUpDown, ChevronRight, ShoppingBag, RefreshCw, Star, Tag, Sparkles
@@ -367,7 +368,13 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
 
           {/* Product Grid / List Section */}
           <main className="lg:col-span-3">
-            {filteredProducts.length === 0 ? (
+            {useShopify().isLoadingData ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[...Array(9)].map((_, idx) => (
+                  <ProductSkeletonCard key={`shop-skeleton-${idx}`} />
+                ))}
+              </div>
+            ) : filteredProducts.length === 0 ? (
               <div className="bg-[#05140b] border border-emerald-900/40 rounded-2xl p-12 text-center my-8">
                 <div className="w-16 h-16 bg-emerald-950/60 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-800/40">
                   <Search className="w-8 h-8 text-emerald-500" />

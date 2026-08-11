@@ -1,12 +1,14 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { Product } from "../../types";
 import { ProductCard } from "./ProductCard";
+import { ProductSkeletonCard } from "./ProductSkeletonCard";
 
 interface ProductCarouselProps {
   title?: string;
   subtitle?: string;
   products: Product[];
+  isLoading?: boolean;
   onViewAll?: () => void;
   viewAllText?: string;
   badgeText?: string;
@@ -17,13 +19,13 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({
   title,
   subtitle,
   products,
+  isLoading = false,
   onViewAll,
   viewAllText = "View All",
   badgeText,
-  autoPlayInterval = 4500,
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [isPaused, setIsPaused] = useState(false);
+  const [, setIsPaused] = useState(false);
 
   // Manual navigation only (auto-scroll disabled per user requirement)
   const scroll = (direction: "left" | "right") => {
@@ -32,7 +34,7 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({
     scrollRef.current.scrollBy({ left: amount, behavior: "smooth" });
   };
 
-  if (!products || products.length === 0) return null;
+  if (!isLoading && (!products || products.length === 0)) return null;
 
   return (
     <section
@@ -99,17 +101,29 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({
             className="flex items-stretch gap-4 sm:gap-6 overflow-x-auto scrollbar-none py-2 px-0.5 select-none"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
-            {products.map((product) => (
-              <div
-                key={product.id}
-                className="flex-none w-[240px] sm:w-[280px] md:w-[290px] lg:w-[295px]"
-              >
-                <ProductCard product={product} />
-              </div>
-            ))}
+            {isLoading ? (
+              [...Array(5)].map((_, idx) => (
+                <div
+                  key={`skeleton-${idx}`}
+                  className="flex-none w-[240px] sm:w-[280px] md:w-[290px] lg:w-[295px]"
+                >
+                  <ProductSkeletonCard />
+                </div>
+              ))
+            ) : (
+              products.map((product) => (
+                <div
+                  key={product.id}
+                  className="flex-none w-[240px] sm:w-[280px] md:w-[290px] lg:w-[295px]"
+                >
+                  <ProductCard product={product} />
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
     </section>
   );
 };
+

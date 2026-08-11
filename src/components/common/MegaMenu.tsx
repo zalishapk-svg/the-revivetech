@@ -32,10 +32,7 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onClose }) => {
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold font-mono text-emerald-400 uppercase tracking-widest bg-emerald-950 px-3 py-1 rounded border border-emerald-800/60 inline-flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                  LIVE SHOPIFY STORE COLLECTIONS ({collections.length})
-                </span>
-                <span className="text-xs text-slate-400 hidden sm:inline">
-                  Updated dynamically from Shopify Storefront API
+                  STORE COLLECTIONS ({collections.length})
                 </span>
               </div>
 

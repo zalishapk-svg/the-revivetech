@@ -4,7 +4,7 @@ import { useShopify } from "../../context/ShopifyContext";
 import { ProductCarousel } from "../common/ProductCarousel";
 
 export const FlashDeals: React.FC = () => {
-  const { products, navigateToShop } = useShopify();
+  const { products, isLoadingData, navigateToShop } = useShopify();
 
   // Filter ONLY products that have an actual compare-at price higher than their current price
   const saleProducts = products.filter((p) => {
@@ -13,7 +13,7 @@ export const FlashDeals: React.FC = () => {
     return compareAt > price;
   });
 
-  // If no specific compare-at items exist, show products with discounts or fallback
+  // If no specific compare-at items exist, show products
   const displayProducts = saleProducts.length > 0 ? saleProducts : products.slice(0, 8);
 
   // Live Timer State
@@ -30,8 +30,6 @@ export const FlashDeals: React.FC = () => {
     }, 1000);
     return () => clearInterval(timer);
   }, []);
-
-  if (!displayProducts || displayProducts.length === 0) return null;
 
   return (
     <div className="relative">
@@ -62,6 +60,7 @@ export const FlashDeals: React.FC = () => {
         subtitle="Exclusive price drops on authentic gaming gear. Updated dynamically from live Shopify inventory."
         badgeText="UP TO 30% OFF"
         products={displayProducts}
+        isLoading={isLoadingData}
         onViewAll={navigateToShop}
         viewAllText="View All Sale Items"
       />

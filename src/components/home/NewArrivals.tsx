@@ -3,12 +3,10 @@ import { useShopify } from "../../context/ShopifyContext";
 import { ProductCarousel } from "../common/ProductCarousel";
 
 export const NewArrivals: React.FC = () => {
-  const { products, navigateToShop } = useShopify();
+  const { products, isLoadingData, navigateToShop } = useShopify();
 
   // Show newest products from live Shopify catalog
   const newProducts = [...products].reverse();
-
-  if (newProducts.length === 0) return null;
 
   return (
     <ProductCarousel
@@ -16,6 +14,7 @@ export const NewArrivals: React.FC = () => {
       subtitle="Newly stocked original tech peripherals and hardware fresh from factory shipments."
       badgeText="FRESH DROPS"
       products={newProducts}
+      isLoading={isLoadingData}
       onViewAll={navigateToShop}
       viewAllText="View Full Catalog"
     />
