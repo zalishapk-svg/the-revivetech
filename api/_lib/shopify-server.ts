@@ -348,19 +348,31 @@ class ShopifyDatabaseSessionStorage {
   public async getOrFetchAdminToken(shopDomain?: string, forceRefresh = false): Promise<string | null> {
     const key = this.cleanDomain(shopDomain);
 
+    // 1. First check if a static SHOPIFY_ADMIN_ACCESS_TOKEN is directly provided via environment variable
+    const envAdminToken = (process.env.SHOPIFY_ADMIN_ACCESS_TOKEN || process.env.SHOPIFY_ADMIN_TOKEN || "").trim();
+
     if (!forceRefresh) {
       const session = await this.getSession(key);
       if (session?.accessToken) {
         return session.accessToken;
       }
+      if (envAdminToken) {
+        return envAdminToken;
+      }
     } else {
       this.inMemorySessions.delete(key);
     }
 
-    // Try Client Credentials Flow
+    // 2. Try Client Credentials Flow
     const newSession = await this.fetchTokenViaClientCredentials(key);
     if (newSession?.accessToken) {
       return newSession.accessToken;
+    }
+
+    // 3. Fallback to direct environment variable token if client credentials grant was unsuccessful or uninstalled
+    if (envAdminToken) {
+      console.log(`[Shopify Storage] Using process.env.SHOPIFY_ADMIN_ACCESS_TOKEN fallback for ${key}`);
+      return envAdminToken;
     }
 
     return null;
