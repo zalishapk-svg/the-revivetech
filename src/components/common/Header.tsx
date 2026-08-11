@@ -47,21 +47,14 @@ export const Header: React.FC = () => {
           {/* LOGO */}
           <button
             onClick={navigateToHome}
-            className="flex items-center gap-2.5 group text-left focus:outline-none"
+            className="flex items-center group text-left focus:outline-none py-1"
           >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 via-emerald-600 to-teal-800 p-0.5 shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-transform duration-300 group-hover:scale-105">
-              <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
-                <Zap className="w-5 h-5 text-emerald-400 fill-emerald-400/20" />
-              </div>
-            </div>
-            <div>
-              <span className="text-lg font-black tracking-wider text-white uppercase font-mono flex items-center gap-1">
-                THEREVIVE<span className="text-emerald-400">TECH</span>
-              </span>
-              <span className="block text-[9px] text-emerald-400/80 font-mono tracking-widest uppercase">
-                HEADLESS SHOPIFY STORE
-              </span>
-            </div>
+            <img
+              src="https://cdn.shopify.com/s/files/1/0610/4642/3631/files/Artboard_1_copy.png?v=1786431651"
+              alt="The Revive Tech Logo"
+              referrerPolicy="no-referrer"
+              className="h-10 sm:h-12 w-auto max-w-[200px] sm:max-w-[240px] object-contain transition-transform duration-300 group-hover:scale-105"
+            />
           </button>
 
           {/* DESKTOP NAVIGATION LINKS */}

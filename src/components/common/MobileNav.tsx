@@ -49,10 +49,12 @@ export const MobileNav: React.FC<MobileNavProps> = ({ isOpen, onClose }) => {
           <div>
             {/* Header */}
             <div className="flex items-center justify-between pb-6 border-b border-emerald-900/40">
-              <div className="flex items-center gap-2">
-                <Zap className="w-5 h-5 text-emerald-400" />
-                <span className="font-mono font-bold tracking-wider text-white">THEREVIVETECH</span>
-              </div>
+              <img
+                src="https://cdn.shopify.com/s/files/1/0610/4642/3631/files/Artboard_1_copy.png?v=1786431651"
+                alt="The Revive Tech Logo"
+                referrerPolicy="no-referrer"
+                className="h-8 w-auto max-w-[180px] object-contain"
+              />
               <button
                 onClick={onClose}
                 className="p-2 text-slate-400 hover:text-white"

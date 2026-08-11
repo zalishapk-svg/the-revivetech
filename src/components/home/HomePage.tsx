@@ -1,5 +1,7 @@
 import React from "react";
 import { HeroSlider } from "./HeroSlider";
+import { SecondSlider } from "./SecondSlider";
+import { SingleBanner } from "./SingleBanner";
 import { TrendingCategories } from "./TrendingCategories";
 import { FeaturedCollections } from "./FeaturedCollections";
 import { BestSellers } from "./BestSellers";
@@ -24,68 +26,73 @@ import { NewsletterSection } from "./NewsletterSection";
 export const HomePage: React.FC = () => {
   return (
     <div className="w-full">
-      {/* 1 & 2: AnnouncementBar & Header are rendered in App layout */}
-      {/* 3: SLIDER 1 — Hero Slider */}
+      {/* Top Hero Slider (3 Slides) */}
       <HeroSlider />
 
-      {/* 4: Trending Categories */}
+      {/* Second Full-Width Slider (2 Slides) */}
+      <SecondSlider />
+
+      {/* Full-Width Single Banner (Govee) */}
+      <SingleBanner />
+
+      {/* Trending Categories */}
       <TrendingCategories />
 
-      {/* 5: Featured Collections */}
+      {/* Featured Collections */}
       <FeaturedCollections />
 
-      {/* 6: Best Sellers */}
+      {/* Best Sellers */}
       <BestSellers />
 
-      {/* 7: Promotional Banner with Selective Yellow Tape Highlight */}
+      {/* Promotional Banner with Selective Yellow Tape Highlight */}
       <PromotionalBanner />
 
-      {/* 8: SLIDER 2 — Tech Categories Slider */}
+      {/* Tech Categories Slider */}
       <TechCategoriesSlider />
 
-      {/* 9: New Arrivals */}
+      {/* New Arrivals */}
       <NewArrivals />
 
-      {/* 10: Gaming Setup Interactive Hotspots */}
+      {/* Gaming Setup Interactive Hotspots */}
       <GamingSetupShowcase />
 
-      {/* 11 & 12: Featured Brands & Brand Logo Marquee */}
+      {/* Featured Brands & Brand Logo Marquee */}
       <BrandMarquee />
 
-      {/* 13 & 14: Flash Deals & Live Countdown Timer */}
+      {/* Flash Deals & Live Countdown Timer */}
       <FlashDeals />
 
-      {/* 15: SLIDER 3 — Recommendation Carousel */}
+      {/* Recommendation Carousel */}
       <RecommendationCarousel />
 
-      {/* 16: Frequently Bought Together Bundle Builder */}
+      {/* Frequently Bought Together Bundle Builder */}
       <FrequentlyBoughtTogether />
 
-      {/* 17: Tech Showcase Spec Breakdown */}
+      {/* Tech Showcase Spec Breakdown */}
       <TechShowcase />
 
-      {/* 18: Why Choose Us */}
+      {/* Why Choose Us */}
       <WhyChooseUs />
 
-      {/* 19: Animated Statistics */}
+      {/* Animated Statistics */}
       <AnimatedStatistics />
 
-      {/* 20: Customer Reviews */}
+      {/* Customer Reviews */}
       <CustomerReviews />
 
-      {/* 21: SLIDER 4 — Community Battlestation Stories */}
+      {/* Community Battlestation Stories */}
       <CommunityStories />
 
-      {/* 22: Buying Guides */}
+      {/* Buying Guides */}
       <BuyingGuides />
 
-      {/* 23: Latest Technology Blog */}
+      {/* Latest Technology Blog */}
       <LatestBlog />
 
-      {/* 24: FAQ Accordion */}
+      {/* FAQ Accordion */}
       <FAQSection />
 
-      {/* 25 & 26: Newsletter Section */}
+      {/* Newsletter Section */}
       <NewsletterSection />
     </div>
   );

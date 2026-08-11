@@ -74,14 +74,17 @@ export const Footer: React.FC = () => {
           
           {/* Brand Info */}
           <div className="md:col-span-4 space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center text-slate-950 font-black">
-                <Zap className="w-5 h-5 fill-slate-950" />
-              </div>
-              <span className="text-lg font-black tracking-wider text-white uppercase font-mono">
-                THEREVIVETECH
-              </span>
-            </div>
+            <button
+              onClick={navigateToHome}
+              className="flex items-center text-left focus:outline-none"
+            >
+              <img
+                src="https://cdn.shopify.com/s/files/1/0610/4642/3631/files/Artboard_1_copy.png?v=1786431651"
+                alt="The Revive Tech Logo"
+                referrerPolicy="no-referrer"
+                className="h-10 sm:h-12 w-auto max-w-[220px] object-contain"
+              />
+            </button>
             <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
               ThereReviveTech is Pakistan's leading gaming and hardware storefront built on an independent headless React architecture powered directly by Shopify Storefront API.
             </p>

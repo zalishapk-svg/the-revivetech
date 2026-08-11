@@ -9,28 +9,22 @@ interface Slide {
   alt: string;
 }
 
-const HERO_SLIDES: Slide[] = [
+const SECOND_SLIDES: Slide[] = [
   {
     id: 1,
-    image: "https://cdn.shopify.com/s/files/1/0610/4642/3631/files/iems.png?v=1786431342",
-    url: "https://cdn.shopify.com/s/files/1/0610/4642/3631/files/iems.png?v=1786431342",
-    alt: "IEMs Collection Banner",
+    image: "https://cdn.shopify.com/s/files/1/0610/4642/3631/files/easysmx_banner_design.jpg?v=1786431339",
+    url: "https://cdn.shopify.com/s/files/1/0610/4642/3631/files/easysmx_banner_design.jpg?v=1786431339",
+    alt: "EasySMX Banner Design",
   },
   {
     id: 2,
-    image: "https://cdn.shopify.com/s/files/1/0610/4642/3631/files/nanoleaf.jpg?v=1786431339",
-    url: "https://cdn.shopify.com/s/files/1/0610/4642/3631/files/nanoleaf.jpg?v=1786431339",
-    alt: "Nanoleaf Lighting Banner",
-  },
-  {
-    id: 3,
-    image: "https://cdn.shopify.com/s/files/1/0610/4642/3631/files/edifier_banner.jpg?v=1786431339",
-    url: "https://cdn.shopify.com/s/files/1/0610/4642/3631/files/edifier_banner.jpg?v=1786431339",
-    alt: "Edifier Audio Banner",
+    image: "https://cdn.shopify.com/s/files/1/0610/4642/3631/files/Andaset_banner_copy.jpg?v=1786431339",
+    url: "https://cdn.shopify.com/s/files/1/0610/4642/3631/files/Andaset_banner_copy.jpg?v=1786431339",
+    alt: "Andaseat Gaming Banner",
   },
 ];
 
-export const HeroSlider: React.FC = () => {
+export const SecondSlider: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const touchStartX = useRef<number | null>(null);
@@ -39,20 +33,19 @@ export const HeroSlider: React.FC = () => {
   useEffect(() => {
     if (isPaused) return;
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
-    }, 5000);
+      setCurrentSlide((prev) => (prev + 1) % SECOND_SLIDES.length);
+    }, 5500);
     return () => clearInterval(timer);
   }, [isPaused]);
 
   const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
+    setCurrentSlide((prev) => (prev + 1) % SECOND_SLIDES.length);
   };
 
   const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length);
+    setCurrentSlide((prev) => (prev - 1 + SECOND_SLIDES.length) % SECOND_SLIDES.length);
   };
 
-  // Touch handlers for mobile swipe
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
   };
@@ -74,22 +67,22 @@ export const HeroSlider: React.FC = () => {
     touchEndX.current = null;
   };
 
-  const activeSlide = HERO_SLIDES[currentSlide];
+  const activeSlide = SECOND_SLIDES[currentSlide];
 
   return (
     <section
-      className="relative w-full overflow-hidden bg-slate-950 group select-none"
+      className="relative w-full overflow-hidden bg-slate-950 group select-none border-t border-b border-emerald-900/30 my-2"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      <div className="w-full relative min-h-[220px] sm:min-h-[360px] md:min-h-[480px] lg:min-h-[580px] xl:min-h-[660px] flex items-center justify-center">
+      <div className="w-full relative min-h-[200px] sm:min-h-[320px] md:min-h-[440px] lg:min-h-[520px] xl:min-h-[600px] flex items-center justify-center">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeSlide.id}
-            initial={{ opacity: 0, scale: 1.03 }}
+            initial={{ opacity: 0, scale: 1.02 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.98 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
@@ -137,7 +130,7 @@ export const HeroSlider: React.FC = () => {
 
         {/* Pagination Dots */}
         <div className="absolute bottom-4 sm:bottom-6 left-0 right-0 z-20 flex items-center justify-center gap-2.5">
-          {HERO_SLIDES.map((s, idx) => (
+          {SECOND_SLIDES.map((s, idx) => (
             <button
               key={s.id}
               onClick={(e) => {
