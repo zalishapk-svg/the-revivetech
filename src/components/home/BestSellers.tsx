@@ -15,7 +15,8 @@ export const BestSellers: React.FC = () => {
     navigateToProduct,
   } = useShopify();
 
-  const bestSellerProducts = products.filter((p) => p.isBestSeller || p.rating! >= 4.8);
+  const bestSellerProducts = products.filter((p) => p.isBestSeller || (p.rating && p.rating >= 4.8));
+  const displayProducts = bestSellerProducts.length > 0 ? bestSellerProducts : products.slice(0, 8);
 
   return (
     <section className="py-16 bg-[#030e07] border-b border-emerald-900/40 text-slate-100">
@@ -34,7 +35,7 @@ export const BestSellers: React.FC = () => {
 
         {/* Product Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {bestSellerProducts.map((product) => {
+          {displayProducts.map((product) => {
             const isWishlisted = isInWishlist(product.handle);
             const isCompared = isInCompare(product.handle);
             const price = product.priceRange?.minVariantPrice?.amount || "0.00";

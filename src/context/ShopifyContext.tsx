@@ -213,7 +213,7 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [wishlistHandles, setWishlistHandles] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem("trt_wishlist");
-      return saved ? JSON.parse(saved) : ["revive-apex-pro-wireless-mouse", "revive-matrix-65-magnetic-keyboard"];
+      return saved ? JSON.parse(saved) : [];
     } catch {
       return [];
     }
@@ -232,7 +232,7 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [recentlyViewedHandles, setRecentlyViewedHandles] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem("trt_recently_viewed");
-      return saved ? JSON.parse(saved) : ["revive-apex-pro-wireless-mouse", "revive-quantum-360-qd-oled-monitor"];
+      return saved ? JSON.parse(saved) : [];
     } catch {
       return [];
     }

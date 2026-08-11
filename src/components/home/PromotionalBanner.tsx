@@ -4,7 +4,7 @@ import { useShopify } from "../../context/ShopifyContext";
 import { YellowTape } from "../common/YellowTape";
 
 export const PromotionalBanner: React.FC = () => {
-  const { navigateToProduct } = useShopify();
+  const { navigateToProduct, navigateToShop, products } = useShopify();
 
   return (
     <section className="py-20 bg-gradient-to-r from-[#030e07] via-[#082214] to-[#030e07] border-b border-emerald-900/40 text-slate-100 relative overflow-hidden">
@@ -31,7 +31,7 @@ export const PromotionalBanner: React.FC = () => {
 
             <div className="pt-2 flex flex-wrap items-center gap-4">
               <button
-                onClick={() => navigateToProduct("revive-planar-planar-planar-headset")}
+                onClick={() => products.length > 0 ? navigateToProduct(products[0].handle) : navigateToShop()}
                 className="px-8 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl transition-colors flex items-center gap-2 shadow-xl shadow-emerald-950/60"
               >
                 <span>Experience Planar Audio ($329.99)</span>

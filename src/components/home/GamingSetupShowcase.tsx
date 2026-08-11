@@ -23,7 +23,7 @@ export const GamingSetupShowcase: React.FC = () => {
   const { products, addToCart, navigateToProduct } = useShopify();
 
   const activeHotspot = HOTSPOTS.find((h) => h.id === activeHotspotId) || HOTSPOTS[0];
-  const activeProduct = products.find((p) => p.handle === activeHotspot.productHandle) || products[0];
+  const activeProduct = products.find((p) => p.handle === activeHotspot.productHandle) || products[activeHotspotId - 1] || products[0];
 
   if (!activeProduct) {
     return null;

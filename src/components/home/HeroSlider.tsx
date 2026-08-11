@@ -45,7 +45,7 @@ const HERO_SLIDES = [
 
 export const HeroSlider: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const { navigateToProduct } = useShopify();
+  const { navigateToProduct, products } = useShopify();
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -55,6 +55,8 @@ export const HeroSlider: React.FC = () => {
   }, []);
 
   const slide = HERO_SLIDES[currentSlide];
+  const targetProduct = products[currentSlide] || products[0];
+  const targetHandle = targetProduct?.handle || slide.productHandle;
 
   return (
     <section className="relative h-[85vh] min-h-[600px] max-h-[850px] bg-[#030e07] overflow-hidden text-white border-b border-emerald-900/40">
@@ -130,7 +132,7 @@ export const HeroSlider: React.FC = () => {
                 </div>
 
                 <button
-                  onClick={() => navigateToProduct(slide.productHandle)}
+                  onClick={() => navigateToProduct(targetHandle)}
                   className="px-8 py-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-2xl shadow-emerald-950 transition-all flex items-center gap-3 group"
                 >
                   <span>Shop Hardware Now</span>

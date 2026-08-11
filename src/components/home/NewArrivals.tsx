@@ -15,7 +15,8 @@ export const NewArrivals: React.FC = () => {
     navigateToProduct,
   } = useShopify();
 
-  const newProducts = products.filter((p) => p.isNewArrival || p.tags.includes("New Drop")).slice(0, 4);
+  const filteredNew = products.filter((p) => p.isNewArrival || p.tags.includes("New Drop")).slice(0, 4);
+  const newProducts = filteredNew.length > 0 ? filteredNew : products.slice(0, 4);
 
   return (
     <section className="py-16 bg-[#05140b] border-b border-emerald-900/40 text-slate-100">

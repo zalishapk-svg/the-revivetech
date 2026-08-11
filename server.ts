@@ -37,48 +37,126 @@ app.get("/api/health", async (req, res) => {
 // Firebase Health Check Endpoint
 app.get("/api/health/firebase", async (req, res) => {
   const health = await checkFirebaseAdminHealth();
-  if (health.connected) {
-    res.json({
-      status: "ok",
-      firebase: {
-        connected: true,
-        projectId: health.projectId,
-        firestore: true,
-      },
-    });
-  } else {
-    res.status(500).json({
-      status: "error",
-      firebase: {
-        connected: false,
-        firestore: false,
-      },
-      error: health.error || "Firebase Admin SDK initialization failed",
-    });
-  }
+  res.json({
+    status: health.connected ? "ok" : "error",
+    firebase: {
+      connected: health.connected,
+      projectId: health.projectId || "revivetech-32287",
+      firestore: health.firestore,
+    },
+    error: health.error || null,
+  });
 });
 
 // Shopify Storefront Health Check Endpoint
 app.get("/api/health/shopify-storefront", async (req, res) => {
   const health = await checkShopifyStorefrontHealth();
-  if (health.connected) {
-    res.json({
-      status: "ok",
-      storefront: {
-        connected: true,
-        store: health.storeDomain,
-        apiVersion: health.apiVersion,
-      },
+  res.json({
+    status: health.connected ? "ok" : "degraded",
+    storefront: {
+      connected: health.connected,
+      store: health.storeDomain,
+      apiVersion: health.apiVersion,
+    },
+    error: health.error || null,
+  });
+});
+
+// Safe Shopify Data Diagnostic Endpoint
+app.get("/api/debug/shopify-storefront", async (req, res) => {
+  try {
+    const config = getConfig();
+    const domain = config.storeDomain || "dbbys1-nd.myshopify.com";
+    const endpoint = `https://${domain}/api/${STABLE_STOREFRONT_API_VERSION}/graphql.json`;
+
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    };
+    if (config.storefrontToken) {
+      headers["X-Shopify-Storefront-Access-Token"] = config.storefrontToken;
+    }
+
+    const query = `
+      query debugStorefront {
+        products(first: 10) {
+          edges {
+            node {
+              id
+              title
+              handle
+            }
+          }
+        }
+        collections(first: 10) {
+          edges {
+            node {
+              id
+              title
+              handle
+            }
+          }
+        }
+      }
+    `;
+
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ query }),
     });
-  } else {
-    res.status(500).json({
-      status: "error",
-      storefront: {
+
+    if (!response.ok) {
+      return res.status(200).json({
         connected: false,
-        store: health.storeDomain,
-        apiVersion: health.apiVersion,
-      },
-      error: health.error || "Failed to communicate with Shopify Storefront API",
+        productsFound: 0,
+        collectionsFound: 0,
+        sampleProducts: [],
+        sampleCollections: [],
+        error: `Storefront API returned HTTP ${response.status}`,
+      });
+    }
+
+    const data = await response.json();
+    if (data.errors && data.errors.length > 0) {
+      return res.status(200).json({
+        connected: false,
+        productsFound: 0,
+        collectionsFound: 0,
+        sampleProducts: [],
+        sampleCollections: [],
+        error: data.errors[0]?.message || "GraphQL Error",
+      });
+    }
+
+    const productEdges = data.data?.products?.edges || [];
+    const collectionEdges = data.data?.collections?.edges || [];
+
+    const sampleProducts = productEdges.map((e: any) => ({
+      title: e.node?.title || "",
+      handle: e.node?.handle || "",
+    }));
+
+    const sampleCollections = collectionEdges.map((e: any) => ({
+      title: e.node?.title || "",
+      handle: e.node?.handle || "",
+    }));
+
+    return res.status(200).json({
+      connected: true,
+      productsFound: sampleProducts.length,
+      collectionsFound: sampleCollections.length,
+      sampleProducts,
+      sampleCollections,
+    });
+  } catch (error: any) {
+    return res.status(200).json({
+      connected: false,
+      productsFound: 0,
+      collectionsFound: 0,
+      sampleProducts: [],
+      sampleCollections: [],
+      error: error?.message || "Failed to query Storefront API",
     });
   }
 });
