@@ -4,6 +4,26 @@
   "framework": "vite",
   "rewrites": [
     {
+      "source": "/api/health/:path*",
+      "destination": "/api/health?path=:path*"
+    },
+    {
+      "source": "/api/debug/:path*",
+      "destination": "/api/health?path=debug/:path*"
+    },
+    {
+      "source": "/api/shopify/auth/callback",
+      "destination": "/api/shopify/auth?action=callback"
+    },
+    {
+      "source": "/sitemap.xml",
+      "destination": "/api/sitemap"
+    },
+    {
+      "source": "/robots.txt",
+      "destination": "/api/robots"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "/api/$1"
     },
@@ -13,3 +33,4 @@
     }
   ]
 }
+
