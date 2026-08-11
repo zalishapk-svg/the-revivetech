@@ -6,7 +6,7 @@ import {
   getConfig, shopifyStorage, getAppBaseUrl, 
   STABLE_ADMIN_API_VERSION, STABLE_STOREFRONT_API_VERSION, REQUIRED_ADMIN_SCOPES,
   checkFirebaseAdminHealth, checkShopifyStorefrontHealth
-} from "./api/_lib/shopify-server";
+} from "./api/_lib/shopify-server.js";
 
 const app = express();
 const PORT = 3000;

@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { getConfig, shopifyStorage, getAppBaseUrl, STABLE_ADMIN_API_VERSION, REQUIRED_ADMIN_SCOPES } from "../_lib/shopify-server";
+import { getConfig, shopifyStorage, getAppBaseUrl, STABLE_ADMIN_API_VERSION, REQUIRED_ADMIN_SCOPES } from "../_lib/shopify-server.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {

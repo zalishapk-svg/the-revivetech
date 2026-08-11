@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import crypto from "crypto";
-import { getConfig, shopifyStorage } from "../_lib/shopify-server";
+import { getConfig, shopifyStorage } from "../_lib/shopify-server.js";
 
 // To parse raw body for webhook HMAC validation in Vercel functions:
 export const config = {

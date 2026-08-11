@@ -6,7 +6,7 @@ import {
   STABLE_STOREFRONT_API_VERSION,
   checkFirebaseAdminHealth,
   checkShopifyStorefrontHealth,
-} from "./_lib/shopify-server";
+} from "./_lib/shopify-server.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const path = (req.query.path as string) || "";
