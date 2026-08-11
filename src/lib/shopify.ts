@@ -3,7 +3,7 @@ import { Product, Collection, BlogArticle, Cart, Customer } from "../types";
 // GraphQL Query Strings for live Shopify Storefront API execution
 export const STOREFRONT_QUERIES = {
   GET_PRODUCTS: `
-    query getProducts($first: Int = 20) {
+    query getProducts($first: Int = 250) {
       products(first: $first) {
         edges {
           node {
@@ -91,7 +91,7 @@ export const STOREFRONT_QUERIES = {
   `,
 
   GET_COLLECTIONS: `
-    query getCollections($first: Int = 20) {
+    query getCollections($first: Int = 50) {
       collections(first: $first) {
         edges {
           node {
@@ -100,7 +100,7 @@ export const STOREFRONT_QUERIES = {
             title
             description
             image { id url altText }
-            products(first: 20) {
+            products(first: 50) {
               edges {
                 node {
                   id
@@ -148,7 +148,7 @@ export const STOREFRONT_QUERIES = {
   `,
 
   GET_COLLECTION_BY_HANDLE: `
-    query getCollectionByHandle($handle: String!, $first: Int = 30) {
+    query getCollectionByHandle($handle: String!, $first: Int = 100) {
       collection(handle: $handle) {
         id
         handle
@@ -201,7 +201,7 @@ export const STOREFRONT_QUERIES = {
   `,
 
   GET_ARTICLES: `
-    query getArticles($first: Int = 10) {
+    query getArticles($first: Int = 100) {
       articles(first: $first) {
         edges {
           node {

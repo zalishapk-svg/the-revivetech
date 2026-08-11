@@ -1,60 +1,116 @@
-import React from "react";
-import { ArrowRight, Calendar, User } from "lucide-react";
+import React, { useRef } from "react";
+import { ArrowRight, Calendar, User, ChevronLeft, ChevronRight, BookOpen } from "lucide-react";
 import { useShopify } from "../../context/ShopifyContext";
 
 export const LatestBlog: React.FC = () => {
-  const { articles, navigateToBlogArticle, navigateToBlog } = useShopify();
+  const { articles, navigateToArticle, navigateToBlog } = useShopify();
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const scroll = (direction: "left" | "right") => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: direction === "left" ? -340 : 340, behavior: "smooth" });
+    }
+  };
+
+  if (!articles || articles.length === 0) return null;
 
   return (
-    <section className="py-16 bg-[#030e07] border-b border-emerald-900/40 text-slate-100">
+    <section className="py-14 bg-slate-950 border-b border-emerald-900/30 text-slate-100 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4">
+        {/* Header */}
+        <div className="flex items-end justify-between mb-8 pb-3 border-b border-emerald-900/40">
           <div>
-            <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest font-mono">
-              JOURNAL & ANNOUNCEMENTS
+            <span className="text-[10px] font-mono font-bold text-emerald-400 uppercase tracking-widest bg-emerald-950 px-2.5 py-0.5 rounded border border-emerald-800/40 inline-flex items-center gap-1.5 mb-1.5">
+              <BookOpen className="w-3.5 h-3.5" /> RECENT ARTICLES
             </span>
-            <h2 className="text-2xl sm:text-4xl font-extrabold text-white mt-1">
-              Latest Technology Journal
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
+              Blogs
             </h2>
+            <p className="text-xs text-slate-400 mt-1">
+              Tech guides, setup reviews, and industry insights from our gaming lab.
+            </p>
           </div>
-          <button onClick={navigateToBlog} className="text-xs font-bold text-emerald-400 hover:underline flex items-center gap-1">
-            View Journal <ArrowRight className="w-4 h-4" />
-          </button>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={navigateToBlog}
+              className="inline-flex items-center gap-1.5 text-xs font-mono font-semibold text-emerald-400 hover:text-emerald-300 hover:underline group focus:outline-none"
+            >
+              View All Blogs ({articles.length})
+              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+            </button>
+
+            <div className="hidden sm:flex items-center gap-1.5 ml-2">
+              <button
+                onClick={() => scroll("left")}
+                aria-label="Previous articles"
+                className="p-2 rounded-lg bg-slate-900 hover:bg-emerald-500 hover:text-slate-950 text-slate-300 border border-emerald-900/40 transition-colors focus:outline-none"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => scroll("right")}
+                aria-label="Next articles"
+                className="p-2 rounded-lg bg-slate-900 hover:bg-emerald-500 hover:text-slate-950 text-slate-300 border border-emerald-900/40 transition-colors focus:outline-none"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Carousel */}
+        <div
+          ref={scrollRef}
+          className="flex gap-6 overflow-x-auto pb-6 scrollbar-none scroll-smooth select-none"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        >
           {articles.map((art) => (
             <div
               key={art.id}
-              onClick={() => navigateToBlogArticle(art.handle)}
-              className="bg-[#071910] border border-emerald-900/40 rounded-2xl overflow-hidden cursor-pointer group hover:border-emerald-500/50 transition-all flex flex-col justify-between"
+              onClick={() => navigateToArticle(art.handle)}
+              className="min-w-[280px] sm:min-w-[340px] max-w-[360px] bg-slate-900 border border-emerald-900/40 rounded-2xl overflow-hidden cursor-pointer group hover:border-emerald-500/60 transition-all flex flex-col justify-between"
             >
-              <div className="aspect-video bg-slate-900 overflow-hidden">
-                {art.image && (
+              <div className="aspect-video bg-slate-950 overflow-hidden relative">
+                {art.image ? (
                   <img
                     src={art.image.url}
                     alt={art.title}
                     referrerPolicy="no-referrer"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-slate-600 text-xs font-mono">
+                    The Revive Tech
+                  </div>
                 )}
               </div>
+
               <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
                 <div>
-                  <div className="flex items-center gap-3 text-[10px] font-mono text-emerald-400">
-                    <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {art.publishedAt}</span>
-                    <span className="flex items-center gap-1"><User className="w-3 h-3" /> {art.authorV2?.name || "TheReviveTech Lab"}</span>
+                  <div className="flex items-center gap-3 text-[10px] font-mono text-emerald-400 mb-2">
+                    <span className="flex items-center gap-1">
+                      <Calendar className="w-3 h-3" />
+                      {art.publishedAt ? new Date(art.publishedAt).toLocaleDateString() : "Recent"}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <User className="w-3 h-3" />
+                      {art.author || "TheReviveTech"}
+                    </span>
                   </div>
-                  <h3 className="text-sm font-bold text-white group-hover:text-emerald-300 transition-colors mt-2 leading-snug">
+
+                  <h3 className="text-sm font-bold text-white group-hover:text-emerald-400 transition-colors line-clamp-2 leading-snug">
                     {art.title}
                   </h3>
-                  <p className="text-xs text-slate-400 line-clamp-2 mt-1.5 leading-relaxed">
-                    {art.excerpt}
+
+                  <p className="text-xs text-slate-400 line-clamp-2 mt-2 leading-relaxed">
+                    {art.excerpt || art.content?.slice(0, 100)}
                   </p>
                 </div>
-                <span className="text-xs font-bold text-emerald-400 group-hover:translate-x-1 transition-transform flex items-center gap-1">
-                  Read Article <ArrowRight className="w-3.5 h-3.5" />
+
+                <span className="text-xs font-bold font-mono text-emerald-400 group-hover:translate-x-1 transition-transform flex items-center gap-1 pt-2 border-t border-slate-800/60">
+                  Read More <ArrowRight className="w-3.5 h-3.5" />
                 </span>
               </div>
             </div>

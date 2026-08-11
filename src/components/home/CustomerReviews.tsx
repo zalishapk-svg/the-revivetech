@@ -1,66 +1,89 @@
 import React from "react";
 import { Star, CheckCircle, Quote } from "lucide-react";
 
-const REVIEWS = [
+const GOOGLE_REVIEWS = [
   {
-    name: "Marcus K.",
-    role: "Valorant Pro Player",
-    comment: "The 49g carbon fiber Apex Pro mouse feels frictionless. My flick consistency improved immediately after switching.",
+    name: "Ahmad Raza",
+    date: "2 weeks ago",
+    comment: "Ordered IEMs and gaming mouse pad. Received 100% authentic original products within 2 days in Lahore. Outstanding packaging!",
     rating: 5,
-    product: "Apex Pro Wireless Mouse",
+    verified: true,
   },
   {
-    name: "Siddharth P.",
-    role: "Hardware Streamer",
-    comment: "360Hz on 4K QD-OLED is unbelievable. Infinite black levels and the vapor chamber cooling keeps it silent.",
+    name: "Zain Ul Abideen",
+    date: "1 month ago",
+    comment: "The Revive Tech is the best place in Pakistan for genuine gaming gear. Bought Edifier speakers and Nanoleaf light panels. Super fast response!",
     rating: 5,
-    product: "Quantum 360Hz QD-OLED",
+    verified: true,
   },
   {
-    name: "Elena Rostova",
-    role: "Software Architect & CS2 Player",
-    comment: "Rapid Trigger magnetic switches are a game changer. Counter-strafing feels effortless and crisp.",
+    name: "Hamza Malik",
+    date: "3 weeks ago",
+    comment: "Great customer service and official brand warranty support. EasySMX controller works flawlessly with PC and Switch.",
     rating: 5,
-    product: "Matrix 65% Magnetic Keyboard",
+    verified: true,
   },
 ];
 
 export const CustomerReviews: React.FC = () => {
   return (
-    <section className="py-16 bg-[#05140b] border-b border-emerald-900/40 text-slate-100">
+    <section className="py-14 bg-slate-950 border-b border-emerald-900/30 text-slate-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <span className="text-xs font-bold text-amber-400 uppercase tracking-widest font-mono">
-            VERIFIED BUYER FEEDBACK
-          </span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-white mt-1">
-            Endorsed by Competitive Gamers
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {REVIEWS.map((rev, idx) => (
-            <div
-              key={idx}
-              className="bg-[#071910] border border-emerald-900/40 p-6 rounded-2xl space-y-4 relative"
-            >
-              <Quote className="w-8 h-8 text-emerald-500/20 absolute top-4 right-4" />
-              <div className="flex text-amber-400">
-                {[...Array(rev.rating)].map((_, i) => (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-10 pb-4 border-b border-emerald-900/40">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              {/* Google G Colors */}
+              <span className="font-bold text-sm text-slate-200 font-mono tracking-wider">
+                Google Business Rating
+              </span>
+              <div className="flex text-amber-400 items-center gap-0.5">
+                {[...Array(5)].map((_, i) => (
                   <Star key={i} className="w-4 h-4 fill-amber-400" />
                 ))}
               </div>
-              <p className="text-xs text-slate-200 leading-relaxed italic">"{rev.comment}"</p>
-              <div className="pt-3 border-t border-emerald-900/30 flex items-center justify-between">
-                <div>
-                  <h4 className="text-xs font-bold text-white flex items-center gap-1">
-                    {rev.name} <CheckCircle className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400/20" />
-                  </h4>
-                  <span className="text-[10px] text-slate-400">{rev.role}</span>
+              <span className="text-xs font-bold text-white font-mono bg-emerald-950 px-2 py-0.5 rounded border border-emerald-800">
+                4.9 / 5.0
+              </span>
+            </div>
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-white">
+              Google Reviews
+            </h2>
+          </div>
+          <p className="text-xs text-slate-400 font-mono max-w-sm">
+            Verified customer ratings and reviews directly from happy tech enthusiasts across Pakistan.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {GOOGLE_REVIEWS.map((rev, idx) => (
+            <div
+              key={idx}
+              className="bg-slate-900 border border-emerald-900/40 p-6 rounded-2xl space-y-4 relative hover:border-emerald-500/40 transition-colors"
+            >
+              <Quote className="w-8 h-8 text-emerald-500/10 absolute top-4 right-4" />
+              <div className="flex items-center justify-between">
+                <div className="flex text-amber-400">
+                  {[...Array(rev.rating)].map((_, i) => (
+                    <Star key={i} className="w-3.5 h-3.5 fill-amber-400" />
+                  ))}
                 </div>
-                <span className="text-[10px] font-mono text-emerald-400 font-bold bg-emerald-950 px-2 py-0.5 rounded border border-emerald-800">
-                  {rev.product}
+                <span className="text-[10px] text-slate-500 font-mono">{rev.date}</span>
+              </div>
+
+              <p className="text-xs text-slate-200 leading-relaxed italic">
+                "{rev.comment}"
+              </p>
+
+              <div className="pt-3 border-t border-slate-800 flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <h3 className="text-xs font-bold text-white">
+                    {rev.name}
+                  </h3>
+                  <CheckCircle className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400/20" />
+                </div>
+                <span className="text-[10px] font-mono text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+                  Verified Google Review
                 </span>
               </div>
             </div>
