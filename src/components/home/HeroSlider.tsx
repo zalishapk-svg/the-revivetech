@@ -85,14 +85,14 @@ export const HeroSlider: React.FC = () => {
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      <div className="w-full relative min-h-[220px] sm:min-h-[360px] md:min-h-[480px] lg:min-h-[580px] xl:min-h-[660px] flex items-center justify-center">
+      <div className="w-full relative aspect-[16/7] sm:aspect-[21/8] md:aspect-[24/9] max-h-[75vh] min-h-[200px]">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeSlide.id}
-            initial={{ opacity: 0, scale: 1.03 }}
+            initial={{ opacity: 0, scale: 1.02 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.98 }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
             className="w-full h-full absolute inset-0"
           >
             <a
@@ -106,7 +106,7 @@ export const HeroSlider: React.FC = () => {
                 src={activeSlide.image}
                 alt={activeSlide.alt}
                 referrerPolicy="no-referrer"
-                className="w-full h-full object-cover sm:object-contain object-center transition-transform duration-700 hover:scale-[1.01]"
+                className="w-full h-full object-cover object-center transition-transform duration-700 hover:scale-[1.01]"
               />
             </a>
           </motion.div>

@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useShopify } from "../../context/ShopifyContext";
 import { formatMoney, calculateDiscount } from "../../lib/utils";
 import { YellowTape } from "../common/YellowTape";
+import { ProductCard } from "../common/ProductCard";
 import { 
   Search, SlidersHorizontal, Grid, List, Check, X,
   Eye, Heart, ArrowUpDown, ChevronRight, ShoppingBag, RefreshCw, Star, Tag, Sparkles
@@ -24,6 +25,14 @@ export const ShopPage: React.FC = () => {
   const [sortBy, setSortBy] = useState<string>("featured");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const itemsPerPage = 15;
+
+  // Reset page to 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedCategory, selectedVendor, inStockOnly, onSaleOnly, maxPrice, sortBy]);
 
   // Extract unique vendors & categories
   const vendors = useMemo(() => {
@@ -94,6 +103,18 @@ export const ShopPage: React.FC = () => {
     setSortBy("featured");
   };
 
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage) || 1;
+
+  const paginatedProducts = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredProducts.slice(start, start + itemsPerPage);
+  }, [filteredProducts, currentPage]);
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    window.scrollTo({ top: 350, behavior: "smooth" });
+  };
+
   return (
     <div className="w-full bg-[#030e07] text-slate-100 min-h-screen py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
@@ -154,7 +175,7 @@ export const ShopPage: React.FC = () => {
 
             {/* Product Count */}
             <span className="text-xs text-slate-400 font-mono">
-              Showing <strong className="text-emerald-400">{filteredProducts.length}</strong> of {products.length} Products
+              Showing <strong className="text-emerald-400">{paginatedProducts.length}</strong> of {filteredProducts.length} Products (Page {currentPage} of {totalPages})
             </span>
 
             {/* Sort Dropdown */}
@@ -195,10 +216,10 @@ export const ShopPage: React.FC = () => {
         </div>
 
         {/* Main Content Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
           
-          {/* Sidebar Filters */}
-          <aside className={`lg:block ${isMobileFilterOpen ? "block" : "hidden"} space-y-6 bg-[#05140b] border border-emerald-900/40 rounded-2xl p-6 h-fit shadow-xl`}>
+          {/* Sticky Desktop Sidebar Filters */}
+          <aside className={`lg:block ${isMobileFilterOpen ? "block" : "hidden"} space-y-6 bg-[#05140b] border border-emerald-900/40 rounded-2xl p-6 h-fit shadow-xl lg:sticky lg:top-24 lg:z-20`}>
             <div className="flex items-center justify-between border-b border-emerald-900/40 pb-4">
               <h3 className="font-bold text-slate-100 text-sm uppercase tracking-wider flex items-center gap-2">
                 <SlidersHorizontal className="w-4 h-4 text-emerald-400" /> Filter Hardware
@@ -323,123 +344,14 @@ export const ShopPage: React.FC = () => {
               </div>
             ) : viewMode === "grid" ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredProducts.map((p) => {
-                  const minPrice = p.priceRange.minVariantPrice.amount;
-                  const comparePrice = p.compareAtPriceRange?.minVariantPrice?.amount;
-                  const discountPct = calculateDiscount(minPrice, comparePrice);
-                  const inWish = isInWishlist(p.handle);
-                  const inComp = isInCompare(p.handle);
-
-                  return (
-                    <div
-                      key={p.id}
-                      className="group bg-[#05140b] border border-emerald-900/40 hover:border-emerald-500/50 rounded-2xl p-4 transition-all duration-300 hover:shadow-2xl hover:shadow-emerald-950/50 flex flex-col relative"
-                    >
-                      {/* Badge Row */}
-                      <div className="absolute top-6 left-6 z-10 flex flex-col gap-1 items-start">
-                        {discountPct > 0 && (
-                          <span className="bg-rose-500/90 text-white font-bold text-[10px] px-2 py-0.5 rounded-md uppercase tracking-wider shadow">
-                            -{discountPct}% OFF
-                          </span>
-                        )}
-                        {p.isBestSeller && (
-                          <span className="bg-amber-500/90 text-slate-950 font-bold text-[10px] px-2 py-0.5 rounded-md uppercase tracking-wider shadow">
-                            Best Seller
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Top Action Overlay Buttons */}
-                      <div className="absolute top-6 right-6 z-10 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                        <button
-                          onClick={(e) => { e.stopPropagation(); toggleWishlist(p.handle); }}
-                          className={`p-2 rounded-xl backdrop-blur-md border transition-colors ${inWish ? 'bg-rose-500/20 text-rose-400 border-rose-500/40' : 'bg-slate-950/80 text-slate-300 border-emerald-900/60 hover:text-emerald-400'}`}
-                          title="Wishlist"
-                        >
-                          <Heart className={`w-3.5 h-3.5 ${inWish ? 'fill-current' : ''}`} />
-                        </button>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); setQuickViewHandle(p.handle); }}
-                          className="p-2 rounded-xl bg-slate-950/80 border border-emerald-900/60 text-slate-300 hover:text-emerald-400 transition-colors"
-                          title="Quick View"
-                        >
-                          <Eye className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); toggleCompare(p.handle); }}
-                          className={`p-2 rounded-xl backdrop-blur-md border transition-colors ${inComp ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' : 'bg-slate-950/80 text-slate-300 border-emerald-900/60 hover:text-emerald-400'}`}
-                          title="Compare"
-                        >
-                          <ArrowUpDown className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-
-                      {/* Product Image */}
-                      <div 
-                        onClick={() => navigateToProduct(p.handle)}
-                        className="w-full h-48 bg-[#030e07] rounded-xl overflow-hidden mb-4 cursor-pointer relative flex items-center justify-center p-2"
-                      >
-                        <img
-                          src={p.featuredImage?.url || "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=600&auto=format&fit=crop&q=80"}
-                          alt={p.featuredImage?.altText || p.title}
-                          className="max-h-full object-contain group-hover:scale-105 transition-transform duration-300"
-                        />
-                      </div>
-
-                      {/* Brand & Category */}
-                      <div className="text-[11px] text-slate-400 font-mono mb-1 flex items-center justify-between">
-                        <span>{p.vendor}</span>
-                        <span className="text-emerald-400/80">{p.productType}</span>
-                      </div>
-
-                      {/* Product Title */}
-                      <h4 
-                        onClick={() => navigateToProduct(p.handle)}
-                        className="font-bold text-slate-100 text-sm hover:text-emerald-400 transition-colors line-clamp-2 cursor-pointer mb-2 flex-1"
-                      >
-                        {p.title}
-                      </h4>
-
-                      {/* Rating */}
-                      <div className="flex items-center gap-1 mb-3">
-                        <div className="flex text-amber-400">
-                          {[...Array(5)].map((_, i) => (
-                            <Star key={i} className="w-3 h-3 fill-amber-400" />
-                          ))}
-                        </div>
-                        <span className="text-[10px] text-slate-400 font-mono ml-1">(4.9)</span>
-                      </div>
-
-                      {/* Price & Add to Cart Row */}
-                      <div className="pt-3 border-t border-emerald-900/40 flex items-center justify-between gap-2 mt-auto">
-                        <div>
-                          <div className="font-mono font-bold text-emerald-400 text-sm">
-                            {formatMoney(minPrice)}
-                          </div>
-                          {comparePrice && (
-                            <div className="font-mono text-[10px] text-slate-500 line-through">
-                              {formatMoney(comparePrice)}
-                            </div>
-                          )}
-                        </div>
-
-                        <button
-                          onClick={() => addToCart(p)}
-                          className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 p-2.5 rounded-xl font-bold transition-all flex items-center gap-1.5 text-xs shadow-lg shadow-emerald-950/40 active:scale-95"
-                          title="Add to Cart"
-                        >
-                          <ShoppingBag className="w-3.5 h-3.5" />
-                          <span className="hidden xl:inline">Add</span>
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
+                {paginatedProducts.map((p) => (
+                  <ProductCard key={p.id} product={p} />
+                ))}
               </div>
             ) : (
               /* List Mode */
               <div className="space-y-4">
-                {filteredProducts.map((p) => {
+                {paginatedProducts.map((p) => {
                   const minPrice = p.priceRange.minVariantPrice.amount;
                   const comparePrice = p.compareAtPriceRange?.minVariantPrice?.amount;
 
@@ -497,6 +409,41 @@ export const ShopPage: React.FC = () => {
                     </div>
                   );
                 })}
+              </div>
+            )}
+
+            {/* Dynamic Catalog Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="mt-12 pt-8 border-t border-emerald-900/40 flex items-center justify-center gap-2 flex-wrap">
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
+                  className="px-4 py-2 rounded-xl bg-[#05140b] border border-emerald-900/60 text-xs font-mono font-bold text-slate-300 hover:bg-emerald-500 hover:text-slate-950 disabled:opacity-30 transition-all disabled:hover:bg-[#05140b] disabled:hover:text-slate-300 cursor-pointer disabled:cursor-not-allowed"
+                >
+                  ← Prev
+                </button>
+
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => handlePageChange(page)}
+                    className={`w-10 h-10 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer ${
+                      currentPage === page
+                        ? "bg-emerald-500 text-slate-950 font-black shadow-lg shadow-emerald-500/20"
+                        : "bg-[#05140b] border border-emerald-900/60 text-slate-300 hover:bg-slate-800"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+
+                <button
+                  disabled={currentPage === totalPages}
+                  onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
+                  className="px-4 py-2 rounded-xl bg-[#05140b] border border-emerald-900/60 text-xs font-mono font-bold text-slate-300 hover:bg-emerald-500 hover:text-slate-950 disabled:opacity-30 transition-all disabled:hover:bg-[#05140b] disabled:hover:text-slate-300 cursor-pointer disabled:cursor-not-allowed"
+                >
+                  Next →
+                </button>
               </div>
             )}
           </main>

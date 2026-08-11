@@ -1,10 +1,37 @@
-import React, { useRef } from "react";
-import { ChevronLeft, ChevronRight, ArrowRight, Layers } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { ChevronLeft, ChevronRight, Layers } from "lucide-react";
 import { useShopify } from "../../context/ShopifyContext";
 
 export const TechCategoriesSlider: React.FC = () => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { collections, navigateToCollection } = useShopify();
+  const [isPaused, setIsPaused] = useState(false);
+
+  // Auto-scroll loop with pause on hover
+  useEffect(() => {
+    if (!scrollContainerRef.current) return;
+    let animId: number;
+    let lastTime = performance.now();
+
+    const step = (now: number) => {
+      const delta = now - lastTime;
+      lastTime = now;
+
+      if (!isPaused && scrollContainerRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+        const speed = (35 * delta) / 1000;
+        if (scrollLeft + clientWidth >= scrollWidth - 1) {
+          scrollContainerRef.current.scrollLeft = 0;
+        } else {
+          scrollContainerRef.current.scrollLeft += speed;
+        }
+      }
+      animId = requestAnimationFrame(step);
+    };
+
+    animId = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(animId);
+  }, [isPaused, collections.length]);
 
   const scroll = (direction: "left" | "right") => {
     if (scrollContainerRef.current) {
@@ -16,7 +43,11 @@ export const TechCategoriesSlider: React.FC = () => {
   if (!collections || collections.length === 0) return null;
 
   return (
-    <section className="py-14 bg-slate-950 border-b border-emerald-900/30 text-slate-100 overflow-hidden">
+    <section
+      className="py-14 bg-slate-950 border-b border-emerald-900/30 text-slate-100 overflow-hidden"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header with Navigation Controls */}
         <div className="flex items-end justify-between mb-8 pb-3 border-b border-emerald-900/40">
@@ -53,11 +84,10 @@ export const TechCategoriesSlider: React.FC = () => {
         {/* Dynamic Collection Spectrum Cards */}
         <div
           ref={scrollContainerRef}
-          className="flex gap-6 overflow-x-auto pb-6 scrollbar-none scroll-smooth select-none"
+          className="flex gap-6 overflow-x-auto pb-6 scrollbar-none select-none"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {collections.map((col) => {
-            const count = col.productsCount || col.products?.length || 0;
             const bgImage =
               col.image?.url ||
               col.products?.[0]?.featuredImage?.url ||
@@ -68,26 +98,20 @@ export const TechCategoriesSlider: React.FC = () => {
               <div
                 key={col.id}
                 onClick={() => navigateToCollection(col.handle)}
-                className="min-w-[260px] sm:min-w-[300px] group relative h-72 rounded-2xl overflow-hidden border border-emerald-900/40 bg-slate-900 cursor-pointer transition-all duration-300 hover:border-emerald-500/60 hover:shadow-[0_0_25px_rgba(16,185,129,0.25)] flex flex-col justify-end p-6"
+                className="min-w-[240px] sm:min-w-[280px] group/colcard relative h-64 rounded-2xl overflow-hidden border border-emerald-900/40 bg-slate-900 cursor-pointer transition-all duration-300 hover:border-emerald-500/60 hover:shadow-[0_0_25px_rgba(16,185,129,0.25)] flex flex-col justify-end p-5"
               >
                 <img
                   src={bgImage}
                   alt={col.title}
                   referrerPolicy="no-referrer"
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-50 group-hover:opacity-65"
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover/colcard:scale-110 opacity-55 group-hover/colcard:opacity-75"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
 
                 <div className="relative z-10">
-                  <span className="bg-emerald-500 text-slate-950 text-[10px] font-black font-mono px-2.5 py-0.5 rounded tracking-widest uppercase mb-2 inline-block">
-                    {count} {count === 1 ? "Product" : "Products"}
-                  </span>
-                  <h3 className="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors line-clamp-1">
+                  <h3 className="text-lg font-bold text-white group-hover/colcard:text-emerald-300 transition-colors line-clamp-1">
                     {col.title}
                   </h3>
-                  <span className="inline-flex items-center gap-1.5 text-xs text-emerald-400 font-semibold font-mono mt-2 group-hover:translate-x-1 transition-transform">
-                    Explore Category <ArrowRight className="w-3.5 h-3.5" />
-                  </span>
                 </div>
               </div>
             );

@@ -1,10 +1,37 @@
-import React, { useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { ArrowRight, Calendar, User, ChevronLeft, ChevronRight, BookOpen } from "lucide-react";
 import { useShopify } from "../../context/ShopifyContext";
 
 export const LatestBlog: React.FC = () => {
   const { articles, navigateToArticle, navigateToBlog } = useShopify();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [isPaused, setIsPaused] = useState(false);
+
+  // Smooth continuous auto-scroll loop
+  useEffect(() => {
+    if (!scrollRef.current) return;
+    let animId: number;
+    let lastTime = performance.now();
+
+    const step = (now: number) => {
+      const delta = now - lastTime;
+      lastTime = now;
+
+      if (!isPaused && scrollRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+        const speed = (35 * delta) / 1000;
+        if (scrollLeft + clientWidth >= scrollWidth - 1) {
+          scrollRef.current.scrollLeft = 0;
+        } else {
+          scrollRef.current.scrollLeft += speed;
+        }
+      }
+      animId = requestAnimationFrame(step);
+    };
+
+    animId = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(animId);
+  }, [isPaused, articles.length]);
 
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {
@@ -15,7 +42,11 @@ export const LatestBlog: React.FC = () => {
   if (!articles || articles.length === 0) return null;
 
   return (
-    <section className="py-14 bg-slate-950 border-b border-emerald-900/30 text-slate-100 overflow-hidden">
+    <section
+      className="py-14 bg-slate-950 border-b border-emerald-900/30 text-slate-100 overflow-hidden"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}
@@ -35,10 +66,10 @@ export const LatestBlog: React.FC = () => {
           <div className="flex items-center gap-3">
             <button
               onClick={navigateToBlog}
-              className="inline-flex items-center gap-1.5 text-xs font-mono font-semibold text-emerald-400 hover:text-emerald-300 hover:underline group focus:outline-none"
+              className="inline-flex items-center gap-1.5 text-xs font-mono font-semibold text-emerald-400 hover:text-emerald-300 hover:underline focus:outline-none"
             >
               View All Blogs ({articles.length})
-              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+              <ArrowRight className="w-3.5 h-3.5" />
             </button>
 
             <div className="hidden sm:flex items-center gap-1.5 ml-2">
@@ -60,17 +91,17 @@ export const LatestBlog: React.FC = () => {
           </div>
         </div>
 
-        {/* Carousel */}
+        {/* Carousel Track */}
         <div
           ref={scrollRef}
-          className="flex gap-6 overflow-x-auto pb-6 scrollbar-none scroll-smooth select-none"
+          className="flex gap-6 overflow-x-auto pb-6 scrollbar-none select-none"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {articles.map((art) => (
             <div
               key={art.id}
               onClick={() => navigateToArticle(art.handle)}
-              className="min-w-[280px] sm:min-w-[340px] max-w-[360px] bg-slate-900 border border-emerald-900/40 rounded-2xl overflow-hidden cursor-pointer group hover:border-emerald-500/60 transition-all flex flex-col justify-between"
+              className="min-w-[280px] sm:min-w-[340px] max-w-[360px] bg-slate-900 border border-emerald-900/40 rounded-2xl overflow-hidden cursor-pointer group/blogcard hover:border-emerald-500/60 transition-all flex flex-col justify-between"
             >
               <div className="aspect-video bg-slate-950 overflow-hidden relative">
                 {art.image ? (
@@ -78,7 +109,7 @@ export const LatestBlog: React.FC = () => {
                     src={art.image.url}
                     alt={art.title}
                     referrerPolicy="no-referrer"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    className="w-full h-full object-cover group-hover/blogcard:scale-105 transition-transform duration-500"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-slate-600 text-xs font-mono">
@@ -100,7 +131,7 @@ export const LatestBlog: React.FC = () => {
                     </span>
                   </div>
 
-                  <h3 className="text-sm font-bold text-white group-hover:text-emerald-400 transition-colors line-clamp-2 leading-snug">
+                  <h3 className="text-sm font-bold text-white group-hover/blogcard:text-emerald-400 transition-colors line-clamp-2 leading-snug">
                     {art.title}
                   </h3>
 
@@ -109,7 +140,7 @@ export const LatestBlog: React.FC = () => {
                   </p>
                 </div>
 
-                <span className="text-xs font-bold font-mono text-emerald-400 group-hover:translate-x-1 transition-transform flex items-center gap-1 pt-2 border-t border-slate-800/60">
+                <span className="text-xs font-bold font-mono text-emerald-400 group-hover/blogcard:translate-x-1 transition-transform flex items-center gap-1 pt-2 border-t border-slate-800/60">
                   Read More <ArrowRight className="w-3.5 h-3.5" />
                 </span>
               </div>

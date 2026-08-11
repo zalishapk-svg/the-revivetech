@@ -54,7 +54,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className = "
   return (
     <div
       onClick={() => navigateToProduct(product.handle)}
-      className={`group relative bg-slate-900/90 rounded-xl overflow-hidden border border-emerald-900/30 hover:border-emerald-500/60 transition-all duration-300 hover:shadow-[0_12px_30px_rgba(16,185,129,0.15)] flex flex-col justify-between cursor-pointer h-full select-none ${className}`}
+      className={`group/productcard relative bg-slate-900/90 rounded-xl overflow-hidden border border-emerald-900/30 hover:border-emerald-500/60 transition-all duration-300 hover:shadow-[0_12px_30px_rgba(16,185,129,0.15)] flex flex-col justify-between cursor-pointer h-full select-none ${className}`}
     >
       {/* Badges */}
       <div className="absolute top-2.5 left-2.5 z-10 flex flex-col gap-1.5 pointer-events-none">
@@ -79,10 +79,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className = "
               src={primaryImage}
               alt={product.title}
               referrerPolicy="no-referrer"
-              className={`absolute inset-0 w-full h-full object-cover object-center transition-all duration-700 ease-out ${
+              className={`absolute inset-0 w-full h-full object-cover object-center transition-all duration-500 ease-out ${
                 secondImage
-                  ? "group-hover:opacity-0 group-hover:scale-105"
-                  : "group-hover:scale-105"
+                  ? "group-hover/productcard:opacity-0 group-hover/productcard:scale-105"
+                  : "group-hover/productcard:scale-105"
               }`}
             />
             {/* Second Image Crossfade */}
@@ -91,7 +91,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className = "
                 src={secondImage}
                 alt={`${product.title} alternate view`}
                 referrerPolicy="no-referrer"
-                className="absolute inset-0 w-full h-full object-cover object-center opacity-0 group-hover:opacity-100 transition-all duration-700 ease-out group-hover:scale-105"
+                className="absolute inset-0 w-full h-full object-cover object-center opacity-0 group-hover/productcard:opacity-100 transition-all duration-500 ease-out group-hover/productcard:scale-105"
               />
             )}
           </>
@@ -101,14 +101,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className = "
           </div>
         )}
 
-        {/* Hover Action Overlay Icons - Staggered Slide In */}
-        <div className="absolute bottom-3 left-0 right-0 z-20 flex items-center justify-center gap-2 px-3 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none group-hover:pointer-events-auto">
+        {/* Hover Action Overlay Icons - Staggered Entrance and Smooth Exit */}
+        <div className="absolute bottom-3 left-0 right-0 z-20 flex items-center justify-center gap-2 px-3 opacity-0 group-hover/productcard:opacity-100 transition-all duration-300 pointer-events-none group-hover/productcard:pointer-events-auto">
           {/* Wishlist Button */}
           <button
             onClick={handleToggleWishlist}
             aria-label="Toggle Wishlist"
             title="Add to Wishlist"
-            className={`p-2.5 rounded-full shadow-lg border backdrop-blur-md transition-all duration-300 transform translate-y-3 group-hover:translate-y-0 delay-75 hover:scale-110 focus:outline-none ${
+            className={`p-2.5 rounded-full shadow-lg border backdrop-blur-md transition-all duration-300 ease-out transform translate-y-3 scale-95 opacity-0 group-hover/productcard:translate-y-0 group-hover/productcard:scale-100 group-hover/productcard:opacity-100 delay-0 hover:scale-110 focus:outline-none ${
               isWishlisted
                 ? "bg-rose-500 text-white border-rose-400"
                 : "bg-slate-950/80 text-slate-200 hover:bg-emerald-500 hover:text-slate-950 border-emerald-500/30"
@@ -122,7 +122,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className = "
             onClick={handleQuickView}
             aria-label="Quick View"
             title="Quick View"
-            className="p-2.5 rounded-full bg-slate-950/80 text-slate-200 hover:bg-emerald-500 hover:text-slate-950 border border-emerald-500/30 backdrop-blur-md shadow-lg transition-all duration-300 transform translate-y-3 group-hover:translate-y-0 delay-100 hover:scale-110 focus:outline-none"
+            className="p-2.5 rounded-full bg-slate-950/80 text-slate-200 hover:bg-emerald-500 hover:text-slate-950 border border-emerald-500/30 backdrop-blur-md shadow-lg transition-all duration-300 ease-out transform translate-y-3 scale-95 opacity-0 group-hover/productcard:translate-y-0 group-hover/productcard:scale-100 group-hover/productcard:opacity-100 delay-75 hover:scale-110 focus:outline-none"
           >
             <Eye className="w-4 h-4" />
           </button>
@@ -133,7 +133,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className = "
             disabled={!product.availableForSale}
             aria-label="Add to Cart"
             title={product.availableForSale ? "Add to Cart" : "Out of Stock"}
-            className={`p-2.5 rounded-full shadow-lg border backdrop-blur-md transition-all duration-300 transform translate-y-3 group-hover:translate-y-0 delay-150 hover:scale-110 focus:outline-none ${
+            className={`p-2.5 rounded-full shadow-lg border backdrop-blur-md transition-all duration-300 ease-out transform translate-y-3 scale-95 opacity-0 group-hover/productcard:translate-y-0 group-hover/productcard:scale-100 group-hover/productcard:opacity-100 delay-150 hover:scale-110 focus:outline-none ${
               isAdded
                 ? "bg-emerald-500 text-slate-950 border-emerald-400"
                 : "bg-slate-950/80 text-slate-200 hover:bg-emerald-500 hover:text-slate-950 border-emerald-500/30 disabled:opacity-50 disabled:hover:bg-slate-950"
@@ -154,7 +154,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className = "
             </span>
           )}
           {/* Title */}
-          <h3 className="text-sm font-semibold text-slate-100 line-clamp-2 group-hover:text-emerald-400 transition-colors duration-200 leading-snug">
+          <h3 className="text-sm font-semibold text-slate-100 line-clamp-2 group-hover/productcard:text-emerald-400 transition-colors duration-200 leading-snug">
             {product.title}
           </h3>
         </div>

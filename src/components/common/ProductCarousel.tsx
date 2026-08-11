@@ -25,22 +25,32 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isPaused, setIsPaused] = useState(false);
 
-  // Auto-scroll logic
+  // Smooth continuous auto-scroll logic
   useEffect(() => {
-    if (isPaused || !scrollRef.current || products.length <= 4) return;
-    const interval = setInterval(() => {
-      if (!scrollRef.current) return;
-      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-      // If reached end, scroll back to start
-      if (scrollLeft + clientWidth >= scrollWidth - 10) {
-        scrollRef.current.scrollTo({ left: 0, behavior: "smooth" });
-      } else {
-        scrollRef.current.scrollBy({ left: 320, behavior: "smooth" });
-      }
-    }, autoPlayInterval);
+    if (!scrollRef.current) return;
+    let animId: number;
+    let lastTime = performance.now();
 
-    return () => clearInterval(interval);
-  }, [isPaused, products.length, autoPlayInterval]);
+    const step = (now: number) => {
+      const delta = now - lastTime;
+      lastTime = now;
+
+      if (!isPaused && scrollRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+        // Scroll speed ~ 40px/sec
+        const speed = (40 * delta) / 1000;
+        if (scrollLeft + clientWidth >= scrollWidth - 1) {
+          scrollRef.current.scrollLeft = 0;
+        } else {
+          scrollRef.current.scrollLeft += speed;
+        }
+      }
+      animId = requestAnimationFrame(step);
+    };
+
+    animId = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(animId);
+  }, [isPaused, products.length]);
 
   const scroll = (direction: "left" | "right") => {
     if (!scrollRef.current) return;
@@ -109,10 +119,10 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({
         )}
 
         {/* Carousel Slider Track */}
-        <div className="relative group">
+        <div className="relative">
           <div
             ref={scrollRef}
-            className="flex items-stretch gap-4 sm:gap-6 overflow-x-auto scrollbar-none py-2 px-0.5 scroll-smooth select-none"
+            className="flex items-stretch gap-4 sm:gap-6 overflow-x-auto scrollbar-none py-2 px-0.5 select-none"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
             {products.map((product) => (
