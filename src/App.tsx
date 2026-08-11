@@ -1,4 +1,4 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { ShopifyProvider, useShopify } from "./context/ShopifyContext";
 import { SEOHead } from "./components/common/SEOHead";
 import { CustomCursor } from "./components/common/CustomCursor";
@@ -10,23 +10,32 @@ import { Footer } from "./components/common/Footer";
 import { CartDrawer } from "./components/common/CartDrawer";
 import { WishlistDrawer } from "./components/common/WishlistDrawer";
 import { CompareDrawer } from "./components/common/CompareDrawer";
-import { QuickViewModal } from "./components/common/QuickViewModal";
-import { SearchModal } from "./components/common/SearchModal";
-import { ShopifyConfigModal } from "./components/common/ShopifyConfigModal";
 
-import { HomePage } from "./components/home/HomePage";
-import { ProductPage } from "./components/product/ProductPage";
-import { CollectionPage } from "./components/collection/CollectionPage";
-import { CollectionsListPage } from "./components/collection/CollectionsListPage";
-import { BlogPage } from "./components/blog/BlogPage";
-import { AccountPage } from "./components/account/AccountPage";
-import { ShopPage } from "./components/shop/ShopPage";
-import { AboutPage } from "./components/about/AboutPage";
-import { ContactPage } from "./components/contact/ContactPage";
-import { FAQPage } from "./components/faq/FAQPage";
-import { LegalPage } from "./components/page/LegalPage";
-import { CartPage } from "./components/cart/CartPage";
-import { SearchPage } from "./components/search/SearchPage";
+// Dynamic lazy-loaded pages for optimized chunking
+const HomePage = lazy(() => import("./components/home/HomePage").then((m) => ({ default: m.HomePage })));
+const ProductPage = lazy(() => import("./components/product/ProductPage").then((m) => ({ default: m.ProductPage })));
+const CollectionPage = lazy(() => import("./components/collection/CollectionPage").then((m) => ({ default: m.CollectionPage })));
+const CollectionsListPage = lazy(() => import("./components/collection/CollectionsListPage").then((m) => ({ default: m.CollectionsListPage })));
+const BlogPage = lazy(() => import("./components/blog/BlogPage").then((m) => ({ default: m.BlogPage })));
+const AccountPage = lazy(() => import("./components/account/AccountPage").then((m) => ({ default: m.AccountPage })));
+const ShopPage = lazy(() => import("./components/shop/ShopPage").then((m) => ({ default: m.ShopPage })));
+const AboutPage = lazy(() => import("./components/about/AboutPage").then((m) => ({ default: m.AboutPage })));
+const ContactPage = lazy(() => import("./components/contact/ContactPage").then((m) => ({ default: m.ContactPage })));
+const FAQPage = lazy(() => import("./components/faq/FAQPage").then((m) => ({ default: m.FAQPage })));
+const LegalPage = lazy(() => import("./components/page/LegalPage").then((m) => ({ default: m.LegalPage })));
+const CartPage = lazy(() => import("./components/cart/CartPage").then((m) => ({ default: m.CartPage })));
+const SearchPage = lazy(() => import("./components/search/SearchPage").then((m) => ({ default: m.SearchPage })));
+
+// Dynamic lazy-loaded modals
+const QuickViewModal = lazy(() => import("./components/common/QuickViewModal").then((m) => ({ default: m.QuickViewModal })));
+const SearchModal = lazy(() => import("./components/common/SearchModal").then((m) => ({ default: m.SearchModal })));
+const ShopifyConfigModal = lazy(() => import("./components/common/ShopifyConfigModal").then((m) => ({ default: m.ShopifyConfigModal })));
+
+const PageFallback: React.FC = () => (
+  <div className="min-h-[50vh] flex items-center justify-center">
+    <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+  </div>
+);
 
 const MainLayout: React.FC = () => {
   const { viewState, toastMessage } = useShopify();
@@ -47,20 +56,22 @@ const MainLayout: React.FC = () => {
 
       {/* Dynamic Route View Switching */}
       <main className="flex-1">
-        {currentType === "home" && <HomePage />}
-        {currentType === "shop" && <ShopPage />}
-        {currentType === "product" && <ProductPage handle={activeHandle} />}
-        {currentType === "collection" && <CollectionPage handle={activeHandle} />}
-        {currentType === "collections_list" && <CollectionsListPage />}
-        {currentType === "blog" && <BlogPage />}
-        {currentType === "article" && <BlogPage articleHandle={activeHandle} />}
-        {currentType === "account" && <AccountPage />}
-        {currentType === "about" && <AboutPage />}
-        {currentType === "contact" && <ContactPage />}
-        {currentType === "faq" && <FAQPage />}
-        {currentType === "search" && <SearchPage initialQuery={activeQuery} />}
-        {currentType === "cart" && <CartPage />}
-        {currentType === "page" && <LegalPage handle={activeHandle} />}
+        <Suspense fallback={<PageFallback />}>
+          {currentType === "home" && <HomePage />}
+          {currentType === "shop" && <ShopPage />}
+          {currentType === "product" && <ProductPage handle={activeHandle} />}
+          {currentType === "collection" && <CollectionPage handle={activeHandle} />}
+          {currentType === "collections_list" && <CollectionsListPage />}
+          {currentType === "blog" && <BlogPage />}
+          {currentType === "article" && <BlogPage articleHandle={activeHandle} />}
+          {currentType === "account" && <AccountPage />}
+          {currentType === "about" && <AboutPage />}
+          {currentType === "contact" && <ContactPage />}
+          {currentType === "faq" && <FAQPage />}
+          {currentType === "search" && <SearchPage initialQuery={activeQuery} />}
+          {currentType === "cart" && <CartPage />}
+          {currentType === "page" && <LegalPage handle={activeHandle} />}
+        </Suspense>
       </main>
 
       {/* Footer */}
@@ -70,9 +81,11 @@ const MainLayout: React.FC = () => {
       <CartDrawer />
       <WishlistDrawer />
       <CompareDrawer />
-      <QuickViewModal />
-      <SearchModal />
-      <ShopifyConfigModal />
+      <Suspense fallback={null}>
+        <QuickViewModal />
+        <SearchModal />
+        <ShopifyConfigModal />
+      </Suspense>
 
       {/* Floating Global Toast Notification */}
       {toastMessage && (
