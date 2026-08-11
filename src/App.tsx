@@ -1,8 +1,6 @@
 import React, { lazy, Suspense } from "react";
 import { ShopifyProvider, useShopify } from "./context/ShopifyContext";
 import { SEOHead } from "./components/common/SEOHead";
-import { CustomCursor } from "./components/common/CustomCursor";
-import { LenisSmoothScroll } from "./components/common/LenisSmoothScroll";
 import { AnnouncementBar } from "./components/common/AnnouncementBar";
 import { Header } from "./components/common/Header";
 import { MobileNav } from "./components/common/MobileNav";
@@ -44,10 +42,8 @@ const MainLayout: React.FC = () => {
   const activeQuery = "query" in viewState ? viewState.query : "";
 
   return (
-    <div className="min-h-screen bg-[#030e07] text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-slate-950">
+    <div className="min-h-screen bg-[#030705] text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-slate-950">
       <SEOHead />
-      <CustomCursor />
-      <LenisSmoothScroll />
 
       {/* Header Navigation Stack */}
       <AnnouncementBar />

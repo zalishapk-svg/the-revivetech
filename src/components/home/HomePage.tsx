@@ -2,7 +2,6 @@ import React from "react";
 import { HeroSlider } from "./HeroSlider";
 import { FeaturedProducts } from "./FeaturedProducts";
 import { TrendingCategories } from "./TrendingCategories";
-import { TechCategoriesSlider } from "./TechCategoriesSlider";
 import { SecondSlider } from "./SecondSlider";
 import { DynamicCollectionSections } from "./DynamicCollectionSections";
 import { NewArrivals } from "./NewArrivals";
@@ -19,7 +18,7 @@ import { FAQSection } from "./FAQSection";
 
 export const HomePage: React.FC = () => {
   return (
-    <div className="w-full bg-slate-950 text-slate-100">
+    <div className="w-full bg-[#030705] text-slate-100">
       {/* 1. HERO SLIDER */}
       <HeroSlider />
 
@@ -34,9 +33,6 @@ export const HomePage: React.FC = () => {
 
       {/* Dynamic Shopify Collection Product Carousels - Batch 1 */}
       <DynamicCollectionSections startIndex={0} count={3} />
-
-      {/* 4. TECHNOLOGY HARDWARE SPECTRUM */}
-      <TechCategoriesSlider />
 
       {/* 5. PROMOTIONAL SLIDER (Second Slider: EasySMX & Andaseat) */}
       <SecondSlider />

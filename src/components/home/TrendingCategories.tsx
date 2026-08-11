@@ -19,7 +19,7 @@ export const TrendingCategories: React.FC = () => {
 
   return (
     <section
-      className="py-14 bg-[#05140b] border-b border-emerald-900/40 text-slate-100 overflow-hidden"
+      className="py-14 bg-[#040806] border-b border-emerald-900/30 text-slate-100 overflow-hidden"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
@@ -55,7 +55,7 @@ export const TrendingCategories: React.FC = () => {
           </div>
         </div>
 
-        {/* Categories Auto-Scrolling Track */}
+        {/* Categories Track */}
         <div
           ref={scrollContainerRef}
           className="flex gap-5 overflow-x-auto pb-4 scrollbar-none select-none"
@@ -77,12 +77,15 @@ export const TrendingCategories: React.FC = () => {
               ) : (
                 <div className="absolute inset-0 bg-emerald-950" />
               )}
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-transparent" />
 
               <div className="relative z-10">
                 <h3 className="text-base font-bold text-white group-hover/colcard:text-emerald-300 transition-colors">
                   {col.title}
                 </h3>
+                <p className="text-xs font-mono font-semibold text-emerald-400 mt-1">
+                  {col.products?.length || col.productsCount || 0} Products
+                </p>
               </div>
             </div>
           ))}

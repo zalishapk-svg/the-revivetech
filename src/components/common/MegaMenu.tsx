@@ -14,14 +14,18 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onClose }) => {
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
-          initial={{ opacity: 0, y: 8, scale: 0.98 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 6, scale: 0.98 }}
-          transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          className="absolute top-full left-0 w-full bg-[#071910]/98 backdrop-blur-2xl border-b border-emerald-900/50 shadow-[0_30px_60px_-12px_rgba(0,0,0,0.85)] z-50 text-slate-100 max-h-[80vh] overflow-y-auto"
-          onMouseLeave={onClose}
-        >
+        <>
+          <div
+            className="fixed inset-0 top-20 z-40 bg-black/60 backdrop-blur-sm"
+            onClick={onClose}
+          />
+          <motion.div
+            initial={{ opacity: 0, y: 8, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 6, scale: 0.98 }}
+            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="absolute top-full left-0 w-full bg-[#05110a]/98 border-b border-emerald-900/50 shadow-[0_30px_60px_-12px_rgba(0,0,0,0.95)] z-50 text-slate-100 max-h-[80vh] overflow-y-auto"
+          >
           <div className="max-w-7xl mx-auto p-6 md:p-8">
             {/* Header / Meta bar */}
             <div className="flex items-center justify-between pb-4 mb-6 border-b border-emerald-900/40">
@@ -116,6 +120,7 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onClose }) => {
             </div>
           </div>
         </motion.div>
+      </>
       )}
     </AnimatePresence>
   );

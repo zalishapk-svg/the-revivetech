@@ -36,7 +36,7 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({
 
   return (
     <section
-      className="py-10 bg-slate-950/60 border-b border-emerald-900/30 text-slate-100"
+      className="py-10 bg-[#030705]/80 border-b border-emerald-900/30 text-slate-100"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >

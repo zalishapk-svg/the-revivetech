@@ -19,7 +19,7 @@ export const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="bg-[#030d07] border-t border-emerald-900/50 text-slate-300 pt-16 pb-12 relative overflow-hidden">
+    <footer className="bg-[#020503] border-t border-emerald-900/50 text-slate-300 pt-16 pb-12 relative overflow-hidden">
       
       {/* Background Accent Mesh */}
       <div className="absolute top-0 right-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />

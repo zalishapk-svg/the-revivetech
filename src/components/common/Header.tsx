@@ -41,7 +41,7 @@ export const Header: React.FC = () => {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 bg-[#05140b]/90 backdrop-blur-xl border-b border-emerald-900/40 text-slate-100 transition-all">
+    <header className="sticky top-0 z-50 bg-[#030705]/95 backdrop-blur-md border-b border-emerald-900/40 text-slate-100 transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           
@@ -79,15 +79,9 @@ export const Header: React.FC = () => {
             </button>
 
             {/* COLLECTIONS / MEGA MENU TRIGGER */}
-            <div
-              className="relative"
-              onMouseEnter={() => setIsMegaMenuOpen(true)}
-            >
+            <div className="relative">
               <button
-                onClick={() => {
-                  navigateToCollectionsList();
-                  setIsMegaMenuOpen(false);
-                }}
+                onClick={() => setIsMegaMenuOpen((prev) => !prev)}
                 className={`flex items-center gap-1.5 py-2 transition-colors hover:text-emerald-400 ${
                   viewState.type === "collection" || viewState.type === "collections_list"
                     ? "text-emerald-400 font-bold"

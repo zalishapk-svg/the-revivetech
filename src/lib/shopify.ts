@@ -793,7 +793,7 @@ export async function getProductsFromShopify(): Promise<Product[]> {
   let cursor: string | null = null;
   let safetyCounter = 0;
 
-  while (hasNextPage && safetyCounter < 20) {
+  while (hasNextPage && safetyCounter < 3) {
     safetyCounter++;
     const result: any = await fetchShopifyGraphQL(STOREFRONT_QUERIES.GET_PRODUCTS, {
       first: 250,

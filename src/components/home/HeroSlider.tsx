@@ -71,7 +71,7 @@ export const HeroSlider: React.FC = () => {
 
   return (
     <section
-      className="relative w-full overflow-hidden bg-slate-950 group select-none"
+      className="relative w-full overflow-hidden bg-[#030705] group select-none"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onTouchStart={handleTouchStart}
