@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Layers, ShoppingBag, Check, Trash2 } from "lucide-react";
 import { useShopify } from "../../context/ShopifyContext";
@@ -6,6 +6,28 @@ import { formatMoney } from "../../lib/utils";
 
 export const CompareDrawer: React.FC = () => {
   const { isCompareOpen, setIsCompareOpen, compareHandles, toggleCompare, products, addToCart } = useShopify();
+
+  // Lock body scroll when compare drawer is open
+  useEffect(() => {
+    if (isCompareOpen && compareHandles.length > 0) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isCompareOpen, compareHandles.length]);
+
+  // Handle ESC key press
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isCompareOpen) {
+        setIsCompareOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isCompareOpen, setIsCompareOpen]);
 
   if (!isCompareOpen || compareHandles.length === 0) return null;
 

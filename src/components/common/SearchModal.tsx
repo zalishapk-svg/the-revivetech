@@ -11,8 +11,24 @@ export const SearchModal: React.FC = () => {
   useEffect(() => {
     if (!isSearchOpen) {
       setSearchTerm("");
+    } else {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
     }
   }, [isSearchOpen]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isSearchOpen) {
+        setIsSearchOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isSearchOpen, setIsSearchOpen]);
 
   if (!isSearchOpen) return null;
 

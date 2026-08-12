@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ShoppingBag, Heart, Star, Check, ShieldCheck, Truck, ArrowRight } from "lucide-react";
 import { useShopify } from "../../context/ShopifyContext";
@@ -9,6 +9,28 @@ export const QuickViewModal: React.FC = () => {
   const { quickViewHandle, setQuickViewHandle, products, addToCart, toggleWishlist, isInWishlist, navigateToProduct } = useShopify();
   const [selectedVariantId, setSelectedVariantId] = useState<string | undefined>(undefined);
   const [quantity, setQuantity] = useState(1);
+
+  // Lock body scroll when QuickView is active
+  useEffect(() => {
+    if (quickViewHandle) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [quickViewHandle]);
+
+  // Handle ESC key press
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && quickViewHandle) {
+        setQuickViewHandle(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [quickViewHandle, setQuickViewHandle]);
 
   if (!quickViewHandle) return null;
 

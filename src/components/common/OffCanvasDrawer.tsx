@@ -56,39 +56,35 @@ export const OffCanvasDrawer: React.FC<OffCanvasDrawerProps> = ({
           />
 
           {/* Slide-In Drawer */}
-          <div
-            className={`fixed inset-y-0 ${
-              side === "left" ? "left-0 pr-10" : "right-0 pl-10"
-            } max-w-full flex`}
+          <motion.div
+            initial={{ x: side === "left" ? "-100%" : "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: side === "left" ? "-100%" : "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 220 }}
+            className={`fixed top-0 ${
+              side === "left" ? "left-0 border-r" : "right-0 border-l"
+            } bottom-0 z-50 w-full sm:w-[360px] max-w-full bg-[#05140b] border-emerald-900/60 shadow-2xl flex flex-col h-[100dvh] max-h-[100dvh] overflow-hidden`}
           >
-            <motion.div
-              initial={{ x: side === "left" ? "-100%" : "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: side === "left" ? "-100%" : "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 220 }}
-              className="w-screen max-w-xs sm:max-w-sm bg-[#05140b] border-r border-emerald-900/60 shadow-2xl flex flex-col h-full overflow-hidden"
-            >
-              {/* Header */}
-              <div className="p-4 sm:p-5 border-b border-emerald-900/60 bg-[#030e07] flex items-center justify-between shrink-0">
-                <div className="flex items-center gap-2 text-white font-bold text-sm uppercase tracking-wider font-mono">
-                  <SlidersHorizontal className="w-4 h-4 text-emerald-400" />
-                  <span>{title}</span>
-                </div>
-                <button
-                  onClick={onClose}
-                  aria-label="Close filters"
-                  className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-emerald-950/80 transition-colors cursor-pointer"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+            {/* Header */}
+            <div className="p-4 sm:p-5 border-b border-emerald-900/60 bg-[#030e07] flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2 text-white font-bold text-sm uppercase tracking-wider font-mono">
+                <SlidersHorizontal className="w-4 h-4 text-emerald-400" />
+                <span>{title}</span>
               </div>
+              <button
+                onClick={onClose}
+                aria-label="Close filters"
+                className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-emerald-950/80 transition-colors cursor-pointer shrink-0"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-              {/* Scrollable Content */}
-              <div className="flex-1 overflow-y-auto p-5 space-y-6">
-                {children}
-              </div>
-            </motion.div>
-          </div>
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-6 min-h-0">
+              {children}
+            </div>
+          </motion.div>
         </div>
       )}
     </AnimatePresence>
