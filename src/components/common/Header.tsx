@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { useShopify } from "../../context/ShopifyContext";
 import { MegaMenu } from "./MegaMenu";
-import { MobileNav } from "./MobileNav";
 
 export const Header: React.FC = () => {
   const {
@@ -35,26 +34,26 @@ export const Header: React.FC = () => {
     setIsCompareOpen,
     setIsSearchOpen,
     customer,
+    setIsMobileNavOpen,
   } = useShopify();
 
   const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false);
-  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-50 bg-[#030705]/95 backdrop-blur-md border-b border-emerald-900/40 text-slate-100 transition-all">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+      <div className="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16 sm:h-20 gap-2">
           
           {/* LOGO */}
           <button
             onClick={navigateToHome}
-            className="flex items-center group text-left focus:outline-none py-1"
+            className="flex items-center group text-left focus:outline-none py-1 shrink-0"
           >
             <img
               src="https://cdn.shopify.com/s/files/1/0610/4642/3631/files/Artboard_1_copy.png?v=1786431651"
               alt="The Revive Tech Logo"
               referrerPolicy="no-referrer"
-              className="h-10 sm:h-12 w-auto max-w-[200px] sm:max-w-[240px] object-contain transition-transform duration-300 group-hover:scale-105"
+              className="h-7 xs:h-8 sm:h-11 w-auto max-w-[120px] xs:max-w-[150px] sm:max-w-[240px] object-contain transition-transform duration-300 group-hover:scale-105"
             />
           </button>
 
@@ -149,7 +148,7 @@ export const Header: React.FC = () => {
           </nav>
 
           {/* RIGHT ACTION BUTTONS */}
-          <div className="flex items-center gap-3 sm:gap-4">
+          <div className="flex items-center gap-1.5 xs:gap-2.5 sm:gap-4 shrink-0">
             
             {/* SEARCH BUTTON (CMD+K) */}
             <button
@@ -167,16 +166,17 @@ export const Header: React.FC = () => {
             {/* MOBILE SEARCH ICON */}
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="sm:hidden p-2 text-slate-300 hover:text-white"
+              className="sm:hidden p-1.5 text-slate-300 hover:text-white"
+              aria-label="Search Store"
             >
-              <Search className="w-5 h-5" />
+              <Search className="w-5 h-5 text-emerald-400" />
             </button>
 
             {/* COMPARE ICON */}
             {compareHandles.length > 0 && (
               <button
                 onClick={() => setIsCompareOpen(true)}
-                className="relative p-2 text-slate-300 hover:text-emerald-400 transition-colors"
+                className="relative p-1.5 text-slate-300 hover:text-emerald-400 transition-colors"
                 title="Compare Products"
               >
                 <Layers className="w-5 h-5" />
@@ -189,7 +189,7 @@ export const Header: React.FC = () => {
             {/* WISHLIST ICON */}
             <button
               onClick={() => setIsWishlistOpen(true)}
-              className="relative p-2 text-slate-300 hover:text-emerald-400 transition-colors"
+              className="relative p-1.5 text-slate-300 hover:text-emerald-400 transition-colors"
               title="Wishlist"
             >
               <Heart className="w-5 h-5" />
@@ -203,7 +203,7 @@ export const Header: React.FC = () => {
             {/* ACCOUNT ICON */}
             <button
               onClick={navigateToAccount}
-              className={`p-2 transition-colors ${
+              className={`p-1.5 transition-colors ${
                 customer ? "text-emerald-400" : "text-slate-300 hover:text-white"
               }`}
               title={customer ? `Account: ${customer.firstName}` : "Sign In"}
@@ -214,11 +214,11 @@ export const Header: React.FC = () => {
             {/* CART BUTTON */}
             <button
               onClick={() => setIsCartOpen(true)}
-              className="relative bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-4 py-2 rounded-xl flex items-center gap-2 transition-all shadow-md shadow-emerald-950/50 active:scale-95"
+              className="relative bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-xl flex items-center gap-1.5 transition-all shadow-md active:scale-95"
             >
               <ShoppingBag className="w-4 h-4" />
               <span className="hidden sm:inline text-xs uppercase tracking-wider">Cart</span>
-              <span className="bg-slate-950 text-emerald-400 text-xs font-mono font-bold px-2 py-0.5 rounded-md ml-1">
+              <span className="bg-slate-950 text-emerald-400 text-xs font-mono font-bold px-1.5 py-0.5 rounded-md">
                 {cartCount}
               </span>
             </button>
@@ -226,10 +226,10 @@ export const Header: React.FC = () => {
             {/* MOBILE HAMBURGER BUTTON */}
             <button
               onClick={() => setIsMobileNavOpen(true)}
-              className="lg:hidden p-2 text-slate-300 hover:text-white"
+              className="lg:hidden p-1.5 text-slate-300 hover:text-white rounded-lg focus:outline-none active:scale-95"
               aria-label="Open Mobile Menu"
             >
-              <MenuIcon className="w-6 h-6" />
+              <MenuIcon className="w-6 h-6 text-emerald-400" />
             </button>
 
           </div>
@@ -239,9 +239,6 @@ export const Header: React.FC = () => {
 
       {/* MEGA MENU OVERLAY */}
       <MegaMenu isOpen={isMegaMenuOpen} onClose={() => setIsMegaMenuOpen(false)} />
-
-      {/* MOBILE DRAWER NAV */}
-      <MobileNav isOpen={isMobileNavOpen} onClose={() => setIsMobileNavOpen(false)} />
     </header>
   );
 };

@@ -54,7 +54,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className = "
   return (
     <div
       onClick={() => navigateToProduct(product.handle)}
-      className={`group/productcard relative bg-slate-900/90 rounded-xl overflow-hidden border border-emerald-900/30 hover:border-emerald-500/60 transition-all duration-300 hover:shadow-[0_12px_30px_rgba(16,185,129,0.15)] flex flex-col justify-between cursor-pointer h-full select-none ${className}`}
+      className={`group/productcard relative bg-gradient-to-b from-[#082015] via-[#04140c] to-[#020b06] rounded-xl overflow-hidden border-[0.5px] border-emerald-950/80 transition-all duration-300 hover:border-[#BFFF2B]/70 hover:shadow-[0_8px_25px_rgba(191,255,43,0.1)] flex flex-col justify-between cursor-pointer h-full select-none ${className}`}
     >
       {/* Badges */}
       <div className="absolute top-2.5 left-2.5 z-10 flex flex-col gap-1.5 pointer-events-none">
@@ -71,7 +71,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className = "
       </div>
 
       {/* Image Container with Hover Second Image */}
-      <div className="relative aspect-square w-full overflow-hidden bg-slate-950/80">
+      <div className="relative aspect-square w-full overflow-hidden bg-[#020b05]/90">
         {primaryImage ? (
           <>
             {/* Primary Image */}

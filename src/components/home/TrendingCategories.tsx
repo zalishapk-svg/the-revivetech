@@ -83,9 +83,6 @@ export const TrendingCategories: React.FC = () => {
                 <h3 className="text-base font-bold text-white group-hover/colcard:text-emerald-300 transition-colors">
                   {col.title}
                 </h3>
-                <p className="text-xs font-mono font-semibold text-emerald-400 mt-1">
-                  {col.products?.length || col.productsCount || 0} Products
-                </p>
               </div>
             </div>
           ))}

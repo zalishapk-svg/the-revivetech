@@ -32,7 +32,7 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onClose }) => {
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold font-mono text-emerald-400 uppercase tracking-widest bg-emerald-950 px-3 py-1 rounded border border-emerald-800/60 inline-flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                  STORE COLLECTIONS ({collections.length})
+                  STORE COLLECTIONS
                 </span>
               </div>
 
@@ -43,7 +43,7 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onClose }) => {
                 }}
                 className="text-xs font-bold font-mono text-emerald-400 hover:text-emerald-300 inline-flex items-center gap-1.5 hover:underline"
               >
-                View Collections Directory ({collections.length}) <ArrowRight className="w-3.5 h-3.5" />
+                View Collections Directory <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
 
@@ -84,9 +84,6 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onClose }) => {
                         <h4 className="font-bold text-sm text-white group-hover:text-emerald-300 transition-colors line-clamp-1">
                           {col.title}
                         </h4>
-                        <p className="text-[11px] font-mono text-slate-400 line-clamp-1 mt-0.5">
-                          {col.products?.length || 0} Products
-                        </p>
                       </div>
 
                       <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all shrink-0" />

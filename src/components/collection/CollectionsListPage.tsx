@@ -3,7 +3,16 @@ import { Grid, ArrowRight, Layers, Tag } from "lucide-react";
 import { useShopify } from "../../context/ShopifyContext";
 
 export const CollectionsListPage: React.FC = () => {
-  const { collections, navigateToCollection, products } = useShopify();
+  const { 
+    collections, navigateToCollection, products,
+    hasMoreCollections, isFetchingMoreCollections, fetchAllCollections
+  } = useShopify();
+
+  React.useEffect(() => {
+    if (hasMoreCollections && !isFetchingMoreCollections) {
+      fetchAllCollections();
+    }
+  }, [hasMoreCollections, isFetchingMoreCollections]);
 
   return (
     <div className="bg-[#030e07] text-slate-100 min-h-screen py-10">

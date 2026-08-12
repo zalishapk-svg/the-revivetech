@@ -1,9 +1,25 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Heart, Layers, ShoppingBag, Star, ShieldCheck, Truck, RotateCcw, Check, Sparkles, Share2, Eye } from "lucide-react";
+import {
+  Heart,
+  Layers,
+  ShoppingBag,
+  Star,
+  ShieldCheck,
+  Truck,
+  RotateCcw,
+  CheckCircle,
+  ThumbsUp,
+  MapPin,
+  MessageSquare,
+  Sparkles,
+  Share2,
+  Eye,
+} from "lucide-react";
 import { ProductCarousel } from "../common/ProductCarousel";
 import { useShopify } from "../../context/ShopifyContext";
 import { formatMoney, calculateDiscount } from "../../lib/utils";
+import { getProductReviews } from "../../lib/reviews";
 
 interface ProductPageProps {
   handle: string;
@@ -22,6 +38,10 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
   } = useShopify();
 
   const product = products.find((p) => p.handle === handle) || products[0];
+
+  const reviewSummary = useMemo(() => {
+    return product ? getProductReviews(product) : { reviews: [], averageRating: 4.9, totalReviews: 0, ratingBreakdown: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 } };
+  }, [product?.handle, product?.id]);
 
   const [selectedImageIdx, setSelectedImageIdx] = useState(0);
   const [selectedVariantId, setSelectedVariantId] = useState<string | undefined>(
@@ -113,11 +133,18 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
               <div className="flex items-center gap-2 mt-3 text-xs">
                 <div className="flex text-amber-400">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-amber-400" />
+                    <Star
+                      key={i}
+                      className={`w-4 h-4 ${
+                        i < Math.round(reviewSummary.averageRating)
+                          ? "fill-amber-400 text-amber-400"
+                          : "text-slate-600"
+                      }`}
+                    />
                   ))}
                 </div>
-                <span className="font-bold text-white">{product.rating || 4.9}</span>
-                <span className="text-slate-400">({product.reviewsCount} verified reviews)</span>
+                <span className="font-bold text-white font-mono">{reviewSummary.averageRating}</span>
+                <span className="text-slate-400">({reviewSummary.totalReviews} customer reviews)</span>
               </div>
             </div>
 
@@ -241,7 +268,7 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
                 activeTab === "reviews" ? "border-emerald-400 text-emerald-400" : "border-transparent text-slate-400 hover:text-white"
               }`}
             >
-              Verified Reviews ({product.reviewsCount})
+              Customer Reviews ({reviewSummary.totalReviews})
             </button>
           </div>
 
@@ -262,20 +289,115 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
             )}
 
             {activeTab === "reviews" && (
-              <div className="space-y-4">
-                <div className="p-4 bg-slate-950 rounded-2xl border border-emerald-900/30 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <div className="flex text-amber-400">
+              <div className="space-y-6">
+                {/* Summary Box */}
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-6 p-6 bg-slate-950/80 rounded-2xl border border-emerald-900/40 items-center">
+                  {/* Left: Rating & Stars */}
+                  <div className="md:col-span-4 text-center md:text-left space-y-1 border-b md:border-b-0 md:border-r border-emerald-900/30 pb-4 md:pb-0 md:pr-4">
+                    <div className="flex items-baseline justify-center md:justify-start gap-2">
+                      <span className="text-4xl font-black text-white font-mono">{reviewSummary.averageRating}</span>
+                      <span className="text-sm text-slate-400 font-mono">/ 5.0</span>
+                    </div>
+                    <div className="flex justify-center md:justify-start text-amber-400">
                       {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="w-3.5 h-3.5 fill-amber-400" />
+                        <Star
+                          key={i}
+                          className={`w-4 h-4 ${
+                            i < Math.round(reviewSummary.averageRating)
+                              ? "fill-amber-400 text-amber-400"
+                              : "text-slate-600"
+                          }`}
+                        />
                       ))}
                     </div>
-                    <span className="font-bold text-white">Alexey V.</span>
-                    <span className="text-[10px] text-emerald-400 font-mono">Verified Buyer</span>
+                    <p className="text-xs text-slate-300 font-medium">
+                      Based on <strong className="text-emerald-400">{reviewSummary.totalReviews} customer reviews</strong>
+                    </p>
                   </div>
-                  <p className="text-xs text-slate-300">
-                    Remarkable build quality. Zero creaking or flex under hard grip. The optical switches feel tactile and insanely fast.
-                  </p>
+
+                  {/* Center: Rating Breakdown */}
+                  <div className="md:col-span-5 space-y-1.5 font-mono text-xs">
+                    {[5, 4, 3, 2, 1].map((stars) => {
+                      const count = reviewSummary.ratingBreakdown[stars as keyof typeof reviewSummary.ratingBreakdown] || 0;
+                      const pct = reviewSummary.totalReviews ? Math.round((count / reviewSummary.totalReviews) * 100) : 0;
+                      return (
+                        <div key={stars} className="flex items-center gap-2">
+                          <span className="w-8 text-slate-400 shrink-0 text-right">{stars} ★</span>
+                          <div className="flex-1 h-2 bg-slate-900 rounded-full overflow-hidden border border-emerald-950">
+                            <div
+                              className="h-full bg-emerald-400 rounded-full transition-all duration-300"
+                              style={{ width: `${pct}%` }}
+                            />
+                          </div>
+                          <span className="w-10 text-slate-400 shrink-0 text-left text-[11px]">{pct}%</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Right: Guarantee Badge */}
+                  <div className="md:col-span-3 bg-emerald-950/40 p-3.5 rounded-xl border border-emerald-800/40 text-center space-y-1.5">
+                    <ShieldCheck className="w-6 h-6 text-emerald-400 mx-auto" />
+                    <p className="text-[11px] font-bold text-emerald-300">Verified Customer Reviews</p>
+                    <p className="text-[10px] text-slate-400 leading-tight">
+                      Authentic feedback from tech enthusiasts across Pakistan.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Reviews List */}
+                <div className="space-y-4 pt-2">
+                  {reviewSummary.reviews.map((rev) => (
+                    <div
+                      key={rev.id}
+                      className="p-5 bg-slate-950/90 rounded-2xl border border-emerald-900/40 hover:border-emerald-800/60 transition-colors space-y-3"
+                    >
+                      {/* Review Header */}
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex items-center gap-3">
+                          {/* Avatar Circle */}
+                          <div className="w-9 h-9 rounded-full bg-emerald-950 border border-emerald-700/60 flex items-center justify-center text-emerald-300 font-bold font-mono text-sm shadow-inner shrink-0">
+                            {rev.author.charAt(0)}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-bold text-white text-xs sm:text-sm">{rev.author}</h4>
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold font-mono text-emerald-400 bg-emerald-950 px-2 py-0.5 rounded border border-emerald-800/60">
+                                <CheckCircle className="w-3 h-3 fill-emerald-400 text-slate-950" />
+                                Verified Buyer
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 text-[11px] text-slate-400 mt-0.5">
+                              <span className="flex items-center gap-1 text-slate-400">
+                                <MapPin className="w-3 h-3 text-emerald-400 shrink-0" />
+                                {rev.location}, PK
+                              </span>
+                              <span>•</span>
+                              <span>{rev.date}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Stars */}
+                        <div className="flex text-amber-400">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`w-3.5 h-3.5 ${
+                                i < rev.rating ? "fill-amber-400 text-amber-400" : "text-slate-700"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Review Content */}
+                      <div className="space-y-1 pl-0 sm:pl-12">
+                        <h5 className="font-bold text-emerald-300 text-xs sm:text-sm">{rev.title}</h5>
+                        <p className="text-xs text-slate-200 leading-relaxed font-sans">{rev.comment}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}

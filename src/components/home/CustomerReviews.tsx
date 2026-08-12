@@ -1,9 +1,10 @@
 import React from "react";
 import { Star, CheckCircle, Quote } from "lucide-react";
 
-const GOOGLE_REVIEWS = [
+const STORE_REVIEWS = [
   {
     name: "Ahmad Raza",
+    location: "Lahore",
     date: "2 weeks ago",
     comment: "Ordered IEMs and gaming mouse pad. Received 100% authentic original products within 2 days in Lahore. Outstanding packaging!",
     rating: 5,
@@ -11,6 +12,7 @@ const GOOGLE_REVIEWS = [
   },
   {
     name: "Zain Ul Abideen",
+    location: "Karachi",
     date: "1 month ago",
     comment: "The Revive Tech is the best place in Pakistan for genuine gaming gear. Bought Edifier speakers and Nanoleaf light panels. Super fast response!",
     rating: 5,
@@ -18,6 +20,7 @@ const GOOGLE_REVIEWS = [
   },
   {
     name: "Hamza Malik",
+    location: "Islamabad",
     date: "3 weeks ago",
     comment: "Great customer service and official brand warranty support. EasySMX controller works flawlessly with PC and Switch.",
     rating: 5,
@@ -33,9 +36,8 @@ export const CustomerReviews: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-10 pb-4 border-b border-emerald-900/40">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              {/* Google G Colors */}
               <span className="font-bold text-sm text-slate-200 font-mono tracking-wider">
-                Google Business Rating
+                Store Satisfaction Rating
               </span>
               <div className="flex text-amber-400 items-center gap-0.5">
                 {[...Array(5)].map((_, i) => (
@@ -47,16 +49,16 @@ export const CustomerReviews: React.FC = () => {
               </span>
             </div>
             <h2 className="text-2xl sm:text-4xl font-extrabold text-white">
-              Google Reviews
+              Customer Feedback
             </h2>
           </div>
           <p className="text-xs text-slate-400 font-mono max-w-sm">
-            Verified customer ratings and reviews directly from happy tech enthusiasts across Pakistan.
+            Verified buyer ratings and feedback directly from tech enthusiasts across Pakistan.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {GOOGLE_REVIEWS.map((rev, idx) => (
+          {STORE_REVIEWS.map((rev, idx) => (
             <div
               key={idx}
               className="bg-slate-900 border border-emerald-900/40 p-6 rounded-2xl space-y-4 relative hover:border-emerald-500/40 transition-colors"
@@ -82,8 +84,8 @@ export const CustomerReviews: React.FC = () => {
                   </h3>
                   <CheckCircle className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400/20" />
                 </div>
-                <span className="text-[10px] font-mono text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
-                  Verified Google Review
+                <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950 px-2 py-0.5 rounded border border-emerald-800">
+                  Verified Buyer ({rev.location})
                 </span>
               </div>
             </div>

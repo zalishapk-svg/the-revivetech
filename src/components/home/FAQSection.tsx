@@ -3,8 +3,8 @@ import { ChevronDown, HelpCircle } from "lucide-react";
 
 const FAQS = [
   {
-    q: "How does TheReviveTech Headless Storefront connect to Shopify?",
-    a: "Our frontend is built completely independently using React + Next.js App Router and communicates directly with the official Shopify Storefront GraphQL API. Orders and checkout are processed natively through Shopify's secure PCI-DSS compliant checkout engine.",
+    q: "How does TheReviveTech ensure 100% authentic products?",
+    a: "All items in our store are sourced directly from authorized brand distributors with verified serial numbers and official manufacturer warranties. We guarantee 100% genuine hardware with full warranty support.",
   },
   {
     q: "What is 8000Hz HyperPolling and does my computer support it?",

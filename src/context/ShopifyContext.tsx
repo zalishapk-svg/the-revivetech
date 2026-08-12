@@ -30,6 +30,22 @@ interface ShopifyContextType {
   isLoadingData: boolean;
   refreshData: () => Promise<void>;
 
+  // Progressive Pagination & Background Prefetching
+  hasMoreProducts: boolean;
+  isFetchingMoreProducts: boolean;
+  fetchMoreProducts: () => Promise<void>;
+  fetchAllProducts: () => Promise<void>;
+
+  hasMoreArticles: boolean;
+  isFetchingMoreArticles: boolean;
+  fetchMoreArticles: () => Promise<void>;
+  fetchAllArticles: () => Promise<void>;
+
+  hasMoreCollections: boolean;
+  isFetchingMoreCollections: boolean;
+  fetchMoreCollections: () => Promise<void>;
+  fetchAllCollections: () => Promise<void>;
+
   // Live Shopify Store Domain Config
   storeDomain: string;
   isMockShop: boolean;
@@ -71,6 +87,10 @@ interface ShopifyContextType {
   // Global Search Modal (CMD+K)
   isSearchOpen: boolean;
   setIsSearchOpen: (open: boolean) => void;
+
+  // Mobile Off-Canvas Nav Drawer
+  isMobileNavOpen: boolean;
+  setIsMobileNavOpen: (open: boolean) => void;
 
   // Recently Viewed
   recentlyViewedHandles: string[];
@@ -235,6 +255,7 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
   // Quick View & Search
   const [quickViewHandle, setQuickViewHandle] = useState<string | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState<boolean>(false);
 
   // Recently Viewed
   const [recentlyViewedHandles, setRecentlyViewedHandles] = useState<string[]>(() => {
@@ -302,18 +323,40 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
     } catch (e) { console.error(e); }
   }, [recentlyViewedHandles]);
 
-  // Load Shopify Data
+  // Cursor Pagination & Progressive Loading State
+  const [productCursor, setProductCursor] = useState<string | null>(null);
+  const [hasMoreProducts, setHasMoreProducts] = useState<boolean>(false);
+  const [isFetchingMoreProducts, setIsFetchingMoreProducts] = useState<boolean>(false);
+
+  const [articleCursor, setArticleCursor] = useState<string | null>(null);
+  const [hasMoreArticles, setHasMoreArticles] = useState<boolean>(false);
+  const [isFetchingMoreArticles, setIsFetchingMoreArticles] = useState<boolean>(false);
+
+  const [collectionCursor, setCollectionCursor] = useState<string | null>(null);
+  const [hasMoreCollections, setHasMoreCollections] = useState<boolean>(false);
+  const [isFetchingMoreCollections, setIsFetchingMoreCollections] = useState<boolean>(false);
+
+  // Load Initial Shopify Data (Fast critical rendering batch)
   const loadShopifyData = async () => {
     setIsLoadingData(true);
     try {
-      const [prods, cols, arts] = await Promise.all([
-        getProductsFromShopify(),
-        getCollectionsFromShopify(),
-        getBlogArticlesFromShopify(),
+      const [pRes, cRes, aRes] = await Promise.all([
+        getProductsFromShopify({ first: 30 }),
+        getCollectionsFromShopify({ first: 12 }),
+        getBlogArticlesFromShopify({ first: 12 }),
       ]);
-      setProducts(prods);
-      setCollections(cols);
-      setArticles(arts);
+
+      setProducts(pRes.products);
+      setProductCursor(pRes.pageInfo.endCursor);
+      setHasMoreProducts(pRes.pageInfo.hasNextPage);
+
+      setCollections(cRes.collections);
+      setCollectionCursor(cRes.pageInfo.endCursor);
+      setHasMoreCollections(cRes.pageInfo.hasNextPage);
+
+      setArticles(aRes.articles);
+      setArticleCursor(aRes.pageInfo.endCursor);
+      setHasMoreArticles(aRes.pageInfo.hasNextPage);
 
       // Check current backend config
       const res = await fetch("/api/shopify/config");
@@ -332,6 +375,177 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
   useEffect(() => {
     loadShopifyData();
   }, []);
+
+  // Fetch Next Products Batch
+  const fetchMoreProducts = async () => {
+    if (!hasMoreProducts || isFetchingMoreProducts || !productCursor) return;
+    setIsFetchingMoreProducts(true);
+    try {
+      const res = await getProductsFromShopify({ first: 30, after: productCursor });
+      if (res.products.length > 0) {
+        setProducts((prev) => {
+          const existingIds = new Set(prev.map((p) => p.id));
+          const newProducts = res.products.filter((p) => !existingIds.has(p.id));
+          return [...prev, ...newProducts];
+        });
+      }
+      setProductCursor(res.pageInfo.endCursor);
+      setHasMoreProducts(res.pageInfo.hasNextPage);
+    } catch (err) {
+      console.error("Error fetching more products:", err);
+    } finally {
+      setIsFetchingMoreProducts(false);
+    }
+  };
+
+  // Fetch ALL remaining products progressively until complete
+  const fetchAllProducts = async () => {
+    let currentHasMore = hasMoreProducts;
+    let currentCursor = productCursor;
+    while (currentHasMore && currentCursor) {
+      setIsFetchingMoreProducts(true);
+      try {
+        const res = await getProductsFromShopify({ first: 40, after: currentCursor });
+        if (res.products.length > 0) {
+          setProducts((prev) => {
+            const existingIds = new Set(prev.map((p) => p.id));
+            const newProducts = res.products.filter((p) => !existingIds.has(p.id));
+            return [...prev, ...newProducts];
+          });
+        }
+        currentCursor = res.pageInfo.endCursor;
+        currentHasMore = res.pageInfo.hasNextPage;
+        setProductCursor(currentCursor);
+        setHasMoreProducts(currentHasMore);
+      } catch (err) {
+        console.error("Error fetching all products:", err);
+        break;
+      } finally {
+        setIsFetchingMoreProducts(false);
+      }
+    }
+  };
+
+  // Fetch Next Articles Batch
+  const fetchMoreArticles = async () => {
+    if (!hasMoreArticles || isFetchingMoreArticles || !articleCursor) return;
+    setIsFetchingMoreArticles(true);
+    try {
+      const res = await getBlogArticlesFromShopify({ first: 12, after: articleCursor });
+      if (res.articles.length > 0) {
+        setArticles((prev) => {
+          const existingIds = new Set(prev.map((a) => a.id));
+          const newArticles = res.articles.filter((a) => !existingIds.has(a.id));
+          return [...prev, ...newArticles];
+        });
+      }
+      setArticleCursor(res.pageInfo.endCursor);
+      setHasMoreArticles(res.pageInfo.hasNextPage);
+    } catch (err) {
+      console.error("Error fetching more articles:", err);
+    } finally {
+      setIsFetchingMoreArticles(false);
+    }
+  };
+
+  // Fetch ALL remaining articles progressively until complete
+  const fetchAllArticles = async () => {
+    let currentHasMore = hasMoreArticles;
+    let currentCursor = articleCursor;
+    while (currentHasMore && currentCursor) {
+      setIsFetchingMoreArticles(true);
+      try {
+        const res = await getBlogArticlesFromShopify({ first: 20, after: currentCursor });
+        if (res.articles.length > 0) {
+          setArticles((prev) => {
+            const existingIds = new Set(prev.map((a) => a.id));
+            const newArticles = res.articles.filter((a) => !existingIds.has(a.id));
+            return [...prev, ...newArticles];
+          });
+        }
+        currentCursor = res.pageInfo.endCursor;
+        currentHasMore = res.pageInfo.hasNextPage;
+        setArticleCursor(currentCursor);
+        setHasMoreArticles(currentHasMore);
+      } catch (err) {
+        console.error("Error fetching all articles:", err);
+        break;
+      } finally {
+        setIsFetchingMoreArticles(false);
+      }
+    }
+  };
+
+  // Fetch Next Collections Batch
+  const fetchMoreCollections = async () => {
+    if (!hasMoreCollections || isFetchingMoreCollections || !collectionCursor) return;
+    setIsFetchingMoreCollections(true);
+    try {
+      const res = await getCollectionsFromShopify({ first: 12, after: collectionCursor });
+      if (res.collections.length > 0) {
+        setCollections((prev) => {
+          const existingIds = new Set(prev.map((c) => c.id));
+          const newCols = res.collections.filter((c) => !existingIds.has(c.id));
+          return [...prev, ...newCols];
+        });
+      }
+      setCollectionCursor(res.pageInfo.endCursor);
+      setHasMoreCollections(res.pageInfo.hasNextPage);
+    } catch (err) {
+      console.error("Error fetching more collections:", err);
+    } finally {
+      setIsFetchingMoreCollections(false);
+    }
+  };
+
+  // Fetch ALL remaining collections progressively until complete
+  const fetchAllCollections = async () => {
+    let currentHasMore = hasMoreCollections;
+    let currentCursor = collectionCursor;
+    while (currentHasMore && currentCursor) {
+      setIsFetchingMoreCollections(true);
+      try {
+        const res = await getCollectionsFromShopify({ first: 20, after: currentCursor });
+        if (res.collections.length > 0) {
+          setCollections((prev) => {
+            const existingIds = new Set(prev.map((c) => c.id));
+            const newCols = res.collections.filter((c) => !existingIds.has(c.id));
+            return [...prev, ...newCols];
+          });
+        }
+        currentCursor = res.pageInfo.endCursor;
+        currentHasMore = res.pageInfo.hasNextPage;
+        setCollectionCursor(currentCursor);
+        setHasMoreCollections(currentHasMore);
+      } catch (err) {
+        console.error("Error fetching all collections:", err);
+        break;
+      } finally {
+        setIsFetchingMoreCollections(false);
+      }
+    }
+  };
+
+  // Non-blocking background prefetch task after initial critical load finishes
+  useEffect(() => {
+    if (!isLoadingData && (hasMoreProducts || hasMoreArticles || hasMoreCollections)) {
+      const timer = setTimeout(() => {
+        const runBackgroundPrefetch = async () => {
+          if (hasMoreProducts && !isFetchingMoreProducts) {
+            await fetchMoreProducts();
+          }
+          if (hasMoreArticles && !isFetchingMoreArticles) {
+            await fetchMoreArticles();
+          }
+          if (hasMoreCollections && !isFetchingMoreCollections) {
+            await fetchMoreCollections();
+          }
+        };
+        runBackgroundPrefetch();
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoadingData, hasMoreProducts, hasMoreArticles, hasMoreCollections, isFetchingMoreProducts, isFetchingMoreArticles, isFetchingMoreCollections]);
 
   const updateStoreConfig = async (domain: string, token: string): Promise<boolean> => {
     try {
@@ -558,6 +772,18 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
         articles,
         isLoadingData,
         refreshData: loadShopifyData,
+        hasMoreProducts,
+        isFetchingMoreProducts,
+        fetchMoreProducts,
+        fetchAllProducts,
+        hasMoreArticles,
+        isFetchingMoreArticles,
+        fetchMoreArticles,
+        fetchAllArticles,
+        hasMoreCollections,
+        isFetchingMoreCollections,
+        fetchMoreCollections,
+        fetchAllCollections,
         storeDomain,
         isMockShop,
         updateStoreConfig,
@@ -588,6 +814,8 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
         setQuickViewHandle,
         isSearchOpen,
         setIsSearchOpen,
+        isMobileNavOpen,
+        setIsMobileNavOpen,
         recentlyViewedHandles,
         addRecentlyViewed,
         customer,

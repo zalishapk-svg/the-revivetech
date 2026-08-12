@@ -17,8 +17,16 @@ interface ShopPageProps {
 export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSalePage = false }) => {
   const { 
     viewState, products, collections, addToCart, toggleWishlist, isInWishlist, 
-    toggleCompare, isInCompare, setQuickViewHandle, navigateToProduct, navigateToCollection 
+    toggleCompare, isInCompare, setQuickViewHandle, navigateToProduct, navigateToCollection,
+    hasMoreProducts, isFetchingMoreProducts, fetchMoreProducts, fetchAllProducts
   } = useShopify();
+
+  // Accelerate fetching all remaining catalog products when shop page is opened
+  useEffect(() => {
+    if (hasMoreProducts && !isFetchingMoreProducts) {
+      fetchAllProducts();
+    }
+  }, [hasMoreProducts, isFetchingMoreProducts]);
 
   const isExplore = isExploreAll || viewState.type === "explore_all";
   const isSale = isSalePage || viewState.type === "sale";

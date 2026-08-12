@@ -457,12 +457,27 @@ app.get("/api/shopify/auth/callback", async (req, res) => {
   }
 });
 
-// Storefront GraphQL Proxy
+// Storefront GraphQL Proxy with 5-minute In-Memory Query Cache
+const storefrontCache = new Map<string, { timestamp: number; data: any }>();
+const STOREFRONT_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
 app.post("/api/shopify/graphql", async (req, res) => {
   try {
     const { query, variables } = req.body || {};
     if (!query) {
       return res.status(400).json({ error: "Missing GraphQL query" });
+    }
+
+    const isMutation = query.trim().startsWith("mutation");
+    const cacheKey = JSON.stringify({ query, variables: variables || {} });
+
+    if (!isMutation && storefrontCache.has(cacheKey)) {
+      const cached = storefrontCache.get(cacheKey)!;
+      if (Date.now() - cached.timestamp < STOREFRONT_CACHE_TTL_MS) {
+        return res.status(200).json(cached.data);
+      } else {
+        storefrontCache.delete(cacheKey);
+      }
     }
 
     const config = getConfig();
@@ -486,6 +501,11 @@ app.post("/api/shopify/graphql", async (req, res) => {
     });
 
     const data = await response.json();
+
+    if (!isMutation && response.ok && data && !data.errors) {
+      storefrontCache.set(cacheKey, { timestamp: Date.now(), data });
+    }
+
     return res.status(response.status).json(data);
   } catch (error: any) {
     console.error("Shopify Storefront Proxy Error:", error);

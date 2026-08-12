@@ -30,9 +30,9 @@ export const AboutPage: React.FC = () => {
     },
     {
       year: "2026",
-      title: "Headless E-Commerce Era",
-      desc: "Launched our state-of-the-art Next.js & Shopify Headless storefront, providing instant page transitions, real-time inventory synchronization, and zero-latency battlestation customization.",
-      badge: "Next Chapter"
+      title: "Built for Modern Tech",
+      desc: "We continue to grow with one simple goal: making quality technology, computer hardware, gaming essentials, and everyday tech easier to discover and purchase. From carefully selected products to a smooth shopping experience, we're focused on bringing reliable technology closer to our customers.",
+      badge: "Our Next Chapter"
     }
   ];
 
@@ -119,7 +119,7 @@ export const AboutPage: React.FC = () => {
             </div>
             <h3 className="text-xl font-bold text-white">Brand Vision</h3>
             <p className="text-xs text-slate-300 leading-relaxed">
-              To become South Asia's leading headless tech hardware ecosystem—pioneering ultra-fast e-commerce, custom keyboard assembly labs, and official gaming gear distribution across the region.
+              To become South Asia's premier gaming & technology destination—bringing official hardware, custom mechanical keyboards, and top-tier accessories directly to creators and gamers.
             </p>
           </div>
         </div>

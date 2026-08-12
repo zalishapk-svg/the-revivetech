@@ -30,12 +30,53 @@ export const CollectionPage: React.FC<CollectionPageProps> = ({ handle }) => {
     let isMounted = true;
     if (handle) {
       setIsLoadingCollection(true);
-      getCollectionByHandleFromShopify(handle).then((res) => {
-        if (isMounted && res) {
-          setLiveCollection(res);
+      
+      const loadCollectionProgressively = async () => {
+        try {
+          // Initial batch (fast critical load)
+          const firstPage = await getCollectionByHandleFromShopify(handle, { first: 30 });
+          if (!isMounted) return;
+
+          if (firstPage && firstPage.collection) {
+            setLiveCollection(firstPage.collection);
+            setIsLoadingCollection(false);
+
+            // Progressive background loading for remaining pages of this collection
+            let hasNext = firstPage.pageInfo.hasNextPage;
+            let cursor = firstPage.pageInfo.endCursor;
+
+            while (hasNext && cursor && isMounted) {
+              const nextPage = await getCollectionByHandleFromShopify(handle, { first: 30, after: cursor });
+              if (!isMounted) break;
+
+              if (nextPage && nextPage.collection && nextPage.collection.products.length > 0) {
+                const newProds = nextPage.collection.products;
+                setLiveCollection((prev) => {
+                  if (!prev) return nextPage.collection;
+                  const existingIds = new Set(prev.products.map((p) => p.id));
+                  const filtered = newProds.filter((p) => !existingIds.has(p.id));
+                  const combined = [...prev.products, ...filtered];
+                  return {
+                    ...prev,
+                    products: combined,
+                    productsCount: combined.length,
+                  };
+                });
+              }
+
+              hasNext = nextPage.pageInfo.hasNextPage;
+              cursor = nextPage.pageInfo.endCursor;
+            }
+          } else {
+            setIsLoadingCollection(false);
+          }
+        } catch (err) {
+          console.error("Error loading collection progressively:", err);
+          if (isMounted) setIsLoadingCollection(false);
         }
-        if (isMounted) setIsLoadingCollection(false);
-      });
+      };
+
+      loadCollectionProgressively();
     }
     return () => { isMounted = false; };
   }, [handle]);

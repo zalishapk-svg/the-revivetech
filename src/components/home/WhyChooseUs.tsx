@@ -9,7 +9,7 @@ export const WhyChooseUs: React.FC = () => {
         <div className="text-center max-w-2xl mx-auto mb-12">
           <h2 className="text-2xl sm:text-4xl font-extrabold text-white">Why Choose TheReviveTech</h2>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Industry-leading warranties, zero-risk returns, and direct headless Shopify commerce.
+            Industry-leading warranties, zero-risk returns, and direct official brand support.
           </p>
         </div>
 

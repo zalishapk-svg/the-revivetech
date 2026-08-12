@@ -52,9 +52,9 @@ export const ContactPage: React.FC = () => {
               <MapPin className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="font-bold text-white text-sm mb-1">Lahore Headquarters</h4>
+              <h4 className="font-bold text-white text-sm mb-1">Lahore Store & Center</h4>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Suite 402, Hafeez Centre, Gulberg III, Lahore, Punjab, Pakistan
+                Commercial Market, 96-D, Block D, DHA EME Sector, Lahore, Punjab, Pakistan
               </p>
             </div>
             <span className="text-[10px] text-emerald-400 font-mono">Main Distribution Hub</span>
@@ -67,12 +67,11 @@ export const ContactPage: React.FC = () => {
             <div>
               <h4 className="font-bold text-white text-sm mb-1">Phone & WhatsApp</h4>
               <p className="text-xs text-slate-400 font-mono">
-                +92 300 1234567<br />
-                +92 42 35789000
+                0347 5799958
               </p>
             </div>
             <a 
-              href="https://wa.me/923001234567" 
+              href="https://wa.me/923475799958" 
               target="_blank" 
               rel="noreferrer"
               className="text-xs text-emerald-400 hover:underline flex items-center gap-1 font-semibold"
@@ -88,11 +87,10 @@ export const ContactPage: React.FC = () => {
             <div>
               <h4 className="font-bold text-white text-sm mb-1">Email Support</h4>
               <p className="text-xs text-slate-400 font-mono">
-                support@therevivetech.com<br />
-                rma@therevivetech.com
+                therevivetech@gmail.com
               </p>
             </div>
-            <span className="text-[10px] text-emerald-400 font-mono">Response within 2 hours</span>
+            <span className="text-[10px] text-emerald-400 font-mono">Fast Response Guaranteed</span>
           </div>
 
           <div className="bg-[#05140b] border border-emerald-900/40 rounded-2xl p-6 space-y-3 flex flex-col justify-between">
@@ -246,9 +244,9 @@ export const ContactPage: React.FC = () => {
               </div>
 
               <div className="flex items-center justify-between text-xs text-slate-400 pt-2 border-t border-emerald-900/40">
-                <span>Hafeez Centre, Lahore</span>
+                <span>DHA EME Sector, Lahore</span>
                 <a
-                  href="https://maps.google.com/?q=Hafeez+Centre+Lahore"
+                  href="https://maps.google.com/?q=DHA+EME+Sector+Lahore"
                   target="_blank"
                   rel="noreferrer"
                   className="text-emerald-400 hover:underline flex items-center gap-1 font-mono"

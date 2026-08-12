@@ -3,11 +3,12 @@ import { ShopifyProvider, useShopify } from "./context/ShopifyContext";
 import { SEOHead } from "./components/common/SEOHead";
 import { AnnouncementBar } from "./components/common/AnnouncementBar";
 import { Header } from "./components/common/Header";
-import { MobileNav } from "./components/common/MobileNav";
 import { Footer } from "./components/common/Footer";
+import { BottomNav } from "./components/common/BottomNav";
 import { CartDrawer } from "./components/common/CartDrawer";
 import { WishlistDrawer } from "./components/common/WishlistDrawer";
 import { CompareDrawer } from "./components/common/CompareDrawer";
+import { MobileNav } from "./components/common/MobileNav";
 
 // Dynamic lazy-loaded pages for optimized chunking
 const HomePage = lazy(() => import("./components/home/HomePage").then((m) => ({ default: m.HomePage })));
@@ -48,10 +49,9 @@ const MainLayout: React.FC = () => {
       {/* Header Navigation Stack */}
       <AnnouncementBar />
       <Header />
-      <MobileNav />
 
       {/* Dynamic Route View Switching */}
-      <main className="flex-1">
+      <main className="flex-1 pb-20 lg:pb-0">
         <Suspense fallback={<PageFallback />}>
           {currentType === "home" && <HomePage />}
           {(currentType === "shop" || currentType === "explore_all" || currentType === "sale") && (
@@ -77,11 +77,13 @@ const MainLayout: React.FC = () => {
 
       {/* Footer */}
       <Footer />
+      <BottomNav />
 
       {/* Drawers & Modals */}
       <CartDrawer />
       <WishlistDrawer />
       <CompareDrawer />
+      <MobileNav />
       <Suspense fallback={null}>
         <QuickViewModal />
         <SearchModal />

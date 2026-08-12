@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, ShoppingBag, Heart, Star, Check, ShieldCheck, Truck, ArrowRight } from "lucide-react";
 import { useShopify } from "../../context/ShopifyContext";
 import { formatMoney, calculateDiscount } from "../../lib/utils";
+import { getProductReviews } from "../../lib/reviews";
 
 export const QuickViewModal: React.FC = () => {
   const { quickViewHandle, setQuickViewHandle, products, addToCart, toggleWishlist, isInWishlist, navigateToProduct } = useShopify();
@@ -68,15 +69,27 @@ export const QuickViewModal: React.FC = () => {
                   {product.vendor}
                 </span>
                 <h2 className="text-xl font-extrabold text-white leading-tight mt-1">{product.title}</h2>
-                <div className="flex items-center gap-2 mt-2 text-xs">
-                  <div className="flex text-amber-400">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-3.5 h-3.5 fill-amber-400" />
-                    ))}
-                  </div>
-                  <span className="font-bold text-white">{product.rating || 4.9}</span>
-                  <span className="text-slate-400">({product.reviewsCount} reviews)</span>
-                </div>
+                {(() => {
+                  const revs = getProductReviews(product);
+                  return (
+                    <div className="flex items-center gap-2 mt-2 text-xs">
+                      <div className="flex text-amber-400">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`w-3.5 h-3.5 ${
+                              i < Math.round(revs.averageRating)
+                                ? "fill-amber-400 text-amber-400"
+                                : "text-slate-600"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <span className="font-bold text-white font-mono">{revs.averageRating}</span>
+                      <span className="text-slate-400">({revs.totalReviews} reviews)</span>
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Price */}

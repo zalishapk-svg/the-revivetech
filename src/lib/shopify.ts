@@ -3,7 +3,7 @@ import { Product, Collection, BlogArticle, Cart, Customer } from "../types";
 // GraphQL Query Strings for live Shopify Storefront API execution
 export const STOREFRONT_QUERIES = {
   GET_PRODUCTS: `
-    query getProducts($first: Int = 250, $after: String) {
+    query getProducts($first: Int = 30, $after: String) {
       products(first: $first, after: $after) {
         pageInfo {
           hasNextPage
@@ -16,7 +16,6 @@ export const STOREFRONT_QUERIES = {
             handle
             title
             description
-            descriptionHtml
             vendor
             productType
             tags
@@ -30,11 +29,11 @@ export const STOREFRONT_QUERIES = {
               maxVariantPrice { amount currencyCode }
             }
             featuredImage { id url altText width height }
-            images(first: 8) {
+            images(first: 2) {
               edges { node { id url altText width height } }
             }
             options { id name values }
-            variants(first: 10) {
+            variants(first: 5) {
               edges {
                 node {
                   id
@@ -96,8 +95,12 @@ export const STOREFRONT_QUERIES = {
   `,
 
   GET_COLLECTIONS: `
-    query getCollections($first: Int = 50) {
-      collections(first: $first) {
+    query getCollections($first: Int = 12, $after: String) {
+      collections(first: $first, after: $after) {
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
         edges {
           node {
             id
@@ -105,14 +108,13 @@ export const STOREFRONT_QUERIES = {
             title
             description
             image { id url altText }
-            products(first: 50) {
+            products(first: 8) {
               edges {
                 node {
                   id
                   handle
                   title
                   description
-                  descriptionHtml
                   vendor
                   productType
                   tags
@@ -126,11 +128,11 @@ export const STOREFRONT_QUERIES = {
                     maxVariantPrice { amount currencyCode }
                   }
                   featuredImage { id url altText width height }
-                  images(first: 8) {
+                  images(first: 2) {
                     edges { node { id url altText width height } }
                   }
                   options { id name values }
-                  variants(first: 10) {
+                  variants(first: 3) {
                     edges {
                       node {
                         id
@@ -153,21 +155,24 @@ export const STOREFRONT_QUERIES = {
   `,
 
   GET_COLLECTION_BY_HANDLE: `
-    query getCollectionByHandle($handle: String!, $first: Int = 100) {
+    query getCollectionByHandle($handle: String!, $first: Int = 30, $after: String) {
       collection(handle: $handle) {
         id
         handle
         title
         description
         image { id url altText }
-        products(first: $first) {
+        products(first: $first, after: $after) {
+          pageInfo {
+            hasNextPage
+            endCursor
+          }
           edges {
             node {
               id
               handle
               title
               description
-              descriptionHtml
               vendor
               productType
               tags
@@ -181,11 +186,11 @@ export const STOREFRONT_QUERIES = {
                 maxVariantPrice { amount currencyCode }
               }
               featuredImage { id url altText width height }
-              images(first: 8) {
+              images(first: 2) {
                 edges { node { id url altText width height } }
               }
               options { id name values }
-              variants(first: 10) {
+              variants(first: 5) {
                 edges {
                   node {
                     id
@@ -206,8 +211,33 @@ export const STOREFRONT_QUERIES = {
   `,
 
   GET_ARTICLES: `
-    query getArticles($first: Int = 100) {
-      articles(first: $first) {
+    query getArticles($first: Int = 12, $after: String) {
+      articles(first: $first, after: $after) {
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+        edges {
+          node {
+            id
+            handle
+            title
+            content
+            contentHtml
+            excerpt
+            publishedAt
+            authorV2 { name }
+            image { id url altText }
+            tags
+          }
+        }
+      }
+    }
+  `,
+
+  GET_ARTICLE_BY_HANDLE: `
+    query getArticleByHandle($handle: String!) {
+      articles(first: 10, query: $handle) {
         edges {
           node {
             id
@@ -786,74 +816,67 @@ export async function fetchShopifyGraphQL(query: string, variables: Record<strin
   }
 }
 
-// Storefront API Functions for Products, Collections, Blogs, Search, and Cart
-export async function getProductsFromShopify(): Promise<Product[]> {
-  let allProducts: Product[] = [];
-  let hasNextPage = true;
-  let cursor: string | null = null;
-  let safetyCounter = 0;
+export interface PageInfo {
+  hasNextPage: boolean;
+  endCursor: string | null;
+}
 
-  while (hasNextPage && safetyCounter < 3) {
-    safetyCounter++;
-    const result: any = await fetchShopifyGraphQL(STOREFRONT_QUERIES.GET_PRODUCTS, {
-      first: 250,
-      after: cursor,
+// Storefront API Functions for Products, Collections, Blogs, Search, and Cart
+export async function getProductsFromShopify(options?: { first?: number; after?: string | null }): Promise<{ products: Product[]; pageInfo: PageInfo }> {
+  const first = options?.first || 30;
+  const after = options?.after || null;
+
+  const result: any = await fetchShopifyGraphQL(STOREFRONT_QUERIES.GET_PRODUCTS, {
+    first,
+    after,
+  });
+
+  if (result && result.data && result.data.products && result.data.products.edges) {
+    const pageInfo: PageInfo = {
+      hasNextPage: Boolean(result.data.products.pageInfo?.hasNextPage),
+      endCursor: result.data.products.pageInfo?.endCursor || null,
+    };
+
+    const edges = result.data.products.edges;
+
+    const pageProducts: Product[] = edges.map((edge: any) => {
+      const node = edge.node;
+      return {
+        id: node.id,
+        handle: node.handle,
+        title: node.title,
+        description: node.description || "",
+        descriptionHtml: node.descriptionHtml || node.description || "",
+        vendor: node.vendor || "TheReviveTech",
+        productType: node.productType || "Hardware",
+        tags: node.tags || [],
+        availableForSale: node.availableForSale,
+        priceRange: {
+          minVariantPrice: node.priceRange?.minVariantPrice || { amount: "0.00", currencyCode: "USD" },
+          maxVariantPrice: node.priceRange?.maxVariantPrice || { amount: "0.00", currencyCode: "USD" },
+        },
+        compareAtPriceRange: node.compareAtPriceRange,
+        featuredImage: node.featuredImage || (node.images?.edges[0]?.node ? node.images.edges[0].node : null),
+        images: node.images?.edges?.map((e: any) => e.node) || [],
+        options: node.options || [],
+        variants: node.variants?.edges?.map((e: any) => ({
+          id: e.node.id,
+          title: e.node.title,
+          sku: e.node.sku,
+          availableForSale: e.node.availableForSale,
+          price: e.node.price,
+          compareAtPrice: e.node.compareAtPrice,
+          selectedOptions: e.node.selectedOptions,
+        })) || [],
+        rating: 4.8,
+        reviewsCount: 12,
+      };
     });
 
-    if (result && result.data && result.data.products && result.data.products.edges) {
-      const pageInfo = result.data.products.pageInfo;
-      const edges = result.data.products.edges;
-
-      const pageProducts: Product[] = edges.map((edge: any) => {
-        const node = edge.node;
-        return {
-          id: node.id,
-          handle: node.handle,
-          title: node.title,
-          description: node.description || "",
-          descriptionHtml: node.descriptionHtml || node.description || "",
-          vendor: node.vendor || "TheReviveTech",
-          productType: node.productType || "Hardware",
-          tags: node.tags || [],
-          availableForSale: node.availableForSale,
-          priceRange: {
-            minVariantPrice: node.priceRange?.minVariantPrice || { amount: "0.00", currencyCode: "USD" },
-            maxVariantPrice: node.priceRange?.maxVariantPrice || { amount: "0.00", currencyCode: "USD" },
-          },
-          compareAtPriceRange: node.compareAtPriceRange,
-          featuredImage: node.featuredImage || (node.images?.edges[0]?.node ? node.images.edges[0].node : null),
-          images: node.images?.edges?.map((e: any) => e.node) || [],
-          options: node.options || [],
-          variants: node.variants?.edges?.map((e: any) => ({
-            id: e.node.id,
-            title: e.node.title,
-            sku: e.node.sku,
-            availableForSale: e.node.availableForSale,
-            price: e.node.price,
-            compareAtPrice: e.node.compareAtPrice,
-            selectedOptions: e.node.selectedOptions,
-          })) || [],
-          rating: 4.8,
-          reviewsCount: 12,
-        };
-      });
-
-      allProducts = [...allProducts, ...pageProducts];
-
-      if (pageInfo && pageInfo.hasNextPage && pageInfo.endCursor) {
-        cursor = pageInfo.endCursor;
-      } else {
-        hasNextPage = false;
-      }
-    } else {
-      hasNextPage = false;
-    }
+    return { products: pageProducts, pageInfo };
   }
 
-  if (allProducts.length > 0) {
-    return allProducts;
-  }
-  return MOCK_TECH_PRODUCTS;
+  return { products: [], pageInfo: { hasNextPage: false, endCursor: null } };
 }
 
 export async function getProductByHandleFromShopify(handle: string): Promise<Product | null> {
@@ -896,9 +919,17 @@ export async function getProductByHandleFromShopify(handle: string): Promise<Pro
   return null;
 }
 
-export async function getCollectionsFromShopify(): Promise<Collection[]> {
-  const result = await fetchShopifyGraphQL(STOREFRONT_QUERIES.GET_COLLECTIONS, { first: 50 });
+export async function getCollectionsFromShopify(options?: { first?: number; after?: string | null }): Promise<{ collections: Collection[]; pageInfo: PageInfo }> {
+  const first = options?.first || 12;
+  const after = options?.after || null;
+
+  const result = await fetchShopifyGraphQL(STOREFRONT_QUERIES.GET_COLLECTIONS, { first, after });
   if (result && result.data && result.data.collections && result.data.collections.edges) {
+    const pageInfo: PageInfo = {
+      hasNextPage: Boolean(result.data.collections.pageInfo?.hasNextPage),
+      endCursor: result.data.collections.pageInfo?.endCursor || null,
+    };
+
     const liveCollections: Collection[] = result.data.collections.edges.map((edge: any) => {
       const node = edge.node;
       const prods: Product[] = node.products?.edges?.map((pEdge: any) => {
@@ -945,15 +976,25 @@ export async function getCollectionsFromShopify(): Promise<Collection[]> {
         products: prods,
       };
     });
-    return liveCollections;
+
+    return { collections: liveCollections, pageInfo };
   }
-  return [];
+
+  return { collections: [], pageInfo: { hasNextPage: false, endCursor: null } };
 }
 
-export async function getCollectionByHandleFromShopify(handle: string): Promise<Collection | null> {
-  const result = await fetchShopifyGraphQL(STOREFRONT_QUERIES.GET_COLLECTION_BY_HANDLE, { handle, first: 30 });
+export async function getCollectionByHandleFromShopify(handle: string, options?: { first?: number; after?: string | null }): Promise<{ collection: Collection | null; pageInfo: PageInfo }> {
+  const first = options?.first || 30;
+  const after = options?.after || null;
+
+  const result = await fetchShopifyGraphQL(STOREFRONT_QUERIES.GET_COLLECTION_BY_HANDLE, { handle, first, after });
   if (result && result.data && result.data.collection) {
     const node = result.data.collection;
+    const pageInfo: PageInfo = {
+      hasNextPage: Boolean(node.products?.pageInfo?.hasNextPage),
+      endCursor: node.products?.pageInfo?.endCursor || null,
+    };
+
     const prods: Product[] = node.products?.edges?.map((pEdge: any) => {
       const pNode = pEdge.node;
       return {
@@ -988,7 +1029,7 @@ export async function getCollectionByHandleFromShopify(handle: string): Promise<
       };
     }) || [];
 
-    return {
+    const collectionObj: Collection = {
       id: node.id,
       handle: node.handle,
       title: node.title,
@@ -997,13 +1038,24 @@ export async function getCollectionByHandleFromShopify(handle: string): Promise<
       productsCount: prods.length,
       products: prods,
     };
+
+    return { collection: collectionObj, pageInfo };
   }
-  return null;
+
+  return { collection: null, pageInfo: { hasNextPage: false, endCursor: null } };
 }
 
-export async function getBlogArticlesFromShopify(): Promise<BlogArticle[]> {
-  const result = await fetchShopifyGraphQL(STOREFRONT_QUERIES.GET_ARTICLES, { first: 100 });
+export async function getBlogArticlesFromShopify(options?: { first?: number; after?: string | null }): Promise<{ articles: BlogArticle[]; pageInfo: PageInfo }> {
+  const first = options?.first || 12;
+  const after = options?.after || null;
+
+  const result = await fetchShopifyGraphQL(STOREFRONT_QUERIES.GET_ARTICLES, { first, after });
   if (result && result.data && result.data.articles && result.data.articles.edges) {
+    const pageInfo: PageInfo = {
+      hasNextPage: Boolean(result.data.articles.pageInfo?.hasNextPage),
+      endCursor: result.data.articles.pageInfo?.endCursor || null,
+    };
+
     const liveArticles: BlogArticle[] = result.data.articles.edges.map((edge: any) => {
       const node = edge.node;
       return {
@@ -1017,10 +1069,37 @@ export async function getBlogArticlesFromShopify(): Promise<BlogArticle[]> {
         author: node.authorV2?.name || "TheReviveTech Editorial",
         image: node.image,
         tags: node.tags || [],
-        readingTimeMinutes: 4,
+        readingTimeMinutes: Math.max(2, Math.ceil((node.excerpt || node.title || "").split(" ").length / 50)),
       };
     });
-    return liveArticles;
+
+    return { articles: liveArticles, pageInfo };
   }
-  return [];
+
+  return { articles: [], pageInfo: { hasNextPage: false, endCursor: null } };
+}
+
+export async function getBlogArticleByHandleFromShopify(handle: string): Promise<BlogArticle | null> {
+  const result = await fetchShopifyGraphQL(STOREFRONT_QUERIES.GET_ARTICLE_BY_HANDLE, { handle });
+  if (result && result.data && result.data.articles && result.data.articles.edges) {
+    const edge = result.data.articles.edges.find((e: any) => e.node.handle === handle) || result.data.articles.edges[0];
+    if (edge) {
+      const node = edge.node;
+      const wordCount = (node.content || node.excerpt || "").split(/\s+/).length;
+      return {
+        id: node.id,
+        handle: node.handle,
+        title: node.title,
+        content: node.content || "",
+        contentHtml: node.contentHtml || node.content || "<p>Detailed editorial benchmark analysis coming soon.</p>",
+        excerpt: node.excerpt || "",
+        publishedAt: node.publishedAt,
+        author: node.authorV2?.name || "TheReviveTech Editorial",
+        image: node.image,
+        tags: node.tags || ["Tech", "Hardware"],
+        readingTimeMinutes: Math.max(3, Math.ceil(wordCount / 200)),
+      };
+    }
+  }
+  return null;
 }

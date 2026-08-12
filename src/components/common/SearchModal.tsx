@@ -198,7 +198,7 @@ export const SearchModal: React.FC = () => {
 
           {/* Modal Footer */}
           <div className="px-4 py-2.5 bg-slate-950 border-t border-emerald-900/40 text-[11px] text-slate-400 flex items-center justify-between">
-            <span>Powered by Shopify Storefront API</span>
+            <span>Search Pakistan's Premier Tech Catalog</span>
             <span>Press <kbd className="font-mono text-emerald-400">ESC</kbd> to exit</span>
           </div>
         </motion.div>
