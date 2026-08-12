@@ -1,8 +1,9 @@
-import React, { useState, useMemo } from "react";
-import { BookOpen, Calendar, ArrowRight, Search } from "lucide-react";
+import React, { useState, useMemo, useEffect } from "react";
+import { BookOpen, Calendar, ArrowRight, Search, SlidersHorizontal } from "lucide-react";
 import { useShopify } from "../../context/ShopifyContext";
 import { SingleBlogPostPage } from "./SingleBlogPostPage";
 import { BlogSidebar } from "./BlogSidebar";
+import { OffCanvasDrawer } from "../common/OffCanvasDrawer";
 
 interface BlogPageProps {
   articleHandle?: string;
@@ -11,35 +12,68 @@ interface BlogPageProps {
 export const BlogPage: React.FC<BlogPageProps> = ({ articleHandle }) => {
   const { 
     articles, isLoadingData, navigateToArticle, showToast,
-    hasMoreArticles, isFetchingMoreArticles, fetchMoreArticles, fetchAllArticles
+    hasMoreArticles, isFetchingMoreArticles, fetchAllArticles
   } = useShopify();
+  
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTag, setSelectedTag] = useState("all");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+
+  // Initialize page number from URL search parameter ?page=N
+  const [currentPage, setCurrentPage] = useState<number>(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const p = parseInt(params.get("page") || "1", 10);
+      return !isNaN(p) && p > 0 ? p : 1;
+    }
+    return 1;
+  });
+
+  // Keep page number in sync with URL search parameter
+  useEffect(() => {
+    const syncPageFromUrl = () => {
+      if (typeof window === "undefined") return;
+      const params = new URLSearchParams(window.location.search);
+      const p = parseInt(params.get("page") || "1", 10);
+      setCurrentPage(!isNaN(p) && p > 0 ? p : 1);
+    };
+
+    window.addEventListener("popstate", syncPageFromUrl);
+    return () => window.removeEventListener("popstate", syncPageFromUrl);
+  }, []);
+
+  // Update URL search parameter when page changes
+  const updatePageUrl = (newPage: number) => {
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    if (newPage > 1) {
+      url.searchParams.set("page", newPage.toString());
+    } else {
+      url.searchParams.delete("page");
+    }
+    window.history.pushState({ page: newPage }, "", url.toString());
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    updatePageUrl(newPage);
+    window.scrollTo({ top: 200, behavior: "smooth" });
+  };
 
   // Automatically fetch remaining blog articles from Shopify when blog page is active
-  React.useEffect(() => {
+  useEffect(() => {
     if (hasMoreArticles && !isFetchingMoreArticles) {
       fetchAllArticles();
     }
   }, [hasMoreArticles, isFetchingMoreArticles]);
 
-  const postsPerPage = 9;
+  // Requirement: EXACTLY 12 posts per page
+  const postsPerPage = 12;
 
   // If articleHandle is supplied, delegate directly to SingleBlogPostPage
   if (articleHandle) {
     return <SingleBlogPostPage handle={articleHandle} />;
   }
-
-  // Extract unique tags from loaded articles
-  const allTags = useMemo(() => {
-    const set = new Set<string>();
-    articles.forEach((a) => {
-      a.tags?.forEach((t) => set.add(t));
-    });
-    return Array.from(set).sort();
-  }, [articles]);
 
   // Filter articles based on query and topic tag
   const filteredArticles = useMemo(() => {
@@ -60,35 +94,23 @@ export const BlogPage: React.FC<BlogPageProps> = ({ articleHandle }) => {
 
   const totalPages = Math.ceil(filteredArticles.length / postsPerPage) || 1;
 
+  // Only render the 12 posts belonging to the current page
   const paginatedArticles = useMemo(() => {
     const start = (currentPage - 1) * postsPerPage;
     return filteredArticles.slice(start, start + postsPerPage);
-  }, [filteredArticles, currentPage]);
-
-  const handlePageChange = (newPage: number) => {
-    setCurrentPage(newPage);
-    window.scrollTo({ top: 200, behavior: "smooth" });
-  };
-
-  const handleSubscribe = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newsletterEmail.trim()) {
-      showToast("Thank you for subscribing to TheReviveTech Journal!");
-      setNewsletterEmail("");
-    }
-  };
+  }, [filteredArticles, currentPage, postsPerPage]);
 
   return (
-    <div className="bg-[#030e07] text-slate-100 min-h-screen py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+    <div className="bg-[#030e07] text-slate-100 min-h-screen py-8 sm:py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         
         {/* Blog Banner Header */}
-        <div className="bg-gradient-to-r from-[#071910] via-[#04140b] to-[#020b05] border border-emerald-800/60 p-8 sm:p-12 rounded-3xl relative overflow-hidden shadow-2xl space-y-3">
+        <div className="bg-gradient-to-r from-[#071910] via-[#04140b] to-[#020b05] border border-emerald-800/60 p-6 sm:p-12 rounded-3xl relative overflow-hidden shadow-2xl space-y-3">
           <div className="flex items-center gap-2 text-xs font-mono font-bold text-emerald-400 uppercase tracking-widest">
             <BookOpen className="w-4 h-4 text-emerald-400" />
             <span>TheReviveTech Hardware Journal</span>
           </div>
-          <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
+          <h1 className="text-2xl sm:text-5xl font-black text-white tracking-tight">
             Esports Benchmarks & Tech Lab
           </h1>
           <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
@@ -96,31 +118,66 @@ export const BlogPage: React.FC<BlogPageProps> = ({ articleHandle }) => {
           </p>
         </div>
 
+        {/* Mobile Filter & Search Trigger Button */}
+        <div className="lg:hidden flex items-center justify-between bg-[#071910] border border-emerald-900/60 p-3.5 rounded-2xl">
+          <button
+            onClick={() => setIsMobileDrawerOpen(true)}
+            className="flex items-center gap-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer"
+          >
+            <SlidersHorizontal className="w-4 h-4" />
+            <span>Filter & Categories</span>
+          </button>
+          <span className="text-xs font-mono text-emerald-400">
+            {filteredArticles.length} {filteredArticles.length === 1 ? "Article" : "Articles"} (Page {currentPage} of {totalPages})
+          </span>
+        </div>
+
         {/* 2-Column Main Layout: Sidebar (1 col) + Articles (3 cols) */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
           
-          {/* Redesigned Responsive Sidebar */}
-          <aside className="lg:col-span-1 lg:sticky lg:top-24">
+          {/* Desktop Sticky Sidebar */}
+          <aside className="hidden lg:block lg:col-span-1 lg:sticky lg:top-24 bg-[#071910] border border-emerald-900/50 rounded-3xl p-6 shadow-xl">
             <BlogSidebar
               searchQuery={searchQuery}
               onSearchChange={(q) => {
                 setSearchQuery(q);
-                setCurrentPage(1);
+                handlePageChange(1);
               }}
               selectedTag={selectedTag}
               onTagSelect={(t) => {
                 setSelectedTag(t);
-                setCurrentPage(1);
+                handlePageChange(1);
               }}
             />
           </aside>
 
+          {/* Off-Canvas Drawer for Mobile/Tablet */}
+          <OffCanvasDrawer
+            isOpen={isMobileDrawerOpen}
+            onClose={() => setIsMobileDrawerOpen(false)}
+            title="Blog Search & Categories"
+          >
+            <BlogSidebar
+              searchQuery={searchQuery}
+              onSearchChange={(q) => {
+                setSearchQuery(q);
+                handlePageChange(1);
+              }}
+              selectedTag={selectedTag}
+              onTagSelect={(t) => {
+                setSelectedTag(t);
+                handlePageChange(1);
+              }}
+              onItemClick={() => setIsMobileDrawerOpen(false)}
+            />
+          </OffCanvasDrawer>
+
           {/* Main Articles Grid */}
-          <main className="lg:col-span-3 space-y-8">
+          <main className="lg:col-span-3 space-y-8 w-full">
             
             {/* Loading Skeleton */}
             {isLoadingData && articles.length === 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <div key={i} className="bg-[#071910] border border-emerald-900/40 rounded-3xl p-4 space-y-4 animate-pulse">
                     <div className="aspect-video bg-emerald-950/60 rounded-2xl" />
@@ -138,14 +195,14 @@ export const BlogPage: React.FC<BlogPageProps> = ({ articleHandle }) => {
                 <h3 className="text-lg font-bold text-white">No Articles Found</h3>
                 <p className="text-xs text-slate-400">Try clearing your search query or choosing another topic filter.</p>
                 <button
-                  onClick={() => { setSearchQuery(""); setSelectedTag("all"); }}
-                  className="bg-emerald-500 text-slate-950 font-bold px-5 py-2 rounded-xl text-xs shadow-lg"
+                  onClick={() => { setSearchQuery(""); setSelectedTag("all"); handlePageChange(1); }}
+                  className="bg-emerald-500 text-slate-950 font-bold px-5 py-2 rounded-xl text-xs shadow-lg cursor-pointer"
                 >
                   Reset Filters
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {paginatedArticles.map((art) => (
                   <div
                     key={art.id}
@@ -188,7 +245,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({ articleHandle }) => {
               </div>
             )}
 
-            {/* Pagination */}
+            {/* Pagination Controls */}
             {totalPages > 1 && (
               <div className="pt-8 border-t border-emerald-900/40 flex items-center justify-center gap-2 flex-wrap">
                 <button
@@ -215,7 +272,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({ articleHandle }) => {
 
                 <button
                   disabled={currentPage === totalPages}
-                  onClick={() => handlePageChange(currentPage + 1)}
+                  onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
                   className="px-4 py-2 rounded-xl bg-[#071910] border border-emerald-900/60 text-xs font-mono font-bold text-slate-300 hover:bg-emerald-500 hover:text-slate-950 disabled:opacity-30 transition-all cursor-pointer disabled:cursor-not-allowed"
                 >
                   Next →

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { ArrowRight, ShoppingBag, Star, Zap } from "lucide-react";
+import { ArrowRight, Zap } from "lucide-react";
 import { useShopify } from "../../context/ShopifyContext";
-import { formatMoney } from "../../lib/utils";
+import { ProductCard } from "../common/ProductCard";
 
 export const FeaturedCollections: React.FC = () => {
   const { collections, products, addToCart, navigateToProduct, navigateToCollection } = useShopify();
@@ -45,43 +45,7 @@ export const FeaturedCollections: React.FC = () => {
         {/* Collection Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {filteredProducts.map((product) => (
-            <div
-              key={product.id}
-              className="group bg-[#071910] rounded-2xl overflow-hidden border border-emerald-900/40 hover:border-emerald-500/50 transition-all p-4 flex flex-col justify-between"
-            >
-              <div>
-                <div
-                  onClick={() => navigateToProduct(product.handle)}
-                  className="cursor-pointer aspect-square bg-slate-900 rounded-xl overflow-hidden mb-3 relative"
-                >
-                  <img
-                    src={product.featuredImage?.url}
-                    alt={product.title}
-                    referrerPolicy="no-referrer"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                </div>
-                <span className="text-[10px] font-mono text-emerald-400 font-bold uppercase">{product.vendor}</span>
-                <h4
-                  onClick={() => navigateToProduct(product.handle)}
-                  className="text-xs font-bold text-white hover:text-emerald-300 transition-colors line-clamp-1 cursor-pointer mt-0.5"
-                >
-                  {product.title}
-                </h4>
-              </div>
-
-              <div className="pt-3 mt-3 border-t border-emerald-900/30 flex items-center justify-between">
-                <span className="font-mono text-xs font-bold text-emerald-400">
-                  {formatMoney(product.priceRange.minVariantPrice.amount)}
-                </span>
-                <button
-                  onClick={() => addToCart(product)}
-                  className="py-1.5 px-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-lg transition-colors flex items-center gap-1"
-                >
-                  <ShoppingBag className="w-3.5 h-3.5" /> Add
-                </button>
-              </div>
-            </div>
+            <ProductCard key={product.id} product={product} />
           ))}
         </div>
 

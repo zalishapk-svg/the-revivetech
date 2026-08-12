@@ -4,6 +4,7 @@ import { formatMoney, calculateDiscount } from "../../lib/utils";
 import { YellowTape } from "../common/YellowTape";
 import { ProductCard } from "../common/ProductCard";
 import { ProductSkeletonCard } from "../common/ProductSkeletonCard";
+import { OffCanvasDrawer } from "../common/OffCanvasDrawer";
 import { 
   Search, SlidersHorizontal, Grid, List, Check, X,
   Eye, Heart, ArrowUpDown, ChevronRight, ShoppingBag, RefreshCw, Star, Tag, Sparkles
@@ -46,22 +47,57 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
   // Filter States
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [selectedCollection, setSelectedCollection] = useState<string>("all");
   const [selectedVendor, setSelectedVendor] = useState<string>("all");
   const [inStockOnly, setInStockOnly] = useState(false);
   const [onSaleOnly, setOnSaleOnly] = useState(false);
-  const [maxPrice, setMaxPrice] = useState<number>(150000);
+  const [maxPrice, setMaxPrice] = useState<number>(250000);
   const [sortBy, setSortBy] = useState<string>("featured");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
 
-  const itemsPerPage = 15;
+  // Requirement: EXACTLY 12 products per page
+  const itemsPerPage = 12;
 
-  // Reset page to 1 when filters change
+  // Initialize page number from URL search parameter ?page=N
+  const [currentPage, setCurrentPage] = useState<number>(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const p = parseInt(params.get("page") || "1", 10);
+      return !isNaN(p) && p > 0 ? p : 1;
+    }
+    return 1;
+  });
+
+  // Keep page number in sync with URL search parameter
   useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, selectedCategory, selectedVendor, inStockOnly, onSaleOnly, maxPrice, sortBy]);
+    const syncPageFromUrl = () => {
+      if (typeof window === "undefined") return;
+      const params = new URLSearchParams(window.location.search);
+      const p = parseInt(params.get("page") || "1", 10);
+      setCurrentPage(!isNaN(p) && p > 0 ? p : 1);
+    };
+
+    window.addEventListener("popstate", syncPageFromUrl);
+    return () => window.removeEventListener("popstate", syncPageFromUrl);
+  }, []);
+
+  // Update URL search parameter when page or filters change
+  const updatePageUrl = (newPage: number) => {
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    if (newPage > 1) {
+      url.searchParams.set("page", newPage.toString());
+    } else {
+      url.searchParams.delete("page");
+    }
+    window.history.pushState({ page: newPage }, "", url.toString());
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    updatePageUrl(newPage);
+    window.scrollTo({ top: 350, behavior: "smooth" });
+  };
 
   // Extract unique vendors & categories
   const vendors = useMemo(() => {
@@ -116,33 +152,157 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
       if (sortBy === "best-selling") return (b.isBestSeller ? 1 : 0) - (a.isBestSeller ? 1 : 0);
       if (sortBy === "newest") return (b.isNewArrival ? 1 : 0) - (a.isNewArrival ? 1 : 0);
       
-      // Default: Featured
       return 0;
     });
   }, [baseProducts, searchQuery, selectedCategory, selectedVendor, inStockOnly, onSaleOnly, maxPrice, sortBy]);
 
+  // Reset filters
   const resetFilters = () => {
     setSearchQuery("");
     setSelectedCategory("all");
-    setSelectedCollection("all");
     setSelectedVendor("all");
     setInStockOnly(false);
     setOnSaleOnly(false);
-    setMaxPrice(150000);
+    setMaxPrice(250000);
     setSortBy("featured");
+    handlePageChange(1);
   };
 
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage) || 1;
 
+  // Only render the 12 products belonging to current page
   const paginatedProducts = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     return filteredProducts.slice(start, start + itemsPerPage);
-  }, [filteredProducts, currentPage]);
+  }, [filteredProducts, currentPage, itemsPerPage]);
 
-  const handlePageChange = (newPage: number) => {
-    setCurrentPage(newPage);
-    window.scrollTo({ top: 350, behavior: "smooth" });
-  };
+  // Reusable Sidebar Form Controls
+  const renderSidebarControls = (onItemSelect?: () => void) => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between border-b border-emerald-900/40 pb-4">
+        <h3 className="font-bold text-slate-100 text-sm uppercase tracking-wider flex items-center gap-2">
+          <SlidersHorizontal className="w-4 h-4 text-emerald-400" /> Filter Hardware
+        </h3>
+        <button
+          onClick={resetFilters}
+          className="text-xs text-emerald-400 hover:underline flex items-center gap-1 font-mono cursor-pointer"
+        >
+          <RefreshCw className="w-3 h-3" /> Reset
+        </button>
+      </div>
+
+      {/* Category Filter */}
+      <div>
+        <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider block mb-2">Category</label>
+        <select
+          value={selectedCategory}
+          onChange={(e) => {
+            setSelectedCategory(e.target.value);
+            handlePageChange(1);
+            if (onItemSelect) onItemSelect();
+          }}
+          className="w-full bg-[#030e07] border border-emerald-900/60 rounded-xl p-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
+        >
+          <option value="all">All Categories</option>
+          {categories.map((cat) => (
+            <option key={cat} value={cat}>{cat}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Vendor Filter */}
+      <div>
+        <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider block mb-2">Brand / Manufacturer</label>
+        <select
+          value={selectedVendor}
+          onChange={(e) => {
+            setSelectedVendor(e.target.value);
+            handlePageChange(1);
+            if (onItemSelect) onItemSelect();
+          }}
+          className="w-full bg-[#030e07] border border-emerald-900/60 rounded-xl p-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
+        >
+          <option value="all">All Brands</option>
+          {vendors.map((v) => (
+            <option key={v} value={v}>{v}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Max Price Range Slider */}
+      <div>
+        <div className="flex justify-between items-center mb-2">
+          <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">Max Price</label>
+          <span className="text-xs font-mono font-bold text-emerald-400">{formatMoney(maxPrice)}</span>
+        </div>
+        <input
+          type="range"
+          min={5000}
+          max={250000}
+          step={5000}
+          value={maxPrice}
+          onChange={(e) => {
+            setMaxPrice(Number(e.target.value));
+            handlePageChange(1);
+          }}
+          className="w-full accent-emerald-500 bg-emerald-950 rounded-lg cursor-pointer h-1.5"
+        />
+        <div className="flex justify-between text-[10px] text-slate-500 font-mono mt-1">
+          <span>Rs. 5,000</span>
+          <span>Rs. 250,000</span>
+        </div>
+      </div>
+
+      {/* Checkbox Options */}
+      <div className="space-y-3 pt-2 border-t border-emerald-900/40">
+        <label className="flex items-center gap-2.5 text-xs text-slate-300 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={inStockOnly}
+            onChange={(e) => {
+              setInStockOnly(e.target.checked);
+              handlePageChange(1);
+            }}
+            className="rounded bg-[#030e07] border-emerald-800 text-emerald-500 focus:ring-0 w-4 h-4"
+          />
+          <span>In Stock Only</span>
+        </label>
+
+        <label className="flex items-center gap-2.5 text-xs text-slate-300 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={onSaleOnly}
+            onChange={(e) => {
+              setOnSaleOnly(e.target.checked);
+              handlePageChange(1);
+            }}
+            className="rounded bg-[#030e07] border-emerald-800 text-emerald-500 focus:ring-0 w-4 h-4"
+          />
+          <span>Special Sale Deals</span>
+        </label>
+      </div>
+
+      {/* Quick Collection Links */}
+      <div className="pt-4 border-t border-emerald-900/40">
+        <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider block mb-2">Popular Collections</label>
+        <div className="space-y-1">
+          {collections.slice(0, 6).map((c) => (
+            <button
+              key={c.id}
+              onClick={() => {
+                navigateToCollection(c.handle);
+                if (onItemSelect) onItemSelect();
+              }}
+              className="w-full text-left text-xs text-slate-400 hover:text-emerald-400 py-1 flex items-center justify-between group transition-colors cursor-pointer"
+            >
+              <span>{c.title}</span>
+              <ChevronRight className="w-3 h-3 text-slate-600 group-hover:text-emerald-400 transition-colors" />
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="w-full bg-[#030e07] text-slate-100 min-h-screen py-8 px-4 sm:px-6 lg:px-8">
@@ -160,7 +320,7 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
         </nav>
 
         {/* Shop Banner / Header */}
-        <div className="relative rounded-3xl bg-gradient-to-r from-[#051a0d] via-[#082a15] to-[#030e07] border border-emerald-900/40 p-8 md:p-12 mb-10 overflow-hidden shadow-2xl">
+        <div className="relative rounded-3xl bg-gradient-to-r from-[#051a0d] via-[#082a15] to-[#030e07] border border-emerald-900/40 p-6 md:p-12 mb-8 overflow-hidden shadow-2xl">
           <div className="absolute -right-10 -bottom-10 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
           <div className="relative z-10 max-w-2xl">
             <span className="text-emerald-400 text-xs font-mono uppercase tracking-widest bg-emerald-950/80 px-3 py-1 rounded-full border border-emerald-800/60 inline-flex items-center gap-2 mb-3">
@@ -173,7 +333,7 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
                 "Official Hardware Store"
               )}
             </span>
-            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight leading-tight mb-4">
+            <h1 className="text-2xl md:text-5xl font-black text-white tracking-tight leading-tight mb-4">
               {isSale ? (
                 <>On Sale <YellowTape text="DISCOUNTED GEAR" /></>
               ) : isExplore ? (
@@ -182,7 +342,7 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
                 <>Explore <YellowTape text="THE REVIVE TECH SHOP" /></>
               )}
             </h1>
-            <p className="text-slate-300 text-sm md:text-base leading-relaxed">
+            <p className="text-slate-300 text-xs md:text-base leading-relaxed">
               {isSale ? (
                 `Showing ONLY live discounted products directly from our Shopify store inventory with active compare-at prices. Deals update automatically.`
               ) : isExplore ? (
@@ -202,30 +362,33 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
             <input
               type="text"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                handlePageChange(1);
+              }}
               placeholder="Search products, brands, specs..."
               className="w-full bg-[#030e07] border border-emerald-900/60 rounded-xl pl-10 pr-4 py-2 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
             />
             {searchQuery && (
-              <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white">
+              <button onClick={() => { setSearchQuery(""); handlePageChange(1); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white cursor-pointer">
                 <X className="w-3.5 h-3.5" />
               </button>
             )}
           </div>
 
           <div className="flex items-center justify-between w-full md:w-auto gap-4">
-            {/* Mobile Filter Toggle */}
+            {/* Mobile/Tablet Filter Button */}
             <button
-              onClick={() => setIsMobileFilterOpen(!isMobileFilterOpen)}
-              className="md:hidden flex items-center gap-2 bg-emerald-950/60 border border-emerald-800/60 text-emerald-300 px-4 py-2 rounded-xl text-xs font-medium"
+              onClick={() => setIsMobileFilterOpen(true)}
+              className="lg:hidden flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer"
             >
               <SlidersHorizontal className="w-4 h-4" />
-              <span>Filters</span>
+              <span>Filter & Categories</span>
             </button>
 
             {/* Product Count */}
             <span className="text-xs text-slate-400 font-mono">
-              Showing <strong className="text-emerald-400">{paginatedProducts.length}</strong> of {filteredProducts.length} Products (Page {currentPage} of {totalPages})
+              Showing <strong className="text-emerald-400">{paginatedProducts.length}</strong> of {filteredProducts.length} (Page {currentPage} of {totalPages})
             </span>
 
             {/* Sort Dropdown */}
@@ -248,14 +411,14 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
               <div className="hidden sm:flex border border-emerald-900/60 rounded-xl p-1 bg-[#030e07]">
                 <button
                   onClick={() => setViewMode("grid")}
-                  className={`p-1.5 rounded-lg transition-colors ${viewMode === "grid" ? "bg-emerald-500 text-slate-950" : "text-slate-400 hover:text-white"}`}
+                  className={`p-1.5 rounded-lg transition-colors cursor-pointer ${viewMode === "grid" ? "bg-emerald-500 text-slate-950" : "text-slate-400 hover:text-white"}`}
                   title="Grid View"
                 >
                   <Grid className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setViewMode("list")}
-                  className={`p-1.5 rounded-lg transition-colors ${viewMode === "list" ? "bg-emerald-500 text-slate-950" : "text-slate-400 hover:text-white"}`}
+                  className={`p-1.5 rounded-lg transition-colors cursor-pointer ${viewMode === "list" ? "bg-emerald-500 text-slate-950" : "text-slate-400 hover:text-white"}`}
                   title="List View"
                 >
                   <List className="w-4 h-4" />
@@ -269,113 +432,21 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
           
           {/* Sticky Desktop Sidebar Filters */}
-          <aside className={`lg:block ${isMobileFilterOpen ? "block" : "hidden"} space-y-6 bg-[#05140b] border border-emerald-900/40 rounded-2xl p-6 h-fit shadow-xl lg:sticky lg:top-24 lg:z-20`}>
-            <div className="flex items-center justify-between border-b border-emerald-900/40 pb-4">
-              <h3 className="font-bold text-slate-100 text-sm uppercase tracking-wider flex items-center gap-2">
-                <SlidersHorizontal className="w-4 h-4 text-emerald-400" /> Filter Hardware
-              </h3>
-              <button
-                onClick={resetFilters}
-                className="text-xs text-emerald-400 hover:underline flex items-center gap-1 font-mono"
-              >
-                <RefreshCw className="w-3 h-3" /> Reset
-              </button>
-            </div>
-
-            {/* Category Filter */}
-            <div>
-              <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider block mb-2">Category</label>
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full bg-[#030e07] border border-emerald-900/60 rounded-xl p-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
-              >
-                <option value="all">All Categories</option>
-                {categories.map((cat) => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Vendor Filter */}
-            <div>
-              <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider block mb-2">Brand / Manufacturer</label>
-              <select
-                value={selectedVendor}
-                onChange={(e) => setSelectedVendor(e.target.value)}
-                className="w-full bg-[#030e07] border border-emerald-900/60 rounded-xl p-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
-              >
-                <option value="all">All Brands</option>
-                {vendors.map((v) => (
-                  <option key={v} value={v}>{v}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Max Price Range Slider */}
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">Max Price</label>
-                <span className="text-xs font-mono font-bold text-emerald-400">{formatMoney(maxPrice)}</span>
-              </div>
-              <input
-                type="range"
-                min={5000}
-                max={250000}
-                step={5000}
-                value={maxPrice}
-                onChange={(e) => setMaxPrice(Number(e.target.value))}
-                className="w-full accent-emerald-500 bg-emerald-950 rounded-lg cursor-pointer h-1.5"
-              />
-              <div className="flex justify-between text-[10px] text-slate-500 font-mono mt-1">
-                <span>Rs. 5,000</span>
-                <span>Rs. 250,000</span>
-              </div>
-            </div>
-
-            {/* Checkbox Options */}
-            <div className="space-y-3 pt-2 border-t border-emerald-900/40">
-              <label className="flex items-center gap-2.5 text-xs text-slate-300 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={inStockOnly}
-                  onChange={(e) => setInStockOnly(e.target.checked)}
-                  className="rounded bg-[#030e07] border-emerald-800 text-emerald-500 focus:ring-0 w-4 h-4"
-                />
-                <span>In Stock Only</span>
-              </label>
-
-              <label className="flex items-center gap-2.5 text-xs text-slate-300 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={onSaleOnly}
-                  onChange={(e) => setOnSaleOnly(e.target.checked)}
-                  className="rounded bg-[#030e07] border-emerald-800 text-emerald-500 focus:ring-0 w-4 h-4"
-                />
-                <span>Special Sale Deals</span>
-              </label>
-            </div>
-
-            {/* Quick Collection Links */}
-            <div className="pt-4 border-t border-emerald-900/40">
-              <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider block mb-2">Popular Collections</label>
-              <div className="space-y-1">
-                {collections.slice(0, 6).map((c) => (
-                  <button
-                    key={c.id}
-                    onClick={() => navigateToCollection(c.handle)}
-                    className="w-full text-left text-xs text-slate-400 hover:text-emerald-400 py-1 flex items-center justify-between group transition-colors"
-                  >
-                    <span>{c.title}</span>
-                    <ChevronRight className="w-3 h-3 text-slate-600 group-hover:text-emerald-400 transition-colors" />
-                  </button>
-                ))}
-              </div>
-            </div>
+          <aside className="hidden lg:block lg:col-span-1 space-y-6 bg-[#05140b] border border-emerald-900/40 rounded-2xl p-6 shadow-xl lg:sticky lg:top-24">
+            {renderSidebarControls()}
           </aside>
 
+          {/* Mobile/Tablet Off-Canvas Drawer */}
+          <OffCanvasDrawer
+            isOpen={isMobileFilterOpen}
+            onClose={() => setIsMobileFilterOpen(false)}
+            title="Filter Hardware & Categories"
+          >
+            {renderSidebarControls(() => setIsMobileFilterOpen(false))}
+          </OffCanvasDrawer>
+
           {/* Product Grid / List Section */}
-          <main className="lg:col-span-3">
+          <main className="lg:col-span-3 w-full">
             {useShopify().isLoadingData ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[...Array(9)].map((_, idx) => (
@@ -393,7 +464,7 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
                 </p>
                 <button
                   onClick={resetFilters}
-                  className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-6 py-2.5 rounded-xl text-xs transition-colors"
+                  className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-6 py-2.5 rounded-xl text-xs transition-colors cursor-pointer"
                 >
                   Reset All Filters
                 </button>
@@ -451,13 +522,13 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
                       <div className="shrink-0 flex sm:flex-col gap-2 w-full sm:w-auto justify-end">
                         <button
                           onClick={() => addToCart(p)}
-                          className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-5 py-2.5 rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-2"
+                          className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-5 py-2.5 rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
                         >
                           <ShoppingBag className="w-4 h-4" /> Add to Cart
                         </button>
                         <button
                           onClick={() => setQuickViewHandle(p.handle)}
-                          className="bg-emerald-950/60 border border-emerald-800/60 text-emerald-300 px-4 py-2.5 rounded-xl text-xs font-medium hover:bg-emerald-900/60 transition-colors"
+                          className="bg-emerald-950/60 border border-emerald-800/60 text-emerald-300 px-4 py-2.5 rounded-xl text-xs font-medium hover:bg-emerald-900/60 transition-colors cursor-pointer"
                         >
                           Quick View
                         </button>

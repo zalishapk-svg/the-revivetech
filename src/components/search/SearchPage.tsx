@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useShopify } from "../../context/ShopifyContext";
-import { formatMoney } from "../../lib/utils";
-import { Search, ChevronRight, ShoppingBag, Star, Eye } from "lucide-react";
+import { Search, ChevronRight } from "lucide-react";
+import { ProductCard } from "../common/ProductCard";
 
 interface SearchPageProps {
   initialQuery?: string;
@@ -72,38 +72,9 @@ export const SearchPage: React.FC<SearchPageProps> = ({ initialQuery = "" }) => 
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {matchedProducts.map((p) => {
-                const minPrice = p.priceRange.minVariantPrice.amount;
-                return (
-                  <div
-                    key={p.id}
-                    className="bg-[#05140b] border border-emerald-900/40 hover:border-emerald-500/50 rounded-2xl p-4 transition-all duration-300 flex flex-col"
-                  >
-                    <div 
-                      onClick={() => navigateToProduct(p.handle)}
-                      className="w-full h-40 bg-[#030e07] rounded-xl overflow-hidden mb-3 cursor-pointer p-2 flex items-center justify-center"
-                    >
-                      <img src={p.featuredImage?.url} alt={p.title} className="max-h-full object-contain" />
-                    </div>
-                    <span className="text-[10px] text-emerald-400 font-mono">{p.vendor}</span>
-                    <h4 
-                      onClick={() => navigateToProduct(p.handle)}
-                      className="font-bold text-white text-xs hover:text-emerald-400 transition-colors line-clamp-2 cursor-pointer mb-2 flex-1"
-                    >
-                      {p.title}
-                    </h4>
-                    <div className="pt-2 border-t border-emerald-900/40 flex items-center justify-between mt-auto">
-                      <span className="font-mono font-bold text-emerald-400 text-xs">{formatMoney(minPrice)}</span>
-                      <button
-                        onClick={() => addToCart(p)}
-                        className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 p-2 rounded-xl"
-                      >
-                        <ShoppingBag className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
+              {matchedProducts.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
             </div>
           )}
         </div>

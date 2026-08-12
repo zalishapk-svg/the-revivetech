@@ -7,6 +7,7 @@ import { useShopify } from "../../context/ShopifyContext";
 import { getBlogArticleByHandleFromShopify } from "../../lib/shopify";
 import { BlogArticle } from "../../types";
 import { BlogSidebar } from "./BlogSidebar";
+import { OffCanvasDrawer } from "../common/OffCanvasDrawer";
 
 interface SingleBlogPostPageProps {
   handle: string;
@@ -21,6 +22,7 @@ export const SingleBlogPostPage: React.FC<SingleBlogPostPageProps> = ({ handle }
   const [loading, setLoading] = useState<boolean>(!article);
   const [copied, setCopied] = useState(false);
   const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
 
   // Fetch article data if not in context
   useEffect(() => {
@@ -376,9 +378,22 @@ export const SingleBlogPostPage: React.FC<SingleBlogPostPageProps> = ({ handle }
 
           </main>
 
-          {/* Sidebar (4 cols) */}
-          <aside className="lg:col-span-4 space-y-6 lg:sticky lg:top-24">
-            
+          {/* Mobile Table of Contents / Sidebar Trigger */}
+          <div className="lg:hidden mb-6 flex items-center justify-between bg-[#071910] border border-emerald-900/60 p-3.5 rounded-2xl">
+            <button
+              onClick={() => setIsMobileDrawerOpen(true)}
+              className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer"
+            >
+              <List className="w-4 h-4" />
+              <span>Table of Contents & Sidebar</span>
+            </button>
+            <span className="text-xs font-mono text-emerald-400">
+              {tocItems.length} Headings
+            </span>
+          </div>
+
+          {/* Desktop Sticky Sidebar */}
+          <aside className="hidden lg:block lg:col-span-4 space-y-6 lg:sticky lg:top-24">
             {/* Table of Contents */}
             {tocItems.length > 0 && (
               <div className="bg-[#071910] border border-emerald-900/50 rounded-3xl p-6 shadow-xl space-y-3">
@@ -402,17 +417,53 @@ export const SingleBlogPostPage: React.FC<SingleBlogPostPageProps> = ({ handle }
               </div>
             )}
 
-            {/* Redesigned Compact Blog Sidebar */}
             <BlogSidebar
-              onSearchChange={(q) => {
-                navigateToBlog();
-              }}
-              onTagSelect={(t) => {
-                navigateToBlog();
-              }}
+              onSearchChange={() => navigateToBlog()}
+              onTagSelect={() => navigateToBlog()}
             />
-
           </aside>
+
+          {/* Mobile/Tablet Off-Canvas Drawer */}
+          <OffCanvasDrawer
+            isOpen={isMobileDrawerOpen}
+            onClose={() => setIsMobileDrawerOpen(false)}
+            title="Article Navigation & Search"
+          >
+            {tocItems.length > 0 && (
+              <div className="bg-[#071910] border border-emerald-900/50 rounded-3xl p-5 shadow-xl space-y-3">
+                <div className="flex items-center gap-2 text-xs font-mono font-bold text-emerald-400 uppercase tracking-widest border-b border-emerald-900/60 pb-2">
+                  <List className="w-4 h-4 text-emerald-400" />
+                  Table of Contents
+                </div>
+                <ul className="space-y-2 text-xs font-sans">
+                  {tocItems.map((item) => (
+                    <li key={item.id} className={item.level === "h3" ? "ml-3" : ""}>
+                      <a
+                        href={`#${item.id}`}
+                        onClick={() => setIsMobileDrawerOpen(false)}
+                        className="text-slate-300 hover:text-emerald-400 transition-colors flex items-center gap-1.5 line-clamp-1"
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                        <span>{item.text}</span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <BlogSidebar
+              onSearchChange={() => {
+                setIsMobileDrawerOpen(false);
+                navigateToBlog();
+              }}
+              onTagSelect={() => {
+                setIsMobileDrawerOpen(false);
+                navigateToBlog();
+              }}
+              onItemClick={() => setIsMobileDrawerOpen(false)}
+            />
+          </OffCanvasDrawer>
 
         </div>
 
