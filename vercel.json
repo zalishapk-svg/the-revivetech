@@ -4,32 +4,20 @@
   "framework": "vite",
   "rewrites": [
     {
-      "source": "/api/health/:path*",
-      "destination": "/api/health?path=:path*"
-    },
-    {
-      "source": "/api/debug/:path*",
-      "destination": "/api/health?path=debug/:path*"
-    },
-    {
-      "source": "/api/shopify/auth/callback",
-      "destination": "/api/shopify/auth?action=callback"
-    },
-    {
-      "source": "/api/shopify/order/:reference",
-      "destination": "/api/shopify/order/[reference]?reference=:reference"
-    },
-    {
       "source": "/sitemap.xml",
-      "destination": "/api/sitemap"
+      "destination": "/api/index?path=sitemap"
     },
     {
       "source": "/robots.txt",
-      "destination": "/api/robots"
+      "destination": "/api/index?path=robots"
     },
     {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
+      "source": "/api/shopify/auth/callback",
+      "destination": "/api/index?path=shopify/auth/callback"
+    },
+    {
+      "source": "/api/:path*",
+      "destination": "/api/index?path=:path*"
     },
     {
       "source": "/((?!api/).*)",
