@@ -341,9 +341,9 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setIsLoadingData(true);
     try {
       const [pRes, cRes, aRes] = await Promise.all([
-        getProductsFromShopify({ first: 30 }),
-        getCollectionsFromShopify({ first: 12 }),
-        getBlogArticlesFromShopify({ first: 12 }),
+        getProductsFromShopify({ first: 15 }),
+        getCollectionsFromShopify({ first: 6 }),
+        getBlogArticlesFromShopify({ first: 6 }),
       ]);
 
       setProducts(pRes.products);

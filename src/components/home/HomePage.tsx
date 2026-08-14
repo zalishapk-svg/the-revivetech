@@ -8,8 +8,6 @@ import { NewArrivals } from "./NewArrivals";
 import { FlashDeals } from "./FlashDeals";
 import { SingleBanner } from "./SingleBanner";
 import { PromotionalMarquee } from "./PromotionalMarquee";
-import { RecommendationCarousel } from "./RecommendationCarousel";
-import { FrequentlyBoughtTogether } from "./FrequentlyBoughtTogether";
 import { CustomerReviews } from "./CustomerReviews";
 import { CommunityStories } from "./CommunityStories";
 import { LatestBlog } from "./LatestBlog";
@@ -40,20 +38,14 @@ export const HomePage: React.FC = () => {
       {/* 6. JUST LANDED HARDWARE */}
       <NewArrivals />
 
-      {/* 7. FLASH SALE */}
+      {/* 7. FLASH SALE HARDWARE */}
       <FlashDeals />
+
+      {/* 8. SOLO IMAGE SLIDER (Moved immediately below Flash Sale Hardware) */}
+      <SingleBanner />
 
       {/* Dynamic Shopify Collection Product Carousels - Batch 2 */}
       <DynamicCollectionSections startIndex={3} count={3} />
-
-      {/* 8. PROMOTIONAL SLIDER (Govee Single Banner) */}
-      <SingleBanner />
-
-      {/* 9. PERSONALIZED HARDWARE RECOMMENDATIONS */}
-      <RecommendationCarousel />
-
-      {/* 10. FREQUENTLY BOUGHT TOGETHER */}
-      <FrequentlyBoughtTogether />
 
       {/* Why Choose Us Trust Badges */}
       <WhyChooseUs />
@@ -72,3 +64,4 @@ export const HomePage: React.FC = () => {
     </div>
   );
 };
+

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { Product } from "../../types";
 import { ProductCard } from "./ProductCard";
@@ -13,6 +13,7 @@ interface ProductCarouselProps {
   viewAllText?: string;
   badgeText?: string;
   autoPlayInterval?: number;
+  initialLimit?: number;
 }
 
 export const ProductCarousel: React.FC<ProductCarouselProps> = ({
@@ -23,9 +24,24 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({
   onViewAll,
   viewAllText = "View All",
   badgeText,
+  initialLimit = 5,
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [, setIsPaused] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  // Initial paint optimization: Render first 5 products immediately,
+  // then populate the rest of the slider track in background after initial render.
+  useEffect(() => {
+    if (products.length > 0) {
+      const timer = setTimeout(() => {
+        setIsExpanded(true);
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [products.length]);
+
+  const displayedProducts = isExpanded ? products : products.slice(0, initialLimit);
 
   // Manual navigation only (auto-scroll disabled per user requirement)
   const scroll = (direction: "left" | "right") => {
@@ -102,7 +118,7 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
             {isLoading ? (
-              [...Array(5)].map((_, idx) => (
+              [...Array(initialLimit)].map((_, idx) => (
                 <div
                   key={`skeleton-${idx}`}
                   className="flex-none w-[240px] sm:w-[280px] md:w-[290px] lg:w-[295px]"
@@ -111,7 +127,7 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({
                 </div>
               ))
             ) : (
-              products.map((product) => (
+              displayedProducts.map((product) => (
                 <div
                   key={product.id}
                   className="flex-none w-[240px] sm:w-[280px] md:w-[290px] lg:w-[295px]"
@@ -126,4 +142,5 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({
     </section>
   );
 };
+
 
