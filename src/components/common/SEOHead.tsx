@@ -6,50 +6,149 @@ export const SEOHead: React.FC = () => {
 
   useEffect(() => {
     const origin = window.location.origin || "https://therevivetech.pk";
-    let title = "The Revive Tech | Original Gaming Hardware & Gear in Pakistan";
-    let description = "Buy 100% original gaming headsets, mechanical keyboards, mice, audio gear and accessories in Pakistan with fast nationwide delivery and cash on delivery.";
+    let title = "The Revive Tech | Original Gaming Hardware & Tech Store Pakistan";
+    let description = "Buy 100% original gaming headsets, mechanical keyboards, mice, audio gear and computer peripherals in Pakistan with fast nationwide delivery and cash on delivery.";
     let image = `${origin}/og-image.png`;
-    let canonical = `${origin}${window.location.pathname}`;
+    let canonicalPath = window.location.pathname || "/";
+    let searchParams = new URLSearchParams(window.location.search);
+    let pageNum = searchParams.get("page");
+    let isUtilityPage = false;
     let ogType = "website";
-    let jsonLd: any = null;
+    let jsonLdSchemas: any[] = [];
+
+    // Global Organization Schema
+    const orgSchema = {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "@id": `${origin}/#organization`,
+      "name": "The Revive Tech",
+      "url": origin,
+      "logo": `${origin}/logo.png`,
+      "description": "Pakistan's Premier Destination for Original Gaming Peripherals & High-Performance Computer Hardware.",
+      "sameAs": [
+        "https://facebook.com/therevivetech",
+        "https://instagram.com/therevivetech"
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer service",
+        "telephone": "+92-300-1234567",
+        "areaServed": "PK",
+        "availableLanguage": ["English", "Urdu"]
+      }
+    };
+
+    // Global WebSite Schema for Sitelinks Searchbox
+    const websiteSchema = {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "@id": `${origin}/#website`,
+      "url": origin,
+      "name": "The Revive Tech",
+      "publisher": { "@id": `${origin}/#organization` },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": `${origin}/search?q={search_term_string}`
+        },
+        "query-input": "required name=search_term_string"
+      }
+    };
+
+    jsonLdSchemas.push(orgSchema, websiteSchema);
 
     const currentType = viewState.type;
 
     if (currentType === "home") {
       title = "The Revive Tech | Original Gaming Hardware & Tech Store Pakistan";
-      description = "Shop 100% genuine gaming keyboards, wireless headsets, ultralight mice, and PC accessories in Pakistan at unbeatable prices with nationwide Cash on Delivery.";
-      canonical = `${origin}/`;
-    } else if (currentType === "shop") {
-      title = "Shop All Gaming Hardware & Accessories | The Revive Tech";
-      description = "Explore our complete inventory of mechanical keyboards, gaming headsets, mice, and computer hardware in Pakistan.";
-      canonical = `${origin}/shop`;
+      description = "Shop 100% genuine gaming keyboards, wireless headsets, ultralight mice, and PC accessories in Pakistan at best prices with nationwide Cash on Delivery.";
+      canonicalPath = "/";
+    } else if (currentType === "shop" || currentType === "explore_all" || currentType === "sale") {
+      title = currentType === "sale" 
+        ? "On Sale Gaming Hardware & Discounted Gear | The Revive Tech"
+        : "Shop All Gaming Hardware & Accessories | The Revive Tech";
+      description = "Explore our complete inventory of mechanical keyboards, gaming headsets, 8000Hz gaming mice, and computer hardware in Pakistan with official warranty.";
+      canonicalPath = "/shop";
+
+      // Breadcrumbs for Shop
+      jsonLdSchemas.push({
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": `${origin}/` },
+          { "@type": "ListItem", "position": 2, "name": "Shop", "item": `${origin}/shop` }
+        ]
+      });
     } else if (currentType === "collections_list") {
-      title = "Gaming Hardware Collections | The Revive Tech";
-      description = "Browse official gaming hardware collections including Keyboards, Headsets, Mice, Audio, and Accessories.";
-      canonical = `${origin}/collections`;
+      title = "Gaming Hardware Collections | The Revive Tech Pakistan";
+      description = "Browse official gaming hardware collections including Mechanical Keyboards, Audiophile Headsets, Lightweight Mice, Audio, and Battlestation Accessories.";
+      canonicalPath = "/collections";
+
+      jsonLdSchemas.push({
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": `${origin}/` },
+          { "@type": "ListItem", "position": 2, "name": "Collections", "item": `${origin}/collections` }
+        ]
+      });
     } else if (currentType === "collection") {
       const handle = "handle" in viewState ? viewState.handle : "";
       const col = collections.find((c) => c.handle === handle);
       const colTitle = col?.title || handle.replace(/-/g, " ").toUpperCase();
-      title = `${colTitle} Collection | The Revive Tech Pakistan`;
-      description = col?.description ? col.description.slice(0, 160) : `Shop official ${colTitle} gaming gear at The Revive Tech with fast delivery across Pakistan.`;
+      
+      title = col?.seo?.title || `${colTitle} Collection | The Revive Tech Pakistan`;
+      description = col?.seo?.description || (col?.description ? col.description.slice(0, 160) : `Shop official ${colTitle} gaming gear at The Revive Tech with fast nationwide delivery in Pakistan.`);
       image = col?.image?.url || image;
-      canonical = `${origin}/collections/${handle}`;
+      canonicalPath = `/collections/${handle}`;
+
+      // CollectionPage Schema
+      jsonLdSchemas.push({
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "@id": `${origin}${canonicalPath}`,
+        "name": colTitle,
+        "description": description,
+        "url": `${origin}${canonicalPath}`,
+        "image": image,
+        "mainEntity": {
+          "@type": "ItemList",
+          "itemListElement": (col?.products || []).slice(0, 12).map((prod, idx) => ({
+            "@type": "ListItem",
+            "position": idx + 1,
+            "url": `${origin}/products/${prod.handle}`
+          }))
+        }
+      });
+
+      // Breadcrumbs for Collection
+      jsonLdSchemas.push({
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": `${origin}/` },
+          { "@type": "ListItem", "position": 2, "name": "Collections", "item": `${origin}/collections` },
+          { "@type": "ListItem", "position": 3, "name": colTitle, "item": `${origin}${canonicalPath}` }
+        ]
+      });
     } else if (currentType === "product") {
       const handle = "handle" in viewState ? viewState.handle : "";
       const product = products.find((p) => p.handle === handle);
       if (product) {
-        title = `${product.title} | The Revive Tech`;
-        description = product.description ? product.description.slice(0, 160) : `Buy original ${product.title} in Pakistan at best price.`;
+        title = product.seo?.title || `${product.title} | The Revive Tech`;
+        description = product.seo?.description || (product.description ? product.description.slice(0, 160) : `Buy original ${product.title} in Pakistan at best price with official warranty.`);
         image = product.featuredImage?.url || image;
-        canonical = `${origin}/products/${handle}`;
+        canonicalPath = `/products/${handle}`;
         ogType = "og:product";
 
-        jsonLd = {
+        // Rich Product Schema for Google Rich Snippets
+        const productSchema: any = {
           "@context": "https://schema.org/",
           "@type": "Product",
+          "@id": `${origin}${canonicalPath}`,
           "name": product.title,
-          "image": [product.featuredImage?.url || image],
+          "image": product.images?.map((img) => img.url) || [image],
           "description": product.description || description,
           "sku": product.variants?.[0]?.sku || product.id,
           "brand": {
@@ -58,9 +157,10 @@ export const SEOHead: React.FC = () => {
           },
           "offers": {
             "@type": "Offer",
-            "url": canonical,
+            "url": `${origin}${canonicalPath}`,
             "priceCurrency": product.priceRange?.minVariantPrice?.currencyCode || "PKR",
             "price": product.priceRange?.minVariantPrice?.amount || "0.00",
+            "itemCondition": "https://schema.org/NewCondition",
             "availability": product.availableForSale
               ? "https://schema.org/InStock"
               : "https://schema.org/OutOfStock",
@@ -70,42 +170,219 @@ export const SEOHead: React.FC = () => {
             },
           },
         };
+
+        // ONLY include AggregateRating if legitimate reviews exist!
+        if (product.rating && product.reviewsCount && product.reviewsCount > 0) {
+          productSchema.aggregateRating = {
+            "@type": "AggregateRating",
+            "ratingValue": Number(product.rating),
+            "reviewCount": Number(product.reviewsCount),
+            "bestRating": "5",
+            "worstRating": "1"
+          };
+        }
+
+        jsonLdSchemas.push(productSchema);
+
+        // Product Breadcrumbs Schema
+        jsonLdSchemas.push({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": `${origin}/` },
+            { "@type": "ListItem", "position": 2, "name": "Shop", "item": `${origin}/shop` },
+            { "@type": "ListItem", "position": 3, "name": product.title, "item": `${origin}${canonicalPath}` }
+          ]
+        });
       } else {
         title = `Product | The Revive Tech`;
-        canonical = `${origin}/products/${handle}`;
+        canonicalPath = `/products/${handle}`;
       }
-    } else if (currentType === "cart") {
-      title = "Your Shopping Cart | The Revive Tech";
-      description = "Review items in your shopping cart before secure checkout.";
-      canonical = `${origin}/cart`;
-    } else if (currentType === "search") {
-      const query = "query" in viewState ? viewState.query : "";
-      title = query ? `Search Results for "${query}" | The Revive Tech` : "Search Hardware | The Revive Tech";
-      canonical = `${origin}/search`;
     } else if (currentType === "about") {
-      title = "About Us | The Revive Tech";
-      description = "Learn about The Revive Tech — Pakistan's premier destination for original gaming gear and technology hardware.";
-      canonical = `${origin}/about`;
+      title = "About The Revive Tech | Premier Gaming Hardware Store Pakistan";
+      description = "Learn about The Revive Tech — Pakistan's trusted destination for 100% original esports gear, custom mechanical keyboards, ultralight gaming mice, and computer peripherals based in Lahore.";
+      canonicalPath = "/about";
+
+      jsonLdSchemas.push({
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": `${origin}/` },
+          { "@type": "ListItem", "position": 2, "name": "About Us", "item": `${origin}/about` }
+        ]
+      });
     } else if (currentType === "contact") {
-      title = "Contact Us & Support | The Revive Tech";
-      description = "Get in touch with The Revive Tech team for order assistance, product availability, or bulk sales in Pakistan.";
-      canonical = `${origin}/contact`;
+      title = "Contact Us & Customer Support | The Revive Tech Pakistan";
+      description = "Get in touch with The Revive Tech team in Lahore for order status tracking, product availability inquiries, switch compatibility, or warranty claims via WhatsApp or phone.";
+      canonicalPath = "/contact";
+
+      jsonLdSchemas.push({
+        "@context": "https://schema.org",
+        "@type": "ContactPage",
+        "@id": `${origin}/contact`,
+        "name": "Contact The Revive Tech",
+        "description": description,
+        "url": `${origin}/contact`,
+        "mainEntity": {
+          "@type": "Organization",
+          "name": "The Revive Tech",
+          "telephone": "+92-300-1234567",
+          "email": "support@therevivetech.pk",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Commercial Market, 96-D, Block D, DHA EME Sector",
+            "addressLocality": "Lahore",
+            "addressRegion": "Punjab",
+            "postalCode": "54000",
+            "addressCountry": "PK"
+          }
+        }
+      });
+
+      jsonLdSchemas.push({
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": `${origin}/` },
+          { "@type": "ListItem", "position": 2, "name": "Contact Us", "item": `${origin}/contact` }
+        ]
+      });
     } else if (currentType === "faq") {
-      title = "Frequently Asked Questions (FAQ) | The Revive Tech";
-      description = "Find answers regarding shipping, Cash on Delivery, warranty, returns, and order verification.";
-      canonical = `${origin}/faq`;
+      title = "Frequently Asked Questions (FAQ) | Warranty & Shipping | The Revive Tech";
+      description = "Find clear answers regarding Cash on Delivery, official brand warranty claims, express delivery timelines across Pakistan, order cancellation, and product authenticity.";
+      canonicalPath = "/faq";
+
+      // Rich FAQPage Schema for Search Snippets
+      jsonLdSchemas.push({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "@id": `${origin}/faq`,
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How does The Revive Tech ensure 100% authentic products in Pakistan?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "All items in our store are sourced directly from authorized brand distributors with verified serial numbers that can be registered on official manufacturer software. We guarantee 100% genuine hardware with official local warranty support."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Do you offer Cash on Delivery (COD) across Pakistan?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes! Cash on Delivery (COD) is available for all orders across Pakistan up to Rs. 100,000. Express shipping takes 24 to 48 hours to major cities like Karachi, Lahore, Islamabad, Rawalpindi, and Faisalabad."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does the Official 3-Year Hardware Warranty work?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "All gaming mice, keyboards, audio gear, and monitors purchased from The Revive Tech carry an official local manufacturer warranty. If a hardware defect occurs, send or bring the product to our Lahore hub with your invoice for RMA diagnosis and replacement."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How fast is express shipping for hardware orders?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Orders placed before 2 PM PST are dispatched same-day from our Lahore fulfillment hub. Express domestic shipping takes 1-2 business days with full real-time courier tracking codes sent via SMS and email."
+            }
+          }
+        ]
+      });
+
+      jsonLdSchemas.push({
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": `${origin}/` },
+          { "@type": "ListItem", "position": 2, "name": "FAQ", "item": `${origin}/faq` }
+        ]
+      });
     } else if (currentType === "blog") {
-      title = "Hardware Blog & Reviews | The Revive Tech";
-      description = "Read expert gaming hardware guides, mechanical keyboard switch breakdowns, and tech reviews.";
-      canonical = `${origin}/blog`;
+      title = "Gaming Tech Blog & Hardware Guides | The Revive Tech";
+      description = "Read expert gaming hardware guides, mechanical keyboard switch breakdowns, display refresh rate comparisons, and tech reviews by Pakistani hardware enthusiasts.";
+      canonicalPath = "/blog";
+
+      jsonLdSchemas.push({
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": `${origin}/` },
+          { "@type": "ListItem", "position": 2, "name": "Blog", "item": `${origin}/blog` }
+        ]
+      });
     } else if (currentType === "article") {
       const handle = "handle" in viewState ? viewState.handle : "";
       const art = articles.find((a) => a.handle === handle);
-      title = art ? `${art.title} | The Revive Tech Blog` : "Blog Article | The Revive Tech";
-      description = art?.excerpt || description;
+      title = art?.seo?.title || (art ? `${art.title} | The Revive Tech Blog` : "Blog Article | The Revive Tech");
+      description = art?.seo?.description || art?.excerpt || description;
       image = art?.image?.url || image;
-      canonical = `${origin}/blog/${handle}`;
+      canonicalPath = `/blog/${handle}`;
       ogType = "article";
+
+      if (art) {
+        // Article / BlogPosting Schema
+        jsonLdSchemas.push({
+          "@context": "https://schema.org",
+          "@type": "BlogPosting",
+          "@id": `${origin}${canonicalPath}`,
+          "headline": art.title,
+          "description": description,
+          "image": [image],
+          "datePublished": art.publishedAt,
+          "author": {
+            "@type": "Person",
+            "name": art.author || "The Revive Tech Team"
+          },
+          "publisher": {
+            "@type": "Organization",
+            "name": "The Revive Tech",
+            "logo": {
+              "@type": "ImageObject",
+              "url": `${origin}/logo.png`
+            }
+          }
+        });
+
+        // Article Breadcrumb Schema
+        jsonLdSchemas.push({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": `${origin}/` },
+            { "@type": "ListItem", "position": 2, "name": "Blog", "item": `${origin}/blog` },
+            { "@type": "ListItem", "position": 3, "name": art.title, "item": `${origin}${canonicalPath}` }
+          ]
+        });
+      }
+    } else if (currentType === "search") {
+      isUtilityPage = true;
+      const query = "query" in viewState ? viewState.query : "";
+      title = query ? `Search Results for "${query}" | The Revive Tech` : "Search Gaming Hardware | The Revive Tech";
+      canonicalPath = "/search";
+    } else if (currentType === "cart") {
+      isUtilityPage = true;
+      title = "Shopping Cart | The Revive Tech";
+      description = "Review items in your shopping cart before proceeding to secure checkout.";
+      canonicalPath = "/cart";
+    } else if (currentType === "account") {
+      isUtilityPage = true;
+      title = "My Account & Orders | The Revive Tech";
+      description = "Manage your account, order history, tracking details, and saved delivery addresses.";
+      canonicalPath = "/account";
+    } else if (currentType === "page") {
+      const handle = "handle" in viewState ? viewState.handle : "";
+      title = `${handle.replace(/-/g, " ").toUpperCase()} | The Revive Tech`;
+      canonicalPath = `/${handle}`;
+    }
+
+    // Handle Pagination Cleanly (Prevent duplicate canonicals & filter parameters bloat)
+    let fullCanonical = `${origin}${canonicalPath}`;
+    if (pageNum && Number(pageNum) > 1) {
+      fullCanonical = `${origin}${canonicalPath}?page=${pageNum}`;
     }
 
     // Update document title
@@ -122,41 +399,77 @@ export const SEOHead: React.FC = () => {
       el.setAttribute("content", content);
     };
 
+    // Robots Meta Tag (Utility pages use noindex, follow; content pages use index, follow)
+    const robotsContent = isUtilityPage ? "noindex, follow" : "index, follow";
+    setMetaTag('meta[name="robots"]', "name", "robots", robotsContent);
+
+    // Standard Meta Description
     setMetaTag('meta[name="description"]', "name", "description", description);
 
-    // Open Graph
+    // Open Graph Tags
     setMetaTag('meta[property="og:title"]', "property", "og:title", title);
     setMetaTag('meta[property="og:description"]', "property", "og:description", description);
     setMetaTag('meta[property="og:image"]', "property", "og:image", image);
-    setMetaTag('meta[property="og:url"]', "property", "og:url", canonical);
+    setMetaTag('meta[property="og:url"]', "property", "og:url", fullCanonical);
     setMetaTag('meta[property="og:type"]', "property", "og:type", ogType);
     setMetaTag('meta[property="og:site_name"]', "property", "og:site_name", "The Revive Tech");
 
-    // Twitter
+    // Twitter Card Tags
     setMetaTag('meta[name="twitter:card"]', "name", "twitter:card", "summary_large_image");
     setMetaTag('meta[name="twitter:title"]', "name", "twitter:title", title);
     setMetaTag('meta[name="twitter:description"]', "name", "twitter:description", description);
     setMetaTag('meta[name="twitter:image"]', "name", "twitter:image", image);
 
-    // Link Canonical
+    // Link Canonical Tag
     let linkCanonical = document.querySelector('link[rel="canonical"]');
     if (!linkCanonical) {
       linkCanonical = document.createElement("link");
       linkCanonical.setAttribute("rel", "canonical");
       document.head.appendChild(linkCanonical);
     }
-    linkCanonical.setAttribute("href", canonical);
+    linkCanonical.setAttribute("href", fullCanonical);
 
-    // JSON-LD Script
+    // Pagination Link Rel Prev / Next
+    let linkPrev = document.querySelector('link[rel="prev"]');
+    let linkNext = document.querySelector('link[rel="next"]');
+    
+    if (pageNum && Number(pageNum) > 1) {
+      const prevPage = Number(pageNum) - 1;
+      const prevUrl = prevPage === 1 ? `${origin}${canonicalPath}` : `${origin}${canonicalPath}?page=${prevPage}`;
+      if (!linkPrev) {
+        linkPrev = document.createElement("link");
+        linkPrev.setAttribute("rel", "prev");
+        document.head.appendChild(linkPrev);
+      }
+      linkPrev.setAttribute("href", prevUrl);
+    } else if (linkPrev) {
+      linkPrev.remove();
+    }
+
+    // Next page link setup
+    if (pageNum) {
+      const nextPage = Number(pageNum) + 1;
+      const nextUrl = `${origin}${canonicalPath}?page=${nextPage}`;
+      if (!linkNext) {
+        linkNext = document.createElement("link");
+        linkNext.setAttribute("rel", "next");
+        document.head.appendChild(linkNext);
+      }
+      linkNext.setAttribute("href", nextUrl);
+    } else if (linkNext) {
+      linkNext.remove();
+    }
+
+    // Inject JSON-LD Scripts dynamically into DOM
     let jsonLdScript = document.querySelector('script[id="seo-jsonld"]');
-    if (jsonLd) {
+    if (jsonLdSchemas.length > 0) {
       if (!jsonLdScript) {
         jsonLdScript = document.createElement("script");
         jsonLdScript.setAttribute("id", "seo-jsonld");
         jsonLdScript.setAttribute("type", "application/ld+json");
         document.head.appendChild(jsonLdScript);
       }
-      jsonLdScript.textContent = JSON.stringify(jsonLd);
+      jsonLdScript.textContent = JSON.stringify(jsonLdSchemas);
     } else if (jsonLdScript) {
       jsonLdScript.remove();
     }
@@ -164,3 +477,4 @@ export const SEOHead: React.FC = () => {
 
   return null;
 };
+

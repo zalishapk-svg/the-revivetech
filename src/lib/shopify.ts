@@ -16,6 +16,7 @@ export const STOREFRONT_QUERIES = {
             handle
             title
             description
+            seo { title description }
             vendor
             productType
             tags
@@ -60,6 +61,7 @@ export const STOREFRONT_QUERIES = {
         title
         description
         descriptionHtml
+        seo { title description }
         vendor
         productType
         tags
@@ -107,6 +109,7 @@ export const STOREFRONT_QUERIES = {
             handle
             title
             description
+            seo { title description }
             image { id url altText }
             products(first: 8) {
               edges {

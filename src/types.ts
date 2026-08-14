@@ -76,6 +76,7 @@ export interface Product {
   isBestSeller?: boolean;
   isFlashDeal?: boolean;
   discountPercentage?: number;
+  seo?: { title?: string; description?: string };
 }
 
 export interface Collection {
@@ -86,6 +87,7 @@ export interface Collection {
   image?: ImageNode;
   productsCount?: number;
   products?: Product[];
+  seo?: { title?: string; description?: string };
 }
 
 export interface BlogArticle {
@@ -100,6 +102,7 @@ export interface BlogArticle {
   image?: ImageNode;
   tags?: string[];
   readingTimeMinutes?: number;
+  seo?: { title?: string; description?: string };
 }
 
 export interface Blog {

@@ -6,6 +6,7 @@ import { formatMoney, calculateDiscount } from "../../lib/utils";
 import { Collection, Product } from "../../types";
 import { OffCanvasDrawer } from "../common/OffCanvasDrawer";
 import { ProductCard } from "../common/ProductCard";
+import { CollectionHero } from "./CollectionHero";
 
 interface CollectionPageProps {
   handle: string;
@@ -286,19 +287,11 @@ export const CollectionPage: React.FC<CollectionPageProps> = ({ handle }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         
         {/* Banner Header */}
-        <div className="bg-[#071910] border border-emerald-800/50 p-6 sm:p-10 rounded-3xl relative overflow-hidden shadow-2xl">
-          <div className="relative z-10 space-y-2">
-            <div className="flex items-center gap-2 text-xs font-mono font-bold text-emerald-400 uppercase tracking-widest">
-              <span>Collection Catalog</span>
-              <span>•</span>
-              <span className="text-slate-300">/collections/{handle}</span>
-            </div>
-            <h1 className="text-2xl sm:text-5xl font-black text-white">{collection.title}</h1>
-            <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
-              {collection.description || `Browse our official ${collection.title} catalog with full specs, warranty, and fast delivery across Pakistan.`}
-            </p>
-          </div>
-        </div>
+        <CollectionHero
+          collection={collection}
+          handle={handle}
+          totalProductsCount={baseProducts.length}
+        />
 
         {/* Filters & Grid Container */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">

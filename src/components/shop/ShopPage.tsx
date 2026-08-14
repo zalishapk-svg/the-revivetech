@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useShopify } from "../../context/ShopifyContext";
 import { formatMoney, calculateDiscount, hasCompareAtDiscount } from "../../lib/utils";
-import { YellowTape } from "../common/YellowTape";
+import { ShopHero } from "./ShopHero";
 import { ProductCard } from "../common/ProductCard";
 import { ProductSkeletonCard } from "../common/ProductSkeletonCard";
 import { OffCanvasDrawer } from "../common/OffCanvasDrawer";
@@ -321,39 +321,14 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
         </nav>
 
         {/* Shop Banner / Header */}
-        <div className="relative rounded-3xl bg-gradient-to-r from-[#051a0d] via-[#082a15] to-[#030e07] border border-emerald-900/40 p-6 md:p-12 mb-8 overflow-hidden shadow-2xl">
-          <div className="absolute -right-10 -bottom-10 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="relative z-10 max-w-2xl">
-            <span className="text-emerald-400 text-xs font-mono uppercase tracking-widest bg-emerald-950/80 px-3 py-1 rounded-full border border-emerald-800/60 inline-flex items-center gap-2 mb-3">
-              <Sparkles className="w-3 h-3 text-emerald-400" />
-              {isSale ? (
-                `Shopify Sale & Discounted Hardware (${baseProducts.length} Items)`
-              ) : isExplore ? (
-                `Complete Store Catalog (${products.length} Items)`
-              ) : (
-                "Official Hardware Store"
-              )}
-            </span>
-            <h1 className="text-2xl md:text-5xl font-black text-white tracking-tight leading-tight mb-4">
-              {isSale ? (
-                <>On Sale <YellowTape text="DISCOUNTED GEAR" /></>
-              ) : isExplore ? (
-                <>Explore All <YellowTape text="STORE PRODUCTS" /></>
-              ) : (
-                <>Explore <YellowTape text="THE REVIVE TECH SHOP" /></>
-              )}
-            </h1>
-            <p className="text-slate-300 text-xs md:text-base leading-relaxed">
-              {isSale ? (
-                `Showing ONLY live discounted products directly from our Shopify store inventory with active compare-at prices. Deals update automatically.`
-              ) : isExplore ? (
-                `Viewing our complete Shopify store catalog (${products.length} products total). Every single item in our store is accessible below with full category filters, search, sorting, and pagination.`
-              ) : (
-                `Browse our full collection of genuine gaming mice, custom mechanical keyboards, audiophile headsets, high-refresh displays, and battlestation accessories with official Pakistan warranty.`
-              )}
-            </p>
-          </div>
-        </div>
+        <ShopHero
+          isSale={isSale}
+          isExplore={isExplore}
+          itemCount={baseProducts.length}
+          totalProductsCount={products.length}
+          collections={collections}
+          onNavigateToCollection={navigateToCollection}
+        />
 
         {/* Filter Toolbar Header */}
         <div className="bg-[#05140b] border border-emerald-900/40 rounded-2xl p-4 mb-8 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl">
