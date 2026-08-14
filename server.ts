@@ -624,6 +624,17 @@ app.post("/api/shopify/webhooks", async (req, res) => {
 });
 
 async function startServer() {
+  // Handle Shopify checkout path redirects
+  const handleCheckoutRedirect = (req: express.Request, res: express.Response) => {
+    const config = getConfig();
+    const domain = config.storeDomain || "dbbys1-nd.myshopify.com";
+    const targetUrl = `https://${domain}${req.originalUrl}`;
+    console.log(`[Express Checkout Redirect] Forwarding ${req.originalUrl} -> ${targetUrl}`);
+    return res.redirect(302, targetUrl);
+  };
+
+  app.get(["/cart/c/*", "/cart/checkouts/*", "/checkouts/*", "/cart/k/*"], handleCheckoutRedirect);
+
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },

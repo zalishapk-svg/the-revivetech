@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Heart, Eye, ShoppingBag, Check, Layers } from "lucide-react";
 import { Product } from "../../types";
 import { useShopify } from "../../context/ShopifyContext";
@@ -41,6 +41,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className = "
   }, [product.images, rawPrimaryImage]);
 
   const secondImage = useMemo(() => (rawSecondImage ? getOptimizedImageUrl(rawSecondImage, 600) : null), [rawSecondImage]);
+
+  // Preload secondary image in background as soon as component mounts
+  useEffect(() => {
+    if (secondImage) {
+      const img = new Image();
+      img.src = secondImage;
+    }
+  }, [secondImage]);
 
   const priceAmount = product.priceRange?.minVariantPrice?.amount || "0";
   const currencyCode = product.priceRange?.minVariantPrice?.currencyCode || "PKR";
@@ -116,13 +124,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className = "
               }`}
             />
 
-            {/* Second Image Crossfade (only rendered when hovered to save bandwidth) */}
-            {secondImage && isHovered && (
+            {/* Second Image Crossfade (always in DOM for instant preloaded hover transition) */}
+            {secondImage && (
               <img
                 src={secondImage}
                 alt={`${product.title} alternate view`}
                 referrerPolicy="no-referrer"
-                loading="lazy"
+                loading={priority ? "eager" : "lazy"}
                 decoding="async"
                 className="absolute inset-0 w-full h-full object-cover object-center opacity-0 group-hover/productcard:opacity-100 transition-all duration-500 ease-out scale-100 group-hover/productcard:scale-105 pointer-events-none"
               />

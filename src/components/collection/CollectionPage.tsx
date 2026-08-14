@@ -373,8 +373,8 @@ export const CollectionPage: React.FC<CollectionPageProps> = ({ handle }) => {
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-3 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {paginatedProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
+                {paginatedProducts.map((product, idx) => (
+                  <ProductCard key={product.id} product={product} priority={idx < 4} />
                 ))}
               </div>
             )}

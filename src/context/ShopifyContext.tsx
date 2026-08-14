@@ -208,6 +208,9 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   };
 
+  const [storeDomain, setStoreDomain] = useState<string>("dbbys1-nd.myshopify.com");
+  const [isMockShop, setIsMockShop] = useState<boolean>(false);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
     const handlePopState = () => {
@@ -215,15 +218,27 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setViewStateInternal(newView);
     };
     window.addEventListener("popstate", handlePopState);
+
+    // Client-side guard for Shopify checkout paths if landed on SPA
+    const pathname = window.location.pathname;
+    if (
+      pathname.startsWith("/cart/c/") ||
+      pathname.startsWith("/cart/checkouts/") ||
+      pathname.startsWith("/checkouts/") ||
+      pathname.startsWith("/cart/k/")
+    ) {
+      const shopifyDomain = storeDomain || "dbbys1-nd.myshopify.com";
+      const targetUrl = `https://${shopifyDomain}${pathname}${window.location.search}`;
+      console.log("[Client Checkout Guard] Redirecting to Shopify checkout:", targetUrl);
+      window.location.replace(targetUrl);
+    }
+
     return () => window.removeEventListener("popstate", handlePopState);
-  }, []);
+  }, [storeDomain]);
   const [products, setProducts] = useState<Product[]>([]);
   const [collections, setCollections] = useState<Collection[]>([]);
   const [articles, setArticles] = useState<BlogArticle[]>([]);
   const [isLoadingData, setIsLoadingData] = useState<boolean>(true);
-
-  const [storeDomain, setStoreDomain] = useState<string>("dbbys1-nd.myshopify.com");
-  const [isMockShop, setIsMockShop] = useState<boolean>(false);
 
   // Cart State
   const [cartLines, setCartLines] = useState<CartLineItem[]>(() => {
@@ -700,7 +715,8 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
       if (checkoutUrl) {
         showToast("Redirecting to Shopify Checkout...");
-        window.location.href = checkoutUrl;
+        // Full browser navigation to external Shopify checkout URL
+        window.location.assign(checkoutUrl);
       } else {
         const errorMsg = resJson?.data?.cartCreate?.userErrors?.[0]?.message || "Could not generate checkout link.";
         console.error("Shopify Cart Create Error:", resJson);
