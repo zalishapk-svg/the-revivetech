@@ -16,6 +16,10 @@
       "destination": "/api/shopify/auth?action=callback"
     },
     {
+      "source": "/api/shopify/order/:reference",
+      "destination": "/api/shopify/order/[reference]?reference=:reference"
+    },
+    {
       "source": "/sitemap.xml",
       "destination": "/api/sitemap"
     },

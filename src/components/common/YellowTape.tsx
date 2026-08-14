@@ -1,16 +1,19 @@
 import React from "react";
 
 interface YellowTapeProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
+  text?: string;
   className?: string;
   tapeClassName?: string;
 }
 
 export const YellowTape: React.FC<YellowTapeProps> = ({
   children,
+  text,
   className = "",
   tapeClassName = "",
 }) => {
+  const content = children ?? text;
   return (
     <span className={`relative inline-block px-2 py-0.5 z-0 ${className}`}>
       {/* Editorial Yellow Highlight Tape shape behind text */}
@@ -21,7 +24,7 @@ export const YellowTape: React.FC<YellowTapeProps> = ({
         }}
       />
       <span className="relative z-10 font-black text-slate-950 dark:text-slate-950">
-        {children}
+        {content}
       </span>
     </span>
   );

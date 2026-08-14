@@ -16,19 +16,19 @@ export default defineConfig(() => {
         output: {
           manualChunks(id) {
             if (id.includes('node_modules')) {
-              if (id.includes('react') || id.includes('react-dom')) {
-                return 'vendor-react';
-              }
-              if (id.includes('motion')) {
-                return 'vendor-motion';
+              // Group all core React runtime and Motion packages together to prevent circular chunk deadlock
+              if (
+                id.includes('react') ||
+                id.includes('react-dom') ||
+                id.includes('motion') ||
+                id.includes('framer-motion')
+              ) {
+                return 'vendor-framework';
               }
               if (id.includes('lucide-react')) {
                 return 'vendor-lucide';
               }
-              if (id.includes('lenis')) {
-                return 'vendor-lenis';
-              }
-              return 'vendor';
+              return 'vendor-libs';
             }
           },
         },

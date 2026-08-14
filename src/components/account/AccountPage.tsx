@@ -137,7 +137,7 @@ export const AccountPage: React.FC = () => {
                   {order.lineItems.map((item, idx) => (
                     <div key={idx} className="flex items-center justify-between text-xs">
                       <span className="text-slate-300">{item.title}</span>
-                      <span className="font-mono text-emerald-400">Qty: {item.quantity} × {formatMoney(item.originalUnitPrice.amount)}</span>
+                      <span className="font-mono text-emerald-400">Qty: {item.quantity} × {formatMoney(item.price.amount)}</span>
                     </div>
                   ))}
                 </div>

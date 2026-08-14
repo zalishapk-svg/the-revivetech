@@ -1,5 +1,6 @@
 import React, { lazy, Suspense } from "react";
 import { ShopifyProvider, useShopify } from "./context/ShopifyContext";
+import { ErrorBoundary } from "./components/common/ErrorBoundary";
 import { SEOHead } from "./components/common/SEOHead";
 import { AnnouncementBar } from "./components/common/AnnouncementBar";
 import { Header } from "./components/common/Header";
@@ -110,8 +111,10 @@ const MainLayout: React.FC = () => {
 
 export default function App() {
   return (
-    <ShopifyProvider>
-      <MainLayout />
-    </ShopifyProvider>
+    <ErrorBoundary>
+      <ShopifyProvider>
+        <MainLayout />
+      </ShopifyProvider>
+    </ErrorBoundary>
   );
 }

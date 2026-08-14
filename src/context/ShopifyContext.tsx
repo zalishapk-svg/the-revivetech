@@ -103,7 +103,7 @@ interface ShopifyContextType {
   // Customer Account
   customer: Customer | null;
   isLoggedIn: boolean;
-  loginCustomer: (email: string) => void;
+  loginCustomer: (email: string, password?: string) => void;
   logoutCustomer: () => void;
 
   // Shopify Config Bar Modal
@@ -740,7 +740,7 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   // Account login
-  const loginCustomer = (email: string) => {
+  const loginCustomer = (email: string, password?: string) => {
     const mockCustomer: Customer = {
       id: "gid://shopify/Customer/99001",
       firstName: email.split("@")[0] || "Gamer",
