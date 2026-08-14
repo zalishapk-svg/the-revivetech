@@ -12,7 +12,7 @@ import {
   validateShopifyCartItems,
   createShopifyAdminOrder,
   getOrderConfirmationRecord,
-  calculateShippingRates,
+  fetchShopifyShippingRates,
 } from "./_lib/shopify-server.js";
 
 /**
@@ -504,11 +504,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // 5. SHIPPING RATES & ORDER OPERATIONS
     // -------------------------------------------------------------------------
 
-    // 5a. Calculate Shipping Rates
+    // 5a. Calculate Dynamic Shopify Shipping Rates
     if (path === "shopify/shipping-rates") {
       const body = req.method === "POST" ? req.body : req.query;
-      const subtotal = parseFloat(String(body?.subtotal || 0));
-      const rates = calculateShippingRates(subtotal);
+      const items = body?.items || [];
+      const shippingAddress = body?.shippingAddress;
+      const rates = await fetchShopifyShippingRates(items, shippingAddress, config.storeDomain);
       return res.status(200).json({ success: true, rates });
     }
 
@@ -554,7 +555,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       const validatedSubtotal = inventoryResult.subtotal;
-      const availableShippingRates = calculateShippingRates(validatedSubtotal);
+      const availableShippingRates = await fetchShopifyShippingRates(items, shippingAddress, config.storeDomain);
       const selectedRate =
         availableShippingRates.find((r) => r.id === shippingMethodId) || availableShippingRates[0];
 
@@ -566,7 +567,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         discountAmount = Math.round(validatedSubtotal * 0.05);
       }
 
-      // Step 2: Create Order
+      // Step 2: Create Real Order in Shopify Admin
       const orderCreationResult = await createShopifyAdminOrder({
         customer: {
           firstName: customer.firstName.trim(),
@@ -585,17 +586,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         shippingMethod: {
           title: selectedRate.title,
           price: selectedRate.price,
-          code: selectedRate.id.toUpperCase(),
+          code: selectedRate.id,
         },
         discountCode: discountAmount > 0 ? upperCode : undefined,
         discountAmount,
         notes: notes?.trim(),
         storeDomain: config.storeDomain,
+        reqHost: req.headers?.host,
       });
 
       if (!orderCreationResult.success) {
         return res.status(500).json({
           error: orderCreationResult.error || "Failed to create order on Shopify.",
+          authUrl: orderCreationResult.authUrl,
         });
       }
 

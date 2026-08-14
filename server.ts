@@ -6,7 +6,7 @@ import {
   getConfig, shopifyStorage, getAppBaseUrl, 
   STABLE_ADMIN_API_VERSION, STABLE_STOREFRONT_API_VERSION, REQUIRED_ADMIN_SCOPES,
   checkFirebaseAdminHealth, checkShopifyStorefrontHealth,
-  validateShopifyCartItems, createShopifyAdminOrder, getOrderConfirmationRecord, calculateShippingRates
+  validateShopifyCartItems, createShopifyAdminOrder, getOrderConfirmationRecord, fetchShopifyShippingRates
 } from "./api/_lib/shopify-server.js";
 
 const app = express();
@@ -625,10 +625,12 @@ app.post("/api/shopify/webhooks", async (req, res) => {
 });
 
 // Shipping Rates Calculation Endpoint
-app.all(["/api/shopify/shipping-rates"], (req, res) => {
+app.all(["/api/shopify/shipping-rates"], async (req, res) => {
   const body = req.method === "POST" ? req.body : req.query;
-  const subtotal = parseFloat(String(body?.subtotal || 0));
-  const rates = calculateShippingRates(subtotal);
+  const config = getConfig();
+  const items = body?.items || [];
+  const shippingAddress = body?.shippingAddress;
+  const rates = await fetchShopifyShippingRates(items, shippingAddress, config.storeDomain);
   return res.json({ success: true, rates });
 });
 
@@ -672,7 +674,7 @@ app.post("/api/shopify/order/create", async (req, res) => {
     }
 
     const validatedSubtotal = inventoryResult.subtotal;
-    const availableShippingRates = calculateShippingRates(validatedSubtotal);
+    const availableShippingRates = await fetchShopifyShippingRates(items, shippingAddress, config.storeDomain);
     const selectedRate =
       availableShippingRates.find((r) => r.id === shippingMethodId) || availableShippingRates[0];
 
@@ -702,17 +704,19 @@ app.post("/api/shopify/order/create", async (req, res) => {
       shippingMethod: {
         title: selectedRate.title,
         price: selectedRate.price,
-        code: selectedRate.id.toUpperCase(),
+        code: selectedRate.id,
       },
       discountCode: discountAmount > 0 ? upperCode : undefined,
       discountAmount,
       notes: notes?.trim(),
       storeDomain: config.storeDomain,
+      reqHost: req.headers?.host,
     });
 
     if (!orderCreationResult.success) {
       return res.status(500).json({
         error: orderCreationResult.error || "Failed to create order on Shopify.",
+        authUrl: orderCreationResult.authUrl,
       });
     }
 

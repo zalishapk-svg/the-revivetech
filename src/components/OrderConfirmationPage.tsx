@@ -6,19 +6,13 @@ import {
   Package,
   Truck,
   MapPin,
-  Phone,
-  Mail,
-  Calendar,
   Clock,
   Printer,
   ShoppingBag,
-  ShieldCheck,
   CreditCard,
   MessageSquare,
-  Sparkles,
   ArrowRight,
   Loader2,
-  AlertCircle,
 } from "lucide-react";
 
 interface OrderConfirmationPageProps {
@@ -28,10 +22,10 @@ interface OrderConfirmationPageProps {
 export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
   orderReference,
 }) => {
-  const { navigateToShop, navigateToHome } = useShopify();
+  const { navigateToShop } = useShopify();
   const [order, setOrder] = useState<OrderConfirmationData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -56,7 +50,6 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
           return;
         }
 
-        // If not found in backend cache, build graceful fallback from reference
         if (isMounted) {
           setError(
             data.error || "Order reference details are being processed by Shopify. Your order is registered."
@@ -97,7 +90,7 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
   if (isLoading) {
     return (
       <div id="order-loading-screen" className="min-h-[70vh] flex flex-col items-center justify-center px-4 py-16 bg-slate-950 text-slate-100">
-        <Loader2 className="w-12 h-12 text-cyan-400 animate-spin mb-4" />
+        <Loader2 className="w-12 h-12 text-emerald-400 animate-spin mb-4" />
         <h2 className="text-xl font-bold text-white mb-2">Loading Order Confirmation...</h2>
         <p className="text-sm text-slate-400">Verifying order #{orderReference} with Shopify</p>
       </div>
@@ -125,15 +118,15 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Success Header Box */}
         <div className="bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border border-slate-800 rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden text-center print:border-none print:shadow-none">
-          <div className="absolute -top-24 -right-24 w-60 h-60 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-24 -left-24 w-60 h-60 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -top-24 -right-24 w-60 h-60 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-24 -left-24 w-60 h-60 bg-green-500/10 rounded-full blur-3xl pointer-events-none" />
 
           {/* Animated Badge */}
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-emerald-500/20 border-2 border-emerald-500/40 text-emerald-400 mb-6 shadow-xl shadow-emerald-500/10">
             <CheckCircle2 className="w-10 h-10 animate-bounce" />
           </div>
 
-          <span className="text-xs uppercase tracking-widest font-extrabold text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 px-3 py-1 rounded-full mb-3 inline-block">
+          <span className="text-xs uppercase tracking-widest font-extrabold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full mb-3 inline-block">
             Shopify Order Confirmed
           </span>
 
@@ -150,7 +143,7 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
               <span className="block text-[11px] uppercase tracking-wider text-slate-400 font-semibold">
                 Shopify Order #
               </span>
-              <span className="font-bold text-sm text-cyan-400">
+              <span className="font-bold text-sm text-emerald-400">
                 {order?.orderNumber || `#${orderReference.split("-")[1] || "NEW"}`}
               </span>
             </div>
@@ -185,7 +178,7 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
         {/* Order Status Timeline */}
         <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl print:hidden">
           <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-6 flex items-center gap-2">
-            <Clock className="w-4 h-4 text-cyan-400" />
+            <Clock className="w-4 h-4 text-emerald-400" />
             Live Delivery Journey
           </h3>
 
@@ -201,11 +194,11 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
             </div>
 
             <div className="flex sm:flex-col items-center sm:items-start gap-3">
-              <div className="w-8 h-8 rounded-full bg-cyan-500 text-slate-950 flex items-center justify-center font-bold text-xs shrink-0 ring-4 ring-cyan-500/20 animate-pulse">
+              <div className="w-8 h-8 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center font-bold text-xs shrink-0 ring-4 ring-emerald-500/20 animate-pulse">
                 2
               </div>
               <div>
-                <p className="text-xs font-bold text-cyan-400">2. Quality Check</p>
+                <p className="text-xs font-bold text-emerald-400">2. Quality Check</p>
                 <p className="text-[11px] text-slate-400">Inspection & Packing</p>
               </div>
             </div>
@@ -237,7 +230,7 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
           {/* Customer & Shipping Details */}
           <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
             <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2 pb-3 border-b border-slate-800">
-              <MapPin className="w-4 h-4 text-cyan-400" />
+              <MapPin className="w-4 h-4 text-emerald-400" />
               Delivery & Contact Details
             </h3>
 
@@ -264,7 +257,7 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
               <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800/60">
                 <div>
                   <span className="text-slate-400 block font-medium">Phone Number:</span>
-                  <span className="text-cyan-300 font-semibold">{order?.customer?.phone}</span>
+                  <span className="text-emerald-300 font-semibold">{order?.customer?.phone}</span>
                 </div>
                 <div>
                   <span className="text-slate-400 block font-medium">Email:</span>
@@ -279,13 +272,13 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
           {/* Payment & Logistics Method */}
           <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
             <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2 pb-3 border-b border-slate-800">
-              <CreditCard className="w-4 h-4 text-cyan-400" />
+              <CreditCard className="w-4 h-4 text-emerald-400" />
               Payment & Shipping Method
             </h3>
 
             <div className="space-y-4 text-xs">
               <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 flex items-start gap-3">
-                <Package className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5" />
+                <Package className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
                 <div>
                   <span className="font-bold text-white block">Cash on Delivery (COD)</span>
                   <p className="text-slate-400 text-[11px] mt-0.5">
@@ -295,7 +288,7 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
               </div>
 
               <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 flex items-start gap-3">
-                <Truck className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5" />
+                <Truck className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
                 <div>
                   <span className="font-bold text-white block">
                     {order?.shippingLine?.title || "Standard Courier Delivery"}
@@ -312,7 +305,7 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
         {/* Ordered Line Items & Price Summary */}
         <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl">
           <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2 pb-4 mb-4 border-b border-slate-800">
-            <ShoppingBag className="w-4 h-4 text-cyan-400" />
+            <ShoppingBag className="w-4 h-4 text-emerald-400" />
             Ordered Items ({order?.items?.length || 1})
           </h3>
 
@@ -379,7 +372,7 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
 
             <div className="flex justify-between items-baseline pt-3 border-t border-slate-800 text-sm">
               <span className="font-extrabold text-white">Total Amount Due (COD):</span>
-              <span className="text-2xl font-black text-cyan-400">
+              <span className="text-2xl font-black text-emerald-400">
                 Rs. {(order?.total || 0).toLocaleString()}
               </span>
             </div>
@@ -414,7 +407,7 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
             id="btn-order-continue-shopping"
             type="button"
             onClick={navigateToShop}
-            className="px-8 py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-black text-sm shadow-xl shadow-cyan-500/20 transition-all flex items-center gap-2"
+            className="px-8 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 hover:from-emerald-400 hover:to-green-500 text-slate-950 font-black text-sm shadow-xl shadow-emerald-500/20 transition-all flex items-center gap-2"
           >
             <span>Continue Shopping</span>
             <ArrowRight className="w-4 h-4" />

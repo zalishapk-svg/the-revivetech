@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useShopify } from "../context/ShopifyContext";
 import { CheckoutCustomerData, CheckoutShippingAddress, ShippingOption } from "../types";
 import {
@@ -20,6 +20,7 @@ import {
   Tag,
   Clock,
   Package,
+  ExternalLink,
 } from "lucide-react";
 
 export const CheckoutPage: React.FC = () => {
@@ -55,7 +56,7 @@ export const CheckoutPage: React.FC = () => {
         ? JSON.parse(saved)
         : {
             address1: "",
-            city: "",
+            city: "Lahore",
             province: "Punjab",
             postalCode: "",
             country: "Pakistan",
@@ -63,7 +64,7 @@ export const CheckoutPage: React.FC = () => {
     } catch {
       return {
         address1: "",
-        city: "",
+        city: "Lahore",
         province: "Punjab",
         postalCode: "",
         country: "Pakistan",
@@ -79,6 +80,7 @@ export const CheckoutPage: React.FC = () => {
   const [isLoadingRates, setIsLoadingRates] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [authRequiredUrl, setAuthRequiredUrl] = useState<string | null>(null);
 
   // Form Validation Errors
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -108,77 +110,80 @@ export const CheckoutPage: React.FC = () => {
     "Gilgit-Baltistan",
   ];
 
-  // Fetch verified shipping rates
-  useEffect(() => {
-    let isMounted = true;
-    async function loadRates() {
-      setIsLoadingRates(true);
-      try {
-        const res = await fetch("/api/shopify/shipping-rates", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ subtotal: cartSubtotal }),
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (isMounted && data.rates && data.rates.length > 0) {
-            setShippingOptions(data.rates);
-            if (!data.rates.some((r: any) => r.id === selectedShippingId)) {
-              setSelectedShippingId(data.rates[0].id);
-            }
-            setIsLoadingRates(false);
-            return;
-          }
-        }
-      } catch (err) {
-        console.warn("Failed to load dynamic shipping rates:", err);
-      }
+  // Fetch verified shipping rates directly from Shopify
+  const loadDynamicShippingRates = useCallback(async () => {
+    setIsLoadingRates(true);
+    try {
+      const itemsPayload = cartLines.map((line) => ({
+        variantId: line.merchandise.id,
+        quantity: line.quantity,
+      }));
 
-      // Fallback shipping rates calculation
-      if (isMounted) {
-        const isFree = cartSubtotal >= 15000;
-        const defaultRates: ShippingOption[] = [
-          {
-            id: "standard",
-            title: "Standard Courier Delivery (TCS / Trax / Leopard)",
-            price: isFree ? 0 : 250,
-            currency: "PKR",
-            estimatedDays: "2-4 Business Days",
-            description: isFree
-              ? "FREE Express delivery on orders above Rs. 15,000"
-              : "Flat-rate secure courier delivery across all cities in Pakistan",
+      const res = await fetch("/api/shopify/shipping-rates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: itemsPayload,
+          shippingAddress: {
+            city: shippingAddress.city || "Lahore",
+            province: shippingAddress.province || "Punjab",
+            address1: shippingAddress.address1 || "Main Boulevard",
+            postalCode: shippingAddress.postalCode || "54000",
+            country: shippingAddress.country || "Pakistan",
           },
-          {
-            id: "express",
-            title: "Priority Air Express Delivery",
-            price: isFree ? 250 : 500,
-            currency: "PKR",
-            estimatedDays: "1-2 Business Days",
-            description: "Fast-tracked priority air dispatch with real-time tracking updates",
-          },
-          {
-            id: "pickup",
-            title: "Self-Pickup (ReviveTech Experience Center)",
-            price: 0,
-            currency: "PKR",
-            estimatedDays: "Same Day / Ready in 2 Hours",
-            description: "Pick up directly from Lahore / Islamabad tech hubs with instant product inspection",
-          },
-        ];
-        setShippingOptions(defaultRates);
-        setIsLoadingRates(false);
+          subtotal: cartSubtotal,
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.rates && data.rates.length > 0) {
+          setShippingOptions(data.rates);
+          if (!data.rates.some((r: any) => r.id === selectedShippingId)) {
+            setSelectedShippingId(data.rates[0].id);
+          }
+          setIsLoadingRates(false);
+          return;
+        }
       }
+    } catch (err) {
+      console.warn("Failed to load dynamic shipping rates:", err);
     }
 
-    loadRates();
-    return () => {
-      isMounted = false;
-    };
-  }, [cartSubtotal]);
+    // Default fallback shipping rates calculation if shopify returns empty
+    const isFree = cartSubtotal >= 15000;
+    const defaultRates: ShippingOption[] = [
+      {
+        id: "standard",
+        title: "Standard Courier Delivery (TCS / Trax / Leopard)",
+        price: isFree ? 0 : 250,
+        currency: "PKR",
+        estimatedDays: "2-4 Business Days",
+        description: isFree
+          ? "FREE Express delivery on orders above Rs. 15,000"
+          : "Flat-rate secure courier delivery across all cities in Pakistan",
+      },
+      {
+        id: "express",
+        title: "Priority Air Express Delivery",
+        price: isFree ? 250 : 500,
+        currency: "PKR",
+        estimatedDays: "1-2 Business Days",
+        description: "Fast-tracked priority air dispatch with real-time tracking updates",
+      },
+    ];
+    setShippingOptions(defaultRates);
+    setIsLoadingRates(false);
+  }, [cartLines, cartSubtotal, shippingAddress.city, shippingAddress.province, selectedShippingId]);
+
+  useEffect(() => {
+    loadDynamicShippingRates();
+  }, [cartSubtotal, shippingAddress.city, shippingAddress.province]);
 
   // Selected Shipping Rate
   const selectedShipping =
-    shippingOptions.find((r) => r.id === selectedShippingId) || shippingOptions[0] || {
+    shippingOptions.find((r) => r.id === selectedShippingId) ||
+    shippingOptions[0] || {
       id: "standard",
       title: "Standard Delivery",
       price: cartSubtotal >= 15000 ? 0 : 250,
@@ -230,6 +235,7 @@ export const CheckoutPage: React.FC = () => {
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
+    setAuthRequiredUrl(null);
 
     if (cartLines.length === 0) {
       setErrorMessage("Your cart is empty. Please add items to proceed.");
@@ -248,13 +254,11 @@ export const CheckoutPage: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      // Save customer details in local storage for convenience
       try {
         localStorage.setItem("trt_checkout_customer", JSON.stringify(customerData));
         localStorage.setItem("trt_checkout_address", JSON.stringify(shippingAddress));
       } catch {}
 
-      // Prepare order items
       const itemsPayload = cartLines.map((line) => ({
         variantId: line.merchandise.id,
         quantity: line.quantity,
@@ -280,6 +284,9 @@ export const CheckoutPage: React.FC = () => {
           data.error ||
           "We encountered an issue creating your order with Shopify. Please verify your details or try again.";
         setErrorMessage(errorText);
+        if (data.authUrl) {
+          setAuthRequiredUrl(data.authUrl);
+        }
         setIsSubmitting(false);
         window.scrollTo({ top: 0, behavior: "smooth" });
         return;
@@ -287,11 +294,7 @@ export const CheckoutPage: React.FC = () => {
 
       // Order created successfully on Shopify!
       const orderRef = data.orderReference || data.orderNumber;
-
-      // Clear the local cart
       clearCart();
-
-      // Navigate to order confirmation
       navigateToOrderConfirmation(orderRef);
     } catch (err: any) {
       console.error("Order creation network error:", err);
@@ -307,7 +310,7 @@ export const CheckoutPage: React.FC = () => {
   if (cartLines.length === 0) {
     return (
       <div id="checkout-empty-view" className="min-h-[70vh] flex flex-col items-center justify-center px-4 py-16 bg-slate-900/50">
-        <div className="w-20 h-20 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-cyan-400 mb-6 shadow-xl">
+        <div className="w-20 h-20 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-emerald-400 mb-6 shadow-xl">
           <ShoppingBag className="w-10 h-10" />
         </div>
         <h2 className="text-2xl font-bold text-white mb-2">Your Cart is Empty</h2>
@@ -317,7 +320,7 @@ export const CheckoutPage: React.FC = () => {
         <button
           id="btn-checkout-explore"
           onClick={navigateToShop}
-          className="px-8 py-3.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold rounded-xl shadow-lg shadow-cyan-500/20 transition-all flex items-center gap-2"
+          className="px-8 py-3.5 bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 hover:from-emerald-400 hover:to-green-500 text-slate-950 font-bold rounded-xl shadow-lg shadow-emerald-500/20 transition-all flex items-center gap-2"
         >
           <Sparkles className="w-5 h-5" />
           Explore Store Catalog
@@ -356,7 +359,7 @@ export const CheckoutPage: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3 self-start sm:self-auto bg-slate-900/90 border border-slate-800/80 px-3.5 py-2 rounded-xl text-xs text-slate-300">
-            <ShieldCheck className="w-4 h-4 text-cyan-400 shrink-0" />
+            <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
             <span>256-Bit SSL Encrypted Checkout</span>
           </div>
         </div>
@@ -365,20 +368,35 @@ export const CheckoutPage: React.FC = () => {
         {errorMessage && (
           <div
             id="checkout-error-banner"
-            className="mb-8 p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 flex items-start gap-3 text-sm animate-shake"
+            className="mb-8 p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm animate-shake"
           >
-            <AlertCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <strong className="font-semibold block text-rose-200">Checkout Error:</strong>
-              <span>{errorMessage}</span>
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <strong className="font-semibold block text-rose-200">Checkout Notice:</strong>
+                <span>{errorMessage}</span>
+              </div>
             </div>
-            <button
-              type="button"
-              onClick={() => setErrorMessage(null)}
-              className="text-rose-400 hover:text-rose-200 text-xs font-semibold px-2 py-1"
-            >
-              Dismiss
-            </button>
+            <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+              {authRequiredUrl && (
+                <a
+                  href={authRequiredUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-lg transition-colors flex items-center gap-1.5"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  Connect Shopify App
+                </a>
+              )}
+              <button
+                type="button"
+                onClick={() => setErrorMessage(null)}
+                className="text-rose-400 hover:text-rose-200 text-xs font-semibold px-2 py-1"
+              >
+                Dismiss
+              </button>
+            </div>
           </div>
         )}
 
@@ -392,12 +410,12 @@ export const CheckoutPage: React.FC = () => {
                 className="bg-slate-900/80 border border-slate-800/90 rounded-2xl p-6 shadow-xl backdrop-blur-sm"
               >
                 <div className="flex items-center gap-3 pb-4 mb-6 border-b border-slate-800/60">
-                  <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold text-sm">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-sm">
                     1
                   </div>
                   <div>
                     <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                      <User className="w-4 h-4 text-cyan-400" />
+                      <User className="w-4 h-4 text-emerald-400" />
                       Customer Contact Details
                     </h2>
                     <p className="text-xs text-slate-400">
@@ -423,7 +441,9 @@ export const CheckoutPage: React.FC = () => {
                       }}
                       placeholder="e.g. Bilal"
                       className={`w-full px-4 py-3 rounded-xl bg-slate-950/80 border ${
-                        errors.firstName ? "border-rose-500 ring-1 ring-rose-500" : "border-slate-800 focus:border-cyan-500"
+                        errors.firstName
+                          ? "border-rose-500 ring-1 ring-rose-500"
+                          : "border-slate-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50"
                       } text-white placeholder-slate-500 text-sm focus:outline-none transition-colors`}
                     />
                     {errors.firstName && (
@@ -447,7 +467,9 @@ export const CheckoutPage: React.FC = () => {
                       }}
                       placeholder="e.g. Ahmed"
                       className={`w-full px-4 py-3 rounded-xl bg-slate-950/80 border ${
-                        errors.lastName ? "border-rose-500 ring-1 ring-rose-500" : "border-slate-800 focus:border-cyan-500"
+                        errors.lastName
+                          ? "border-rose-500 ring-1 ring-rose-500"
+                          : "border-slate-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50"
                       } text-white placeholder-slate-500 text-sm focus:outline-none transition-colors`}
                     />
                     {errors.lastName && (
@@ -475,7 +497,9 @@ export const CheckoutPage: React.FC = () => {
                       }}
                       placeholder="bilal.ahmed@example.com"
                       className={`w-full px-4 py-3 rounded-xl bg-slate-950/80 border ${
-                        errors.email ? "border-rose-500 ring-1 ring-rose-500" : "border-slate-800 focus:border-cyan-500"
+                        errors.email
+                          ? "border-rose-500 ring-1 ring-rose-500"
+                          : "border-slate-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50"
                       } text-white placeholder-slate-500 text-sm focus:outline-none transition-colors`}
                     />
                     {errors.email && <p className="text-rose-400 text-xs mt-1">{errors.email}</p>}
@@ -488,7 +512,7 @@ export const CheckoutPage: React.FC = () => {
                         <Phone className="w-3.5 h-3.5 text-slate-400" />
                         Mobile / WhatsApp Number <span className="text-rose-400">*</span>
                       </span>
-                      <span className="text-[11px] font-normal text-amber-400">Required for COD verification call</span>
+                      <span className="text-[11px] font-normal text-amber-400">Required for courier dispatch call</span>
                     </label>
                     <div className="relative">
                       <input
@@ -502,7 +526,9 @@ export const CheckoutPage: React.FC = () => {
                         }}
                         placeholder="0300 1234567 or +92 300 1234567"
                         className={`w-full px-4 py-3 rounded-xl bg-slate-950/80 border ${
-                          errors.phone ? "border-rose-500 ring-1 ring-rose-500" : "border-slate-800 focus:border-cyan-500"
+                          errors.phone
+                            ? "border-rose-500 ring-1 ring-rose-500"
+                            : "border-slate-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50"
                         } text-white placeholder-slate-500 text-sm focus:outline-none transition-colors`}
                       />
                     </div>
@@ -517,12 +543,12 @@ export const CheckoutPage: React.FC = () => {
                 className="bg-slate-900/80 border border-slate-800/90 rounded-2xl p-6 shadow-xl backdrop-blur-sm"
               >
                 <div className="flex items-center gap-3 pb-4 mb-6 border-b border-slate-800/60">
-                  <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold text-sm">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-sm">
                     2
                   </div>
                   <div>
                     <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-cyan-400" />
+                      <MapPin className="w-4 h-4 text-emerald-400" />
                       Delivery Address (Pakistan)
                     </h2>
                     <p className="text-xs text-slate-400">
@@ -548,7 +574,9 @@ export const CheckoutPage: React.FC = () => {
                       }}
                       placeholder="e.g. House 42-B, Sector F-8/2, Street 15"
                       className={`w-full px-4 py-3 rounded-xl bg-slate-950/80 border ${
-                        errors.address1 ? "border-rose-500 ring-1 ring-rose-500" : "border-slate-800 focus:border-cyan-500"
+                        errors.address1
+                          ? "border-rose-500 ring-1 ring-rose-500"
+                          : "border-slate-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50"
                       } text-white placeholder-slate-500 text-sm focus:outline-none transition-colors`}
                     />
                     {errors.address1 && (
@@ -572,7 +600,9 @@ export const CheckoutPage: React.FC = () => {
                       }}
                       placeholder="e.g. Lahore"
                       className={`w-full px-4 py-3 rounded-xl bg-slate-950/80 border ${
-                        errors.city ? "border-rose-500 ring-1 ring-rose-500" : "border-slate-800 focus:border-cyan-500"
+                        errors.city
+                          ? "border-rose-500 ring-1 ring-rose-500"
+                          : "border-slate-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/50"
                       } text-white placeholder-slate-500 text-sm focus:outline-none transition-colors`}
                     />
                     {errors.city && <p className="text-rose-400 text-xs mt-1">{errors.city}</p>}
@@ -590,7 +620,7 @@ export const CheckoutPage: React.FC = () => {
                           }}
                           className={`text-xs px-2.5 py-1 rounded-lg border transition-colors ${
                             shippingAddress.city.toLowerCase() === city.toLowerCase()
-                              ? "bg-cyan-500/20 border-cyan-500 text-cyan-300 font-medium"
+                              ? "bg-emerald-500/20 border-emerald-500 text-emerald-300 font-medium"
                               : "bg-slate-950/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700"
                           }`}
                         >
@@ -613,7 +643,7 @@ export const CheckoutPage: React.FC = () => {
                           setShippingAddress({ ...shippingAddress, province: e.target.value });
                           if (errors.province) setErrors({ ...errors, province: "" });
                         }}
-                        className="w-full px-4 py-3 rounded-xl bg-slate-950/80 border border-slate-800 text-white text-sm focus:border-cyan-500 focus:outline-none transition-colors"
+                        className="w-full px-4 py-3 rounded-xl bg-slate-950/80 border border-slate-800 text-white text-sm focus:border-emerald-500 focus:outline-none transition-colors"
                       >
                         {provinces.map((prov) => (
                           <option key={prov} value={prov} className="bg-slate-900 text-white">
@@ -639,7 +669,7 @@ export const CheckoutPage: React.FC = () => {
                           setShippingAddress({ ...shippingAddress, postalCode: e.target.value })
                         }
                         placeholder="e.g. 54000"
-                        className="w-full px-4 py-3 rounded-xl bg-slate-950/80 border border-slate-800 text-white placeholder-slate-500 text-sm focus:border-cyan-500 focus:outline-none transition-colors"
+                        className="w-full px-4 py-3 rounded-xl bg-slate-950/80 border border-slate-800 text-white placeholder-slate-500 text-sm focus:border-emerald-500 focus:outline-none transition-colors"
                       />
                     </div>
                   </div>
@@ -655,7 +685,7 @@ export const CheckoutPage: React.FC = () => {
                       value={orderNotes}
                       onChange={(e) => setOrderNotes(e.target.value)}
                       placeholder="e.g. Near Allied Bank, please call before delivery..."
-                      className="w-full px-4 py-3 rounded-xl bg-slate-950/80 border border-slate-800 text-white placeholder-slate-500 text-sm focus:border-cyan-500 focus:outline-none transition-colors"
+                      className="w-full px-4 py-3 rounded-xl bg-slate-950/80 border border-slate-800 text-white placeholder-slate-500 text-sm focus:border-emerald-500 focus:outline-none transition-colors"
                     />
                   </div>
                 </div>
@@ -667,23 +697,23 @@ export const CheckoutPage: React.FC = () => {
                 className="bg-slate-900/80 border border-slate-800/90 rounded-2xl p-6 shadow-xl backdrop-blur-sm"
               >
                 <div className="flex items-center gap-3 pb-4 mb-6 border-b border-slate-800/60">
-                  <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold text-sm">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-sm">
                     3
                   </div>
                   <div>
                     <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                      <Truck className="w-4 h-4 text-cyan-400" />
+                      <Truck className="w-4 h-4 text-emerald-400" />
                       Shipping & Delivery Options
                     </h2>
                     <p className="text-xs text-slate-400">
-                      Real rates calculated directly from Shopify logistics policy.
+                      Real rates calculated directly from active Shopify store logistics configuration.
                     </p>
                   </div>
                 </div>
 
                 {isLoadingRates ? (
                   <div className="flex items-center justify-center py-8 text-slate-400 gap-3">
-                    <Loader2 className="w-5 h-5 animate-spin text-cyan-400" />
+                    <Loader2 className="w-5 h-5 animate-spin text-emerald-400" />
                     <span className="text-sm">Calculating Shopify shipping rates...</span>
                   </div>
                 ) : (
@@ -696,7 +726,7 @@ export const CheckoutPage: React.FC = () => {
                           id={`shipping-rate-${rate.id}`}
                           className={`flex items-start justify-between p-4 rounded-xl border cursor-pointer transition-all ${
                             isSelected
-                              ? "bg-cyan-950/30 border-cyan-500 shadow-md shadow-cyan-950/50"
+                              ? "bg-emerald-950/30 border-emerald-500 shadow-md shadow-emerald-950/50"
                               : "bg-slate-950/50 border-slate-800 hover:border-slate-700"
                           }`}
                         >
@@ -707,7 +737,7 @@ export const CheckoutPage: React.FC = () => {
                               value={rate.id}
                               checked={isSelected}
                               onChange={() => setSelectedShippingId(rate.id)}
-                              className="mt-1 text-cyan-500 focus:ring-cyan-400 bg-slate-900 border-slate-700"
+                              className="mt-1 text-emerald-500 focus:ring-emerald-400 bg-slate-900 border-slate-700"
                             />
                             <div>
                               <div className="flex items-center gap-2">
@@ -719,7 +749,7 @@ export const CheckoutPage: React.FC = () => {
                                 )}
                               </div>
                               {rate.estimatedDays && (
-                                <p className="text-xs text-cyan-400 flex items-center gap-1 mt-0.5">
+                                <p className="text-xs text-emerald-400 flex items-center gap-1 mt-0.5">
                                   <Clock className="w-3 h-3" />
                                   {rate.estimatedDays}
                                 </p>
@@ -750,12 +780,12 @@ export const CheckoutPage: React.FC = () => {
                 className="bg-slate-900/80 border border-slate-800/90 rounded-2xl p-6 shadow-xl backdrop-blur-sm"
               >
                 <div className="flex items-center gap-3 pb-4 mb-6 border-b border-slate-800/60">
-                  <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold text-sm">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-sm">
                     4
                   </div>
                   <div>
                     <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                      <CreditCard className="w-4 h-4 text-cyan-400" />
+                      <CreditCard className="w-4 h-4 text-emerald-400" />
                       Payment Method
                     </h2>
                     <p className="text-xs text-slate-400">
@@ -765,10 +795,10 @@ export const CheckoutPage: React.FC = () => {
                 </div>
 
                 {/* Cash on Delivery Card */}
-                <div className="p-5 rounded-xl bg-gradient-to-br from-cyan-950/40 via-slate-900 to-slate-950 border-2 border-cyan-500/80 shadow-lg relative overflow-hidden">
+                <div className="p-5 rounded-xl bg-gradient-to-br from-emerald-950/40 via-slate-900 to-slate-950 border-2 border-emerald-500/80 shadow-lg relative overflow-hidden">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-center gap-3.5">
-                      <div className="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400 shrink-0 shadow-inner">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0 shadow-inner">
                         <Package className="w-5 h-5" />
                       </div>
                       <div>
@@ -784,17 +814,17 @@ export const CheckoutPage: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="w-5 h-5 rounded-full bg-cyan-500 flex items-center justify-center text-slate-950 shrink-0">
+                    <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center text-slate-950 shrink-0">
                       <CheckCircle2 className="w-4 h-4" />
                     </div>
                   </div>
 
                   <div className="mt-4 pt-3.5 border-t border-slate-800/80 flex flex-wrap items-center gap-4 text-xs text-slate-400">
                     <span className="flex items-center gap-1 text-slate-300">
-                      <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" /> Open Parcel Inspection Available
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" /> Open Parcel Inspection Available
                     </span>
                     <span className="flex items-center gap-1 text-slate-300">
-                      <Building2 className="w-3.5 h-3.5 text-cyan-400" /> 7-Day Replacement Warranty
+                      <Building2 className="w-3.5 h-3.5 text-emerald-400" /> 7-Day Replacement Warranty
                     </span>
                   </div>
                 </div>
@@ -835,7 +865,7 @@ export const CheckoutPage: React.FC = () => {
                           ) : (
                             <Package className="w-6 h-6 text-slate-600" />
                           )}
-                          <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-cyan-500 text-slate-950 text-[10px] font-extrabold flex items-center justify-center">
+                          <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 text-slate-950 text-[10px] font-extrabold flex items-center justify-center">
                             {item.quantity}
                           </span>
                         </div>
@@ -874,7 +904,7 @@ export const CheckoutPage: React.FC = () => {
                         value={couponInput}
                         onChange={(e) => setCouponInput(e.target.value)}
                         placeholder="Promo Code (REVIVE10)"
-                        className="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 uppercase tracking-wider focus:outline-none focus:border-cyan-500"
+                        className="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 uppercase tracking-wider focus:outline-none focus:border-emerald-500"
                       />
                     </div>
                     <button
@@ -929,7 +959,7 @@ export const CheckoutPage: React.FC = () => {
                       <span className="text-[10px] text-slate-400">Payable via Cash on Delivery</span>
                     </div>
                     <div className="text-right">
-                      <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-cyan-300 to-blue-400">
+                      <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-emerald-300 to-green-400">
                         Rs. {finalTotal.toLocaleString()}
                       </span>
                       <span className="block text-[10px] text-slate-400 uppercase font-semibold">
@@ -945,7 +975,7 @@ export const CheckoutPage: React.FC = () => {
                     id="btn-place-order"
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-cyan-500 via-cyan-400 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-black text-base shadow-xl shadow-cyan-500/25 transition-all transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 cursor-pointer"
+                    className="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-600 hover:from-emerald-400 hover:to-green-500 text-slate-950 font-black text-base shadow-xl shadow-emerald-500/25 transition-all transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 cursor-pointer"
                   >
                     {isSubmitting ? (
                       <>

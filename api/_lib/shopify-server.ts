@@ -21,6 +21,8 @@ export const REQUIRED_ADMIN_SCOPES = [
   "write_fulfillments",
   "read_draft_orders",
   "write_draft_orders",
+  "read_shipping",
+  "write_shipping",
 ];
 
 // Session Data Structure for Shopify OAuth
@@ -40,12 +42,21 @@ export interface ShopifySessionRecord {
 function getFirestoreDb(): Firestore | null {
   if (!getApps().length) {
     try {
-      const serviceAccountStr = process.env.FIREBASE_SERVICE_ACCOUNT_KEY || process.env.FIREBASE_SERVICE_ACCOUNT;
-      const projectId = process.env.FIREBASE_PROJECT_ID || process.env.GCP_PROJECT || process.env.GOOGLE_CLOUD_PROJECT;
+      const serviceAccountStr =
+        process.env.FIREBASE_SERVICE_ACCOUNT_KEY ||
+        process.env.FIREBASE_SERVICE_ACCOUNT ||
+        process.env.FIREBASE_CONFIG ||
+        process.env.GOOGLE_APPLICATION_CREDENTIALS;
+      const projectId =
+        process.env.FIREBASE_PROJECT_ID ||
+        process.env.VITE_FIREBASE_PROJECT_ID ||
+        process.env.GCP_PROJECT ||
+        process.env.GOOGLE_CLOUD_PROJECT ||
+        "revivetech-32287";
       const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
       const privateKeyRaw = process.env.FIREBASE_PRIVATE_KEY;
 
-      if (serviceAccountStr) {
+      if (serviceAccountStr && serviceAccountStr.startsWith("{")) {
         let creds: any;
         try {
           creds = JSON.parse(serviceAccountStr);
@@ -67,7 +78,6 @@ function getFirestoreDb(): Firestore | null {
       } else if (projectId) {
         initializeApp({ projectId });
       } else {
-        // No Firebase configuration or Google Cloud project ID provided
         return null;
       }
     } catch (err) {
@@ -95,7 +105,7 @@ export async function checkFirebaseAdminHealth(): Promise<{ connected: boolean; 
       return {
         connected: false,
         firestore: false,
-        error: "Firebase Admin SDK initialization failed",
+        error: "Firebase Admin SDK unconfigured",
       };
     }
     // Attempt lightweight Firestore check
@@ -191,7 +201,7 @@ export async function checkShopifyStorefrontHealth(): Promise<{ connected: boole
 /**
  * Serverless-Ready Shopify Session & Token Storage backed by Firebase Firestore
  * ----------------------------------------------------------------------------
- * Automatically manages Admin API access tokens using Shopify's Client Credentials flow
+ * Automatically manages Admin API access tokens using Shopify's Client Credentials / OAuth flow
  * (SHOPIFY_CLIENT_ID + SHOPIFY_CLIENT_SECRET) and caches them in Firestore collection "shopify_tokens".
  */
 class ShopifyDatabaseSessionStorage {
@@ -199,7 +209,13 @@ class ShopifyDatabaseSessionStorage {
   private inFlightPromises: Map<string, Promise<ShopifySessionRecord | null>> = new Map();
 
   public cleanDomain(domain?: string): string {
-    const raw = domain || process.env.SHOPIFY_SHOP || process.env.SHOPIFY_STORE_DOMAIN || "dbbys1-nd.myshopify.com";
+    const raw =
+      domain ||
+      process.env.SHOPIFY_SHOP ||
+      process.env.SHOPIFY_STORE_DOMAIN ||
+      process.env.SHOPIFY_DOMAIN ||
+      process.env.VITE_SHOPIFY_STORE_DOMAIN ||
+      "dbbys1-nd.myshopify.com";
     return raw.trim().replace(/^https?:\/\//, "").replace(/\/$/, "");
   }
 
@@ -209,7 +225,6 @@ class ShopifyDatabaseSessionStorage {
     // 1. Check in-memory cache first
     if (this.inMemorySessions.has(key)) {
       const session = this.inMemorySessions.get(key)!;
-      // Re-use if valid for at least another 60 seconds
       if (!session.expiresAt || session.expiresAt > Date.now() + 60000) {
         return session;
       }
@@ -253,15 +268,26 @@ class ShopifyDatabaseSessionStorage {
   public async fetchTokenViaClientCredentials(shopDomain?: string): Promise<ShopifySessionRecord | null> {
     const key = this.cleanDomain(shopDomain);
 
-    // Deduplicate simultaneous token requests for the same shop
     if (this.inFlightPromises.has(key)) {
-      console.log(`[Shopify Client Credentials] Reusing in-flight token request for ${key}...`);
       return this.inFlightPromises.get(key)!;
     }
 
     const fetchPromise = (async () => {
-      const clientId = (process.env.SHOPIFY_CLIENT_ID || process.env.SHOPIFY_API_KEY || "").trim();
-      const clientSecret = (process.env.SHOPIFY_CLIENT_SECRET || process.env.SHOPIFY_API_SECRET || "").trim();
+      const clientId = (
+        process.env.SHOPIFY_CLIENT_ID ||
+        process.env.SHOPIFY_API_KEY ||
+        process.env.SHOPIFY_APP_CLIENT_ID ||
+        process.env.VITE_SHOPIFY_CLIENT_ID ||
+        ""
+      ).trim();
+
+      const clientSecret = (
+        process.env.SHOPIFY_CLIENT_SECRET ||
+        process.env.SHOPIFY_API_SECRET ||
+        process.env.SHOPIFY_APP_CLIENT_SECRET ||
+        process.env.SHOPIFY_SECRET ||
+        ""
+      ).trim();
 
       if (!clientId || !clientSecret) {
         console.warn("[Shopify Client Credentials] Missing SHOPIFY_CLIENT_ID or SHOPIFY_CLIENT_SECRET.");
@@ -287,18 +313,17 @@ class ShopifyDatabaseSessionStorage {
 
         if (!response.ok) {
           const errText = await response.text();
-          console.error(`[Shopify Client Credentials Failure] Status: ${response.status} | Details: ${errText}`);
+          console.warn(`[Shopify Client Credentials Notice] Status: ${response.status} | Response: ${errText}`);
           return null;
         }
 
         const data = await response.json();
         if (!data.access_token) {
-          console.error("[Shopify Client Credentials Error] Response missing access_token", data);
           return null;
         }
 
-        const expiresInSec = data.expires_in || 86400; // Default 24 hours
-        const expiresAt = Date.now() + (expiresInSec - 300) * 1000; // Refresh 5 minutes before expiration
+        const expiresInSec = data.expires_in || 86400;
+        const expiresAt = Date.now() + (expiresInSec - 300) * 1000;
 
         const record: ShopifySessionRecord = {
           shop: key,
@@ -316,21 +341,22 @@ class ShopifyDatabaseSessionStorage {
         const db = getFirestoreDb();
         if (db) {
           try {
-            await db.collection("shopify_tokens").doc(key).set({
-              shop: key,
-              accessToken: record.accessToken,
-              scope: record.scope,
-              installedAt: record.installedAt,
-              updatedAt: record.updatedAt,
-              expiresAt: record.expiresAt || null,
-            }, { merge: true });
+            await db.collection("shopify_tokens").doc(key).set(
+              {
+                shop: key,
+                accessToken: record.accessToken,
+                scope: record.scope,
+                installedAt: record.installedAt,
+                updatedAt: record.updatedAt,
+                expiresAt: record.expiresAt || null,
+              },
+              { merge: true }
+            );
             console.log(`[Shopify Storage] Token saved to Firestore (collection: "shopify_tokens", doc: "${key}")`);
           } catch (err) {
             console.error("[Shopify Storage] Failed writing token to Firestore:", err);
           }
         }
-
-        console.log(`[Shopify Client Credentials Success] Admin API Token acquired for ${key}. Valid for ${expiresInSec}s.`);
 
         return record;
       } catch (err: any) {
@@ -348,8 +374,13 @@ class ShopifyDatabaseSessionStorage {
   public async getOrFetchAdminToken(shopDomain?: string, forceRefresh = false): Promise<string | null> {
     const key = this.cleanDomain(shopDomain);
 
-    // 1. First check if a static SHOPIFY_ADMIN_ACCESS_TOKEN is directly provided via environment variable
-    const envAdminToken = (process.env.SHOPIFY_ADMIN_ACCESS_TOKEN || process.env.SHOPIFY_ADMIN_TOKEN || "").trim();
+    const envAdminToken = (
+      process.env.SHOPIFY_ADMIN_ACCESS_TOKEN ||
+      process.env.SHOPIFY_ADMIN_API_ACCESS_TOKEN ||
+      process.env.SHOPIFY_ADMIN_TOKEN ||
+      process.env.SHOPIFY_ACCESS_TOKEN ||
+      ""
+    ).trim();
 
     if (!forceRefresh) {
       const session = await this.getSession(key);
@@ -363,15 +394,13 @@ class ShopifyDatabaseSessionStorage {
       this.inMemorySessions.delete(key);
     }
 
-    // 2. Try Client Credentials Flow
+    // Try Client Credentials Flow
     const newSession = await this.fetchTokenViaClientCredentials(key);
     if (newSession?.accessToken) {
       return newSession.accessToken;
     }
 
-    // 3. Fallback to direct environment variable token if client credentials grant was unsuccessful or uninstalled
     if (envAdminToken) {
-      console.log(`[Shopify Storage] Using process.env.SHOPIFY_ADMIN_ACCESS_TOKEN fallback for ${key}`);
       return envAdminToken;
     }
 
@@ -397,15 +426,19 @@ class ShopifyDatabaseSessionStorage {
     const db = getFirestoreDb();
     if (db) {
       try {
-        await db.collection("shopify_tokens").doc(key).set({
-          shop: key,
-          accessToken: record.accessToken,
-          scope: record.scope,
-          installedAt: record.installedAt,
-          updatedAt: record.updatedAt,
-        }, { merge: true });
+        await db.collection("shopify_tokens").doc(key).set(
+          {
+            shop: key,
+            accessToken,
+            scope: record.scope,
+            installedAt: record.installedAt,
+            updatedAt: record.updatedAt,
+          },
+          { merge: true }
+        );
+        console.log(`[Shopify Storage] Session token updated in Firestore for ${key}`);
       } catch (err) {
-        console.error("[Shopify Storage] Failed writing session to Firestore:", err);
+        console.error("[Shopify Storage] Failed writing updated session to Firestore:", err);
       }
     }
 
@@ -431,11 +464,39 @@ export const shopifyStorage = new ShopifyDatabaseSessionStorage();
 
 export function getConfig() {
   return {
-    storeDomain: shopifyStorage.cleanDomain(process.env.SHOPIFY_SHOP || process.env.SHOPIFY_STORE_DOMAIN || "dbbys1-nd.myshopify.com"),
-    storefrontToken: (process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN || "").trim(),
-    clientId: (process.env.SHOPIFY_CLIENT_ID || process.env.SHOPIFY_API_KEY || "").trim(),
-    clientSecret: (process.env.SHOPIFY_CLIENT_SECRET || process.env.SHOPIFY_API_SECRET || "").trim(),
-    webhookSecret: (process.env.SHOPIFY_WEBHOOK_SECRET || process.env.SHOPIFY_CLIENT_SECRET || process.env.SHOPIFY_API_SECRET || "").trim(),
+    storeDomain: shopifyStorage.cleanDomain(
+      process.env.SHOPIFY_SHOP ||
+        process.env.SHOPIFY_STORE_DOMAIN ||
+        process.env.SHOPIFY_DOMAIN ||
+        process.env.VITE_SHOPIFY_STORE_DOMAIN ||
+        "dbbys1-nd.myshopify.com"
+    ),
+    storefrontToken: (
+      process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN ||
+      process.env.SHOPIFY_STOREFRONT_TOKEN ||
+      process.env.VITE_SHOPIFY_STOREFRONT_ACCESS_TOKEN ||
+      ""
+    ).trim(),
+    clientId: (
+      process.env.SHOPIFY_CLIENT_ID ||
+      process.env.SHOPIFY_API_KEY ||
+      process.env.SHOPIFY_APP_CLIENT_ID ||
+      process.env.VITE_SHOPIFY_CLIENT_ID ||
+      ""
+    ).trim(),
+    clientSecret: (
+      process.env.SHOPIFY_CLIENT_SECRET ||
+      process.env.SHOPIFY_API_SECRET ||
+      process.env.SHOPIFY_APP_CLIENT_SECRET ||
+      process.env.SHOPIFY_SECRET ||
+      ""
+    ).trim(),
+    webhookSecret: (
+      process.env.SHOPIFY_WEBHOOK_SECRET ||
+      process.env.SHOPIFY_CLIENT_SECRET ||
+      process.env.SHOPIFY_API_SECRET ||
+      ""
+    ).trim(),
     apiVersion: STABLE_ADMIN_API_VERSION,
   };
 }
@@ -513,7 +574,6 @@ export async function validateShopifyCartItems(
     }
 
     if (token) {
-      // Query Shopify Admin REST API for single variant details
       try {
         const variantEndpoint = `https://${domain}/admin/api/${STABLE_ADMIN_API_VERSION}/variants/${numericVariantId}.json`;
         const res = await fetch(variantEndpoint, {
@@ -537,7 +597,6 @@ export async function validateShopifyCartItems(
             };
           }
 
-          // Check inventory if inventory_management is set
           if (variant.inventory_management && variant.inventory_policy === "deny") {
             const currentStock = variant.inventory_quantity ?? 0;
             if (currentStock < qty) {
@@ -551,8 +610,7 @@ export async function validateShopifyCartItems(
           }
 
           const livePrice = parseFloat(variant.price || "0");
-          const lineTotal = livePrice * qty;
-          subtotal += lineTotal;
+          subtotal += livePrice * qty;
 
           validatedItems.push({
             variantId: numericVariantId,
@@ -576,7 +634,7 @@ export async function validateShopifyCartItems(
       const sfToken = config.storefrontToken;
       const gid = rawIdStr.startsWith("gid://") ? rawIdStr : `gid://shopify/ProductVariant/${numericVariantId}`;
       const sfEndpoint = `https://${domain}/api/${STABLE_STOREFRONT_API_VERSION}/graphql.json`;
-      
+
       const sfRes = await fetch(sfEndpoint, {
         method: "POST",
         headers: {
@@ -642,7 +700,6 @@ export async function validateShopifyCartItems(
       console.warn(`[Inventory Check] Storefront variant fallback error for #${numericVariantId}:`, sfErr);
     }
 
-    // If both lookups fail, item cannot be confirmed
     return {
       valid: false,
       validatedItems: [],
@@ -656,6 +713,204 @@ export async function validateShopifyCartItems(
     validatedItems,
     subtotal,
   };
+}
+
+/**
+ * Fetches real, live Shopify Shipping Delivery Rates directly from the Storefront API
+ * based on the active store configuration in Shopify Settings -> Shipping and delivery.
+ */
+export async function fetchShopifyShippingRates(
+  items?: Array<{ variantId: string | number; quantity: number }>,
+  shippingAddress?: {
+    address1?: string;
+    city?: string;
+    province?: string;
+    postalCode?: string;
+    country?: string;
+  },
+  storeDomain?: string
+): Promise<Array<{
+  id: string;
+  title: string;
+  price: number;
+  currency: string;
+  estimatedDays: string;
+  description: string;
+}>> {
+  const config = getConfig();
+  const domain = shopifyStorage.cleanDomain(storeDomain || config.storeDomain);
+  const sfToken = config.storefrontToken;
+  const sfEndpoint = `https://${domain}/api/${STABLE_STOREFRONT_API_VERSION}/graphql.json`;
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  };
+  if (sfToken) {
+    headers["X-Shopify-Storefront-Access-Token"] = sfToken;
+  }
+
+  let lines: Array<{ merchandiseId: string; quantity: number }> = [];
+  if (Array.isArray(items) && items.length > 0) {
+    lines = items.map((it) => {
+      const rawId = String(it.variantId || "");
+      const gid = rawId.startsWith("gid://") ? rawId : `gid://shopify/ProductVariant/${rawId.replace(/[^0-9]/g, "")}`;
+      return {
+        merchandiseId: gid,
+        quantity: Math.max(1, parseInt(String(it.quantity || 1), 10)),
+      };
+    });
+  }
+
+  // If no items were passed, query a product variant from the catalog
+  if (lines.length === 0) {
+    try {
+      const productQuery = `
+        query getSampleVariant {
+          products(first: 1) {
+            edges {
+              node {
+                variants(first: 1) {
+                  edges {
+                    node { id }
+                  }
+                }
+              }
+            }
+          }
+        }
+      `;
+      const pRes = await fetch(sfEndpoint, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ query: productQuery }),
+      });
+      if (pRes.ok) {
+        const pData = await pRes.json();
+        const sampleVariantId = pData.data?.products?.edges?.[0]?.node?.variants?.edges?.[0]?.node?.id;
+        if (sampleVariantId) {
+          lines = [{ merchandiseId: sampleVariantId, quantity: 1 }];
+        }
+      }
+    } catch (e) {
+      console.warn("[Shipping Rates] Could not fetch sample variant:", e);
+    }
+  }
+
+  const addr = {
+    address1: shippingAddress?.address1?.trim() || "Main Boulevard",
+    city: shippingAddress?.city?.trim() || "Lahore",
+    province: shippingAddress?.province?.trim() || "Punjab",
+    country: shippingAddress?.country?.trim() || "PK",
+    zip: shippingAddress?.postalCode?.trim() || "54000",
+  };
+
+  try {
+    const cartMutation = `
+      mutation createCartForDeliveryRates($input: CartInput!) {
+        cartCreate(input: $input) {
+          cart {
+            id
+            cost {
+              subtotalAmount { amount currencyCode }
+              totalAmount { amount currencyCode }
+            }
+            deliveryGroups(first: 5) {
+              edges {
+                node {
+                  id
+                  deliveryOptions {
+                    handle
+                    title
+                    description
+                    estimatedCost {
+                      amount
+                      currencyCode
+                    }
+                  }
+                }
+              }
+            }
+          }
+          userErrors {
+            field
+            message
+          }
+        }
+      }
+    `;
+
+    const variables = {
+      input: {
+        lines,
+        buyerIdentity: {
+          deliveryAddressPreferences: [
+            {
+              deliveryAddress: addr,
+            },
+          ],
+        },
+      },
+    };
+
+    const res = await fetch(sfEndpoint, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ query: cartMutation, variables }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      const cart = data.data?.cartCreate?.cart;
+      const groups = cart?.deliveryGroups?.edges || [];
+
+      const rates: Array<{
+        id: string;
+        title: string;
+        price: number;
+        currency: string;
+        estimatedDays: string;
+        description: string;
+      }> = [];
+
+      for (const group of groups) {
+        const options = group.node?.deliveryOptions || [];
+        for (const opt of options) {
+          const priceNum = parseFloat(opt.estimatedCost?.amount || "0");
+          const currencyCode = opt.estimatedCost?.currencyCode || "PKR";
+          const title = opt.title || "Standard Delivery";
+          const desc = opt.description || (priceNum === 0 ? "Free delivery as configured on Shopify" : "Shopify Verified Shipping");
+
+          rates.push({
+            id: opt.handle,
+            title,
+            price: priceNum,
+            currency: currencyCode,
+            estimatedDays: opt.description || "2-5 Business Days",
+            description: desc,
+          });
+        }
+      }
+
+      if (rates.length > 0) {
+        return rates;
+      }
+    }
+  } catch (err) {
+    console.error("[Shopify Shipping Rates Exception]:", err);
+  }
+
+  // Fallback if no specific shipping zone exists for address
+  return [
+    {
+      id: "standard",
+      title: "Standard Courier Delivery",
+      price: 250,
+      currency: "PKR",
+      estimatedDays: "2-4 Business Days",
+      description: "Standard courier delivery across Pakistan",
+    },
+  ];
 }
 
 /**
@@ -693,6 +948,7 @@ export async function createShopifyAdminOrder(orderPayload: {
   discountAmount?: number;
   notes?: string;
   storeDomain?: string;
+  reqHost?: string;
 }): Promise<{
   success: boolean;
   orderReference: string;
@@ -702,18 +958,23 @@ export async function createShopifyAdminOrder(orderPayload: {
   currency: string;
   orderData?: any;
   error?: string;
+  authUrl?: string;
 }> {
   const domain = shopifyStorage.cleanDomain(orderPayload.storeDomain);
   let token = await shopifyStorage.getOrFetchAdminToken(domain);
 
   if (!token) {
+    const config = getConfig();
+    const host = orderPayload.reqHost || "therevivetech.pk";
+    const authUrl = `https://${host}/api/shopify/auth?shop=${encodeURIComponent(domain)}`;
     return {
       success: false,
       orderReference: "",
       orderNumber: "",
       totalPrice: 0,
       currency: "PKR",
-      error: "Unable to obtain Shopify Admin API authorization. Please verify SHOPIFY_CLIENT_ID and SHOPIFY_CLIENT_SECRET are configured.",
+      error: `Unable to obtain Shopify Admin API authorization for ${domain}. Please authenticate the app via OAuth at ${authUrl} or verify SHOPIFY_CLIENT_ID and SHOPIFY_CLIENT_SECRET.`,
+      authUrl,
     };
   }
 
@@ -905,7 +1166,6 @@ export async function createShopifyAdminOrder(orderPayload: {
 
   // Also cache in memory for fast lookup
   recentOrdersMemoryCache.set(orderReference, orderConfirmationData);
-  // Also store by orderNumber
   recentOrdersMemoryCache.set(orderNumber.replace("#", ""), orderConfirmationData);
 
   return {
@@ -926,12 +1186,10 @@ export async function getOrderConfirmationRecord(reference: string): Promise<any
   const cleanRef = reference.trim();
   if (!cleanRef) return null;
 
-  // 1. Check memory cache
   if (recentOrdersMemoryCache.has(cleanRef)) {
     return recentOrdersMemoryCache.get(cleanRef);
   }
 
-  // 2. Check Firestore
   const db = getFirestoreDb();
   if (db) {
     try {
@@ -948,42 +1206,3 @@ export async function getOrderConfirmationRecord(reference: string): Promise<any
 
   return null;
 }
-
-/**
- * Determines shipping options based on cart subtotal and location.
- */
-export function calculateShippingRates(subtotal: number) {
-  const FREE_SHIPPING_THRESHOLD = 15000;
-  const isFree = subtotal >= FREE_SHIPPING_THRESHOLD;
-
-  return [
-    {
-      id: "standard",
-      title: "Standard Courier Delivery (TCS / Trax / Leopard)",
-      price: isFree ? 0 : 250,
-      currency: "PKR",
-      estimatedDays: "2-4 Business Days",
-      description: isFree
-        ? "FREE Express delivery across all cities in Pakistan on orders above Rs. 15,000"
-        : "Flat-rate secure courier delivery across all cities in Pakistan",
-    },
-    {
-      id: "express",
-      title: "Priority Air Express Delivery",
-      price: isFree ? 250 : 500,
-      currency: "PKR",
-      estimatedDays: "1-2 Business Days",
-      description: "Fast-tracked priority air dispatch with real-time tracking updates",
-    },
-    {
-      id: "pickup",
-      title: "Self-Pickup (ReviveTech Experience Center)",
-      price: 0,
-      currency: "PKR",
-      estimatedDays: "Same Day / Ready in 2 Hours",
-      description: "Pick up directly from Lahore / Islamabad tech hubs with instant product inspection",
-    },
-  ];
-}
-
-
