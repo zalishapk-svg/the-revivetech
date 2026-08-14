@@ -452,3 +452,538 @@ export function getAppBaseUrl(req: any): string {
   return `${protocol}://${host}`;
 }
 
+export { getFirestoreDb };
+
+// In-memory fallback for recent order confirmations
+const recentOrdersMemoryCache = new Map<string, any>();
+
+/**
+ * Validates cart line items directly against Shopify Admin/Storefront API for authentic prices and inventory availability.
+ */
+export async function validateShopifyCartItems(
+  items: Array<{ variantId: string | number; quantity: number }>,
+  storeDomain?: string
+): Promise<{
+  valid: boolean;
+  validatedItems: Array<{
+    variantId: number;
+    title: string;
+    variantTitle?: string;
+    price: number;
+    quantity: number;
+    imageUrl?: string;
+    sku?: string;
+    availableForSale: boolean;
+  }>;
+  subtotal: number;
+  error?: string;
+}> {
+  if (!items || !items.length) {
+    return { valid: false, validatedItems: [], subtotal: 0, error: "Cart is empty." };
+  }
+
+  const domain = shopifyStorage.cleanDomain(storeDomain);
+  const token = await shopifyStorage.getOrFetchAdminToken(domain);
+
+  const validatedItems: Array<{
+    variantId: number;
+    title: string;
+    variantTitle?: string;
+    price: number;
+    quantity: number;
+    imageUrl?: string;
+    sku?: string;
+    availableForSale: boolean;
+  }> = [];
+
+  let subtotal = 0;
+
+  for (const item of items) {
+    const rawIdStr = String(item.variantId || "");
+    const numericVariantId = parseInt(rawIdStr.replace(/[^0-9]/g, ""), 10);
+    const qty = Math.max(1, parseInt(String(item.quantity || 1), 10));
+
+    if (!numericVariantId || isNaN(numericVariantId)) {
+      return {
+        valid: false,
+        validatedItems: [],
+        subtotal: 0,
+        error: `Invalid product variant ID provided: ${item.variantId}`,
+      };
+    }
+
+    if (token) {
+      // Query Shopify Admin REST API for single variant details
+      try {
+        const variantEndpoint = `https://${domain}/admin/api/${STABLE_ADMIN_API_VERSION}/variants/${numericVariantId}.json`;
+        const res = await fetch(variantEndpoint, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            "X-Shopify-Access-Token": token,
+          },
+        });
+
+        if (res.ok) {
+          const vData = await res.json();
+          const variant = vData?.variant;
+          if (!variant) {
+            return {
+              valid: false,
+              validatedItems: [],
+              subtotal: 0,
+              error: `Product variant #${numericVariantId} not found in Shopify catalog.`,
+            };
+          }
+
+          // Check inventory if inventory_management is set
+          if (variant.inventory_management && variant.inventory_policy === "deny") {
+            const currentStock = variant.inventory_quantity ?? 0;
+            if (currentStock < qty) {
+              return {
+                valid: false,
+                validatedItems: [],
+                subtotal: 0,
+                error: `"${variant.title || "Selected item"}" is out of stock or requested quantity (${qty}) exceeds available stock (${currentStock}).`,
+              };
+            }
+          }
+
+          const livePrice = parseFloat(variant.price || "0");
+          const lineTotal = livePrice * qty;
+          subtotal += lineTotal;
+
+          validatedItems.push({
+            variantId: numericVariantId,
+            title: variant.name || variant.title || "Product",
+            variantTitle: variant.title !== "Default Title" ? variant.title : undefined,
+            price: livePrice,
+            quantity: qty,
+            sku: variant.sku || undefined,
+            availableForSale: true,
+          });
+          continue;
+        }
+      } catch (err) {
+        console.warn(`[Inventory Check] Admin API variant lookup error for #${numericVariantId}:`, err);
+      }
+    }
+
+    // Fallback via Storefront GraphQL API
+    try {
+      const config = getConfig();
+      const sfToken = config.storefrontToken;
+      const gid = rawIdStr.startsWith("gid://") ? rawIdStr : `gid://shopify/ProductVariant/${numericVariantId}`;
+      const sfEndpoint = `https://${domain}/api/${STABLE_STOREFRONT_API_VERSION}/graphql.json`;
+      
+      const sfRes = await fetch(sfEndpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(sfToken ? { "X-Shopify-Storefront-Access-Token": sfToken } : {}),
+        },
+        body: JSON.stringify({
+          query: `
+            query getVariantNode($id: ID!) {
+              node(id: $id) {
+                ... on ProductVariant {
+                  id
+                  title
+                  availableForSale
+                  quantityAvailable
+                  price {
+                    amount
+                    currencyCode
+                  }
+                  image {
+                    url
+                  }
+                  product {
+                    title
+                  }
+                }
+              }
+            }
+          `,
+          variables: { id: gid },
+        }),
+      });
+
+      if (sfRes.ok) {
+        const sfData = await sfRes.json();
+        const vNode = sfData?.data?.node;
+        if (vNode) {
+          if (!vNode.availableForSale) {
+            return {
+              valid: false,
+              validatedItems: [],
+              subtotal: 0,
+              error: `"${vNode.product?.title || vNode.title}" is currently out of stock on Shopify.`,
+            };
+          }
+
+          const livePrice = parseFloat(vNode.price?.amount || "0");
+          subtotal += livePrice * qty;
+
+          validatedItems.push({
+            variantId: numericVariantId,
+            title: vNode.product?.title || vNode.title || "Product",
+            variantTitle: vNode.title !== "Default Title" ? vNode.title : undefined,
+            price: livePrice,
+            quantity: qty,
+            imageUrl: vNode.image?.url,
+            availableForSale: vNode.availableForSale,
+          });
+          continue;
+        }
+      }
+    } catch (sfErr) {
+      console.warn(`[Inventory Check] Storefront variant fallback error for #${numericVariantId}:`, sfErr);
+    }
+
+    // If both lookups fail, item cannot be confirmed
+    return {
+      valid: false,
+      validatedItems: [],
+      subtotal: 0,
+      error: `Could not verify stock or pricing for variant #${numericVariantId} on Shopify.`,
+    };
+  }
+
+  return {
+    valid: true,
+    validatedItems,
+    subtotal,
+  };
+}
+
+/**
+ * Creates a real Shopify order via the Admin API using Cash on Delivery (COD).
+ */
+export async function createShopifyAdminOrder(orderPayload: {
+  customer: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+  };
+  shippingAddress: {
+    address1: string;
+    city: string;
+    province: string;
+    postalCode: string;
+    country: string;
+  };
+  validatedItems: Array<{
+    variantId: number;
+    title: string;
+    variantTitle?: string;
+    price: number;
+    quantity: number;
+    imageUrl?: string;
+    sku?: string;
+  }>;
+  shippingMethod: {
+    title: string;
+    price: number;
+    code?: string;
+  };
+  discountCode?: string;
+  discountAmount?: number;
+  notes?: string;
+  storeDomain?: string;
+}): Promise<{
+  success: boolean;
+  orderReference: string;
+  orderNumber: string;
+  shopifyOrderId?: number;
+  totalPrice: number;
+  currency: string;
+  orderData?: any;
+  error?: string;
+}> {
+  const domain = shopifyStorage.cleanDomain(orderPayload.storeDomain);
+  let token = await shopifyStorage.getOrFetchAdminToken(domain);
+
+  if (!token) {
+    return {
+      success: false,
+      orderReference: "",
+      orderNumber: "",
+      totalPrice: 0,
+      currency: "PKR",
+      error: "Unable to obtain Shopify Admin API authorization. Please verify SHOPIFY_CLIENT_ID and SHOPIFY_CLIENT_SECRET are configured.",
+    };
+  }
+
+  const { customer, shippingAddress, validatedItems, shippingMethod, discountCode, discountAmount = 0, notes } = orderPayload;
+
+  const subtotal = validatedItems.reduce((acc, it) => acc + it.price * it.quantity, 0);
+  const total = Math.max(0, subtotal - discountAmount + shippingMethod.price);
+
+  const shopifyOrderPayload: any = {
+    order: {
+      email: customer.email.trim(),
+      phone: customer.phone.trim(),
+      financial_status: "pending",
+      fulfillment_status: null,
+      send_receipt: true,
+      send_fulfillment_receipt: true,
+      gateway: "Cash on Delivery (COD)",
+      payment_gateway_names: ["Cash on Delivery (COD)"],
+      note: notes ? `Payment: Cash on Delivery (COD)\nCustomer Notes: ${notes}` : "Payment: Cash on Delivery (COD)",
+      tags: "COD, Headless Checkout, ReviveTech Storefront",
+      line_items: validatedItems.map((item) => ({
+        variant_id: item.variantId,
+        quantity: item.quantity,
+        price: item.price.toFixed(2),
+      })),
+      customer: {
+        first_name: customer.firstName.trim(),
+        last_name: customer.lastName.trim(),
+        email: customer.email.trim(),
+        phone: customer.phone.trim(),
+      },
+      billing_address: {
+        first_name: customer.firstName.trim(),
+        last_name: customer.lastName.trim(),
+        address1: shippingAddress.address1.trim(),
+        city: shippingAddress.city.trim(),
+        province: shippingAddress.province.trim(),
+        zip: shippingAddress.postalCode.trim(),
+        country: shippingAddress.country || "Pakistan",
+        phone: customer.phone.trim(),
+      },
+      shipping_address: {
+        first_name: customer.firstName.trim(),
+        last_name: customer.lastName.trim(),
+        address1: shippingAddress.address1.trim(),
+        city: shippingAddress.city.trim(),
+        province: shippingAddress.province.trim(),
+        zip: shippingAddress.postalCode.trim(),
+        country: shippingAddress.country || "Pakistan",
+        phone: customer.phone.trim(),
+      },
+      shipping_lines: [
+        {
+          title: shippingMethod.title,
+          price: shippingMethod.price.toFixed(2),
+          code: shippingMethod.code || "STANDARD",
+        },
+      ],
+    },
+  };
+
+  if (discountAmount > 0 && discountCode) {
+    shopifyOrderPayload.order.discount_codes = [
+      {
+        code: discountCode.toUpperCase(),
+        amount: discountAmount.toFixed(2),
+        type: "fixed_amount",
+      },
+    ];
+  }
+
+  const endpoint = `https://${domain}/admin/api/${STABLE_ADMIN_API_VERSION}/orders.json`;
+
+  let res = await fetch(endpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      "X-Shopify-Access-Token": token,
+    },
+    body: JSON.stringify(shopifyOrderPayload),
+  });
+
+  // Handle 401 Unauthorized token retry
+  if (res.status === 401) {
+    console.warn("[Shopify Order Create] Received 401 Unauthorized. Refreshing token and retrying...");
+    token = await shopifyStorage.getOrFetchAdminToken(domain, true);
+    if (token) {
+      res = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "X-Shopify-Access-Token": token,
+        },
+        body: JSON.stringify(shopifyOrderPayload),
+      });
+    }
+  }
+
+  if (!res.ok) {
+    const errorBody = await res.text();
+    console.error(`[Shopify Order Create Error] HTTP ${res.status}:`, errorBody);
+    let parsedMsg = "Shopify order creation failed.";
+    try {
+      const errJson = JSON.parse(errorBody);
+      if (errJson.errors) {
+        if (typeof errJson.errors === "string") parsedMsg = errJson.errors;
+        else parsedMsg = JSON.stringify(errJson.errors);
+      }
+    } catch {}
+    return {
+      success: false,
+      orderReference: "",
+      orderNumber: "",
+      totalPrice: 0,
+      currency: "PKR",
+      error: parsedMsg,
+    };
+  }
+
+  const resData = await res.json();
+  const createdOrder = resData?.order;
+
+  if (!createdOrder || !createdOrder.id) {
+    return {
+      success: false,
+      orderReference: "",
+      orderNumber: "",
+      totalPrice: 0,
+      currency: "PKR",
+      error: "Unexpected response from Shopify Admin API.",
+    };
+  }
+
+  const orderNumber = createdOrder.name || `#${createdOrder.order_number}`;
+  const orderReference = `RT-${createdOrder.order_number || createdOrder.id}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+
+  const orderConfirmationData = {
+    orderReference,
+    orderNumber,
+    shopifyOrderId: createdOrder.id,
+    createdAt: createdOrder.created_at || new Date().toISOString(),
+    customer: {
+      firstName: customer.firstName,
+      lastName: customer.lastName,
+      email: customer.email,
+      phone: customer.phone,
+    },
+    shippingAddress: {
+      address1: shippingAddress.address1,
+      city: shippingAddress.city,
+      province: shippingAddress.province,
+      postalCode: shippingAddress.postalCode,
+      country: shippingAddress.country || "Pakistan",
+    },
+    items: validatedItems.map((it) => ({
+      id: String(it.variantId),
+      title: it.title,
+      variantTitle: it.variantTitle,
+      quantity: it.quantity,
+      price: it.price,
+      imageUrl: it.imageUrl,
+    })),
+    shippingLine: {
+      title: shippingMethod.title,
+      price: shippingMethod.price,
+    },
+    subtotal,
+    discount: discountAmount,
+    discountCode: discountAmount > 0 ? discountCode : undefined,
+    total: parseFloat(createdOrder.total_price || total.toFixed(2)),
+    currency: createdOrder.currency || "PKR",
+    paymentMethod: "Cash on Delivery (COD)",
+    financialStatus: createdOrder.financial_status || "pending",
+    notes: notes || undefined,
+  };
+
+  // Cache in Firestore under "shopify_orders"
+  const db = getFirestoreDb();
+  if (db) {
+    try {
+      await db.collection("shopify_orders").doc(orderReference).set(orderConfirmationData);
+      console.log(`[Firestore Order Saved] Cached order reference ${orderReference} in Firestore.`);
+    } catch (fsErr) {
+      console.warn("[Firestore Order Save Warning]", fsErr);
+    }
+  }
+
+  // Also cache in memory for fast lookup
+  recentOrdersMemoryCache.set(orderReference, orderConfirmationData);
+  // Also store by orderNumber
+  recentOrdersMemoryCache.set(orderNumber.replace("#", ""), orderConfirmationData);
+
+  return {
+    success: true,
+    orderReference,
+    orderNumber,
+    shopifyOrderId: createdOrder.id,
+    totalPrice: orderConfirmationData.total,
+    currency: orderConfirmationData.currency,
+    orderData: orderConfirmationData,
+  };
+}
+
+/**
+ * Retrieves cached order confirmation details by reference.
+ */
+export async function getOrderConfirmationRecord(reference: string): Promise<any | null> {
+  const cleanRef = reference.trim();
+  if (!cleanRef) return null;
+
+  // 1. Check memory cache
+  if (recentOrdersMemoryCache.has(cleanRef)) {
+    return recentOrdersMemoryCache.get(cleanRef);
+  }
+
+  // 2. Check Firestore
+  const db = getFirestoreDb();
+  if (db) {
+    try {
+      const snap = await db.collection("shopify_orders").doc(cleanRef).get();
+      if (snap.exists) {
+        const data = snap.data();
+        recentOrdersMemoryCache.set(cleanRef, data);
+        return data;
+      }
+    } catch (e) {
+      console.warn(`[Order Lookup] Firestore lookup error for ${cleanRef}:`, e);
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Determines shipping options based on cart subtotal and location.
+ */
+export function calculateShippingRates(subtotal: number) {
+  const FREE_SHIPPING_THRESHOLD = 15000;
+  const isFree = subtotal >= FREE_SHIPPING_THRESHOLD;
+
+  return [
+    {
+      id: "standard",
+      title: "Standard Courier Delivery (TCS / Trax / Leopard)",
+      price: isFree ? 0 : 250,
+      currency: "PKR",
+      estimatedDays: "2-4 Business Days",
+      description: isFree
+        ? "FREE Express delivery across all cities in Pakistan on orders above Rs. 15,000"
+        : "Flat-rate secure courier delivery across all cities in Pakistan",
+    },
+    {
+      id: "express",
+      title: "Priority Air Express Delivery",
+      price: isFree ? 250 : 500,
+      currency: "PKR",
+      estimatedDays: "1-2 Business Days",
+      description: "Fast-tracked priority air dispatch with real-time tracking updates",
+    },
+    {
+      id: "pickup",
+      title: "Self-Pickup (ReviveTech Experience Center)",
+      price: 0,
+      currency: "PKR",
+      estimatedDays: "Same Day / Ready in 2 Hours",
+      description: "Pick up directly from Lahore / Islamabad tech hubs with instant product inspection",
+    },
+  ];
+}
+
+

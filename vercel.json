@@ -2,28 +2,6 @@
   "buildCommand": "vite build",
   "outputDirectory": "dist",
   "framework": "vite",
-  "redirects": [
-    {
-      "source": "/cart/c/:path*",
-      "destination": "https://dbbys1-nd.myshopify.com/cart/c/:path*",
-      "permanent": false
-    },
-    {
-      "source": "/cart/checkouts/:path*",
-      "destination": "https://dbbys1-nd.myshopify.com/cart/checkouts/:path*",
-      "permanent": false
-    },
-    {
-      "source": "/checkouts/:path*",
-      "destination": "https://dbbys1-nd.myshopify.com/checkouts/:path*",
-      "permanent": false
-    },
-    {
-      "source": "/cart/k/:path*",
-      "destination": "https://dbbys1-nd.myshopify.com/cart/k/:path*",
-      "permanent": false
-    }
-  ],
   "rewrites": [
     {
       "source": "/api/health/:path*",

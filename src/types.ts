@@ -189,6 +189,61 @@ export interface Customer {
   orders: CustomerOrder[];
 }
 
+export interface CheckoutCustomerData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+}
+
+export interface CheckoutShippingAddress {
+  address1: string;
+  city: string;
+  province: string;
+  postalCode: string;
+  country: string;
+}
+
+export interface ShippingOption {
+  id: string;
+  title: string;
+  price: number;
+  currency: string;
+  estimatedDays: string;
+  description: string;
+}
+
+export interface OrderConfirmationItem {
+  id: string;
+  title: string;
+  variantTitle?: string;
+  quantity: number;
+  price: number;
+  imageUrl?: string;
+}
+
+export interface OrderConfirmationData {
+  orderReference: string;
+  orderNumber: string;
+  shopifyOrderId?: string | number;
+  createdAt: string;
+  customer: CheckoutCustomerData;
+  shippingAddress: CheckoutShippingAddress;
+  items: OrderConfirmationItem[];
+  shippingLine: {
+    title: string;
+    price: number;
+  };
+  subtotal: number;
+  discount: number;
+  discountCode?: string;
+  total: number;
+  currency: string;
+  paymentMethod: string;
+  financialStatus: string;
+  notes?: string;
+}
+
 export type ViewState = 
   | { type: 'home' }
   | { type: 'shop' }
@@ -205,4 +260,6 @@ export type ViewState =
   | { type: 'faq' }
   | { type: 'search'; query?: string }
   | { type: 'cart' }
+  | { type: 'checkout' }
+  | { type: 'order_confirmation'; orderReference: string }
   | { type: 'page'; handle: string };

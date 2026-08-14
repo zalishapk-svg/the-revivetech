@@ -298,28 +298,18 @@ export const CartDrawer: React.FC = () => {
                 </div>
               </div>
 
-              {/* Proceed to Official Shopify Checkout */}
+              {/* Proceed to Checkout */}
               <button
                 onClick={handleCheckout}
-                disabled={isCheckingOut}
                 className="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 disabled:opacity-50 disabled:cursor-not-allowed text-slate-950 font-black text-sm uppercase tracking-wider rounded-xl shadow-xl shadow-emerald-950/60 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
-                {isCheckingOut ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Preparing Checkout...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Proceed to Shopify Checkout</span>
-                    <ExternalLink className="w-4 h-4" />
-                  </>
-                )}
+                <Lock className="w-4 h-4" />
+                <span>Proceed to Checkout</span>
               </button>
 
               <div className="flex items-center justify-center gap-2 text-[10px] text-slate-400 pt-1">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Secure 256-bit SSL encrypted Shopify checkout</span>
+                <span>Secure Cash on Delivery • 256-bit SSL Encrypted</span>
               </div>
 
             </div>

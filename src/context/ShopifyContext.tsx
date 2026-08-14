@@ -21,6 +21,8 @@ interface ShopifyContextType {
   navigateToFAQ: () => void;
   navigateToSearch: (query?: string) => void;
   navigateToCart: () => void;
+  navigateToCheckout: () => void;
+  navigateToOrderConfirmation: (orderReference: string) => void;
   navigateToPage: (handle: string) => void;
 
   // Shopify Storefront Data
@@ -129,6 +131,11 @@ export function parseUrlToViewState(path: string, search: string): ViewState {
     if (handle) return { type: "product", handle };
   }
   if (cleanPath === "/cart") return { type: "cart" };
+  if (cleanPath === "/checkout") return { type: "checkout" };
+  if (cleanPath.startsWith("/order-confirmation/")) {
+    const orderReference = cleanPath.replace("/order-confirmation/", "");
+    if (orderReference) return { type: "order_confirmation", orderReference };
+  }
   if (cleanPath === "/search") {
     const query = new URLSearchParams(search).get("q") || "";
     return { type: "search", query };
@@ -167,6 +174,10 @@ export function viewStateToUrl(view: ViewState): string {
       return `/products/${view.handle}`;
     case "cart":
       return "/cart";
+    case "checkout":
+      return "/checkout";
+    case "order_confirmation":
+      return `/order-confirmation/${view.orderReference}`;
     case "search":
       return view.query ? `/search?q=${encodeURIComponent(view.query)}` : "/search";
     case "about":
@@ -218,21 +229,6 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setViewStateInternal(newView);
     };
     window.addEventListener("popstate", handlePopState);
-
-    // Client-side guard for Shopify checkout paths if landed on SPA
-    const pathname = window.location.pathname;
-    if (
-      pathname.startsWith("/cart/c/") ||
-      pathname.startsWith("/cart/checkouts/") ||
-      pathname.startsWith("/checkouts/") ||
-      pathname.startsWith("/cart/k/")
-    ) {
-      const shopifyDomain = storeDomain || "dbbys1-nd.myshopify.com";
-      const targetUrl = `https://${shopifyDomain}${pathname}${window.location.search}`;
-      console.log("[Client Checkout Guard] Redirecting to Shopify checkout:", targetUrl);
-      window.location.replace(targetUrl);
-    }
-
     return () => window.removeEventListener("popstate", handlePopState);
   }, [storeDomain]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -604,6 +600,14 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const navigateToFAQ = () => setViewState({ type: "faq" });
   const navigateToSearch = (query?: string) => setViewState({ type: "search", query });
   const navigateToCart = () => setViewState({ type: "cart" });
+  const navigateToCheckout = () => {
+    setIsCartOpen(false);
+    setViewState({ type: "checkout" });
+  };
+  const navigateToOrderConfirmation = (orderReference: string) => {
+    setIsCartOpen(false);
+    setViewState({ type: "order_confirmation", orderReference });
+  };
   const navigateToPage = (handle: string) => setViewState({ type: "page", handle });
 
   // Cart functions
@@ -688,46 +692,7 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
       showToast("Your cart is empty");
       return;
     }
-
-    setIsCheckingOut(true);
-    try {
-      const linesInput = cartLines.map((item) => ({
-        merchandiseId: item.merchandise.id,
-        quantity: item.quantity,
-      }));
-
-      const response = await fetch("/api/shopify/graphql", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          query: STOREFRONT_QUERIES.CART_CREATE,
-          variables: {
-            input: {
-              lines: linesInput,
-            },
-          },
-        }),
-      });
-
-      const resJson = await response.json();
-      const cartData = resJson?.data?.cartCreate?.cart;
-      const checkoutUrl = cartData?.checkoutUrl;
-
-      if (checkoutUrl) {
-        showToast("Redirecting to Shopify Checkout...");
-        // Full browser navigation to external Shopify checkout URL
-        window.location.assign(checkoutUrl);
-      } else {
-        const errorMsg = resJson?.data?.cartCreate?.userErrors?.[0]?.message || "Could not generate checkout link.";
-        console.error("Shopify Cart Create Error:", resJson);
-        showToast(errorMsg);
-        setIsCheckingOut(false);
-      }
-    } catch (err: any) {
-      console.error("Checkout process error:", err);
-      showToast("Error initiating checkout. Please try again.");
-      setIsCheckingOut(false);
-    }
+    navigateToCheckout();
   };
 
   // Wishlist functions
@@ -832,6 +797,8 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
         navigateToFAQ,
         navigateToSearch,
         navigateToCart,
+        navigateToCheckout,
+        navigateToOrderConfirmation,
         navigateToPage,
         products,
         collections,

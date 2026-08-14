@@ -208,9 +208,9 @@ export const CartPage: React.FC = () => {
             {/* Checkout Button */}
             <button
               onClick={handleCheckout}
-              className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-4 rounded-2xl text-xs uppercase tracking-wider transition-colors flex items-center justify-center gap-2 shadow-xl"
+              className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-4 rounded-2xl text-xs uppercase tracking-wider transition-colors flex items-center justify-center gap-2 shadow-xl cursor-pointer"
             >
-              <Lock className="w-4 h-4" /> Proceed to Shopify Checkout
+              <Lock className="w-4 h-4" /> Proceed to Checkout (COD)
             </button>
 
             {/* Trust Badges */}

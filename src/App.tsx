@@ -24,6 +24,8 @@ const FAQPage = lazy(() => import("./components/faq/FAQPage").then((m) => ({ def
 const LegalPage = lazy(() => import("./components/page/LegalPage").then((m) => ({ default: m.LegalPage })));
 const CartPage = lazy(() => import("./components/cart/CartPage").then((m) => ({ default: m.CartPage })));
 const SearchPage = lazy(() => import("./components/search/SearchPage").then((m) => ({ default: m.SearchPage })));
+const CheckoutPage = lazy(() => import("./components/CheckoutPage").then((m) => ({ default: m.CheckoutPage })));
+const OrderConfirmationPage = lazy(() => import("./components/OrderConfirmationPage").then((m) => ({ default: m.OrderConfirmationPage })));
 
 // Dynamic lazy-loaded modals
 const QuickViewModal = lazy(() => import("./components/common/QuickViewModal").then((m) => ({ default: m.QuickViewModal })));
@@ -41,6 +43,7 @@ const MainLayout: React.FC = () => {
   const currentType = viewState.type;
   const activeHandle = "handle" in viewState ? viewState.handle : "";
   const activeQuery = "query" in viewState ? viewState.query : "";
+  const activeOrderRef = "orderReference" in viewState ? (viewState as any).orderReference : "";
 
   return (
     <div className="min-h-screen bg-[#030705] text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-slate-950">
@@ -71,6 +74,10 @@ const MainLayout: React.FC = () => {
           {currentType === "faq" && <FAQPage />}
           {currentType === "search" && <SearchPage initialQuery={activeQuery} />}
           {currentType === "cart" && <CartPage />}
+          {currentType === "checkout" && <CheckoutPage />}
+          {currentType === "order_confirmation" && (
+            <OrderConfirmationPage orderReference={activeOrderRef} />
+          )}
           {currentType === "page" && <LegalPage handle={activeHandle} />}
         </Suspense>
       </main>

@@ -5,7 +5,8 @@ import { createServer as createViteServer } from "vite";
 import { 
   getConfig, shopifyStorage, getAppBaseUrl, 
   STABLE_ADMIN_API_VERSION, STABLE_STOREFRONT_API_VERSION, REQUIRED_ADMIN_SCOPES,
-  checkFirebaseAdminHealth, checkShopifyStorefrontHealth
+  checkFirebaseAdminHealth, checkShopifyStorefrontHealth,
+  validateShopifyCartItems, createShopifyAdminOrder, getOrderConfirmationRecord, calculateShippingRates
 } from "./api/_lib/shopify-server.js";
 
 const app = express();
@@ -623,18 +624,136 @@ app.post("/api/shopify/webhooks", async (req, res) => {
   });
 });
 
-async function startServer() {
-  // Handle Shopify checkout path redirects
-  const handleCheckoutRedirect = (req: express.Request, res: express.Response) => {
+// Shipping Rates Calculation Endpoint
+app.all(["/api/shopify/shipping-rates"], (req, res) => {
+  const body = req.method === "POST" ? req.body : req.query;
+  const subtotal = parseFloat(String(body?.subtotal || 0));
+  const rates = calculateShippingRates(subtotal);
+  return res.json({ success: true, rates });
+});
+
+// Headless Checkout Order Creation Endpoint (Shopify Admin API + Cash on Delivery)
+app.post("/api/shopify/order/create", async (req, res) => {
+  try {
+    const { customer, shippingAddress, items, shippingMethodId, discountCode, notes } = req.body || {};
+
+    if (!customer?.firstName?.trim() || !customer?.lastName?.trim()) {
+      return res.status(400).json({ error: "First and last name are required." });
+    }
+    if (!customer?.email?.trim() || !customer.email.includes("@")) {
+      return res.status(400).json({ error: "A valid email address is required for order confirmation." });
+    }
+    if (!customer?.phone?.trim() || customer.phone.trim().length < 8) {
+      return res.status(400).json({ error: "A valid phone number is required for Cash on Delivery dispatch." });
+    }
+
+    if (!shippingAddress?.address1?.trim()) {
+      return res.status(400).json({ error: "Complete delivery address is required." });
+    }
+    if (!shippingAddress?.city?.trim()) {
+      return res.status(400).json({ error: "City is required." });
+    }
+    if (!shippingAddress?.province?.trim()) {
+      return res.status(400).json({ error: "Province is required." });
+    }
+
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ error: "Your shopping cart is empty." });
+    }
+
     const config = getConfig();
-    const domain = config.storeDomain || "dbbys1-nd.myshopify.com";
-    const targetUrl = `https://${domain}${req.originalUrl}`;
-    console.log(`[Express Checkout Redirect] Forwarding ${req.originalUrl} -> ${targetUrl}`);
-    return res.redirect(302, targetUrl);
-  };
+    const inventoryResult = await validateShopifyCartItems(items, config.storeDomain);
 
-  app.get(["/cart/c/*", "/cart/checkouts/*", "/checkouts/*", "/cart/k/*"], handleCheckoutRedirect);
+    if (!inventoryResult.valid || !inventoryResult.validatedItems.length) {
+      return res.status(400).json({
+        error: inventoryResult.error || "Unable to verify stock or prices for your items.",
+        code: "INVENTORY_ERROR",
+      });
+    }
 
+    const validatedSubtotal = inventoryResult.subtotal;
+    const availableShippingRates = calculateShippingRates(validatedSubtotal);
+    const selectedRate =
+      availableShippingRates.find((r) => r.id === shippingMethodId) || availableShippingRates[0];
+
+    let discountAmount = 0;
+    const upperCode = (discountCode || "").trim().toUpperCase();
+    if (upperCode === "REVIVE10" || upperCode === "WELCOME10") {
+      discountAmount = Math.round(validatedSubtotal * 0.1);
+    } else if (upperCode === "REVIVE5") {
+      discountAmount = Math.round(validatedSubtotal * 0.05);
+    }
+
+    const orderCreationResult = await createShopifyAdminOrder({
+      customer: {
+        firstName: customer.firstName.trim(),
+        lastName: customer.lastName.trim(),
+        email: customer.email.trim(),
+        phone: customer.phone.trim(),
+      },
+      shippingAddress: {
+        address1: shippingAddress.address1.trim(),
+        city: shippingAddress.city.trim(),
+        province: shippingAddress.province.trim(),
+        postalCode: (shippingAddress.postalCode || "").trim() || "00000",
+        country: (shippingAddress.country || "Pakistan").trim(),
+      },
+      validatedItems: inventoryResult.validatedItems,
+      shippingMethod: {
+        title: selectedRate.title,
+        price: selectedRate.price,
+        code: selectedRate.id.toUpperCase(),
+      },
+      discountCode: discountAmount > 0 ? upperCode : undefined,
+      discountAmount,
+      notes: notes?.trim(),
+      storeDomain: config.storeDomain,
+    });
+
+    if (!orderCreationResult.success) {
+      return res.status(500).json({
+        error: orderCreationResult.error || "Failed to create order on Shopify.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      orderReference: orderCreationResult.orderReference,
+      orderNumber: orderCreationResult.orderNumber,
+      shopifyOrderId: orderCreationResult.shopifyOrderId,
+      totalPrice: orderCreationResult.totalPrice,
+      currency: orderCreationResult.currency,
+      orderData: orderCreationResult.orderData,
+    });
+  } catch (error: any) {
+    console.error("[Create Order Exception in Express]", error);
+    return res.status(500).json({
+      error: error?.message || "Internal server error while creating Shopify order.",
+    });
+  }
+});
+
+// Order Lookup Endpoint for Confirmation Page
+app.get("/api/shopify/order/:reference", async (req, res) => {
+  try {
+    const reference = req.params.reference || (req.query.reference as string) || "";
+    if (!reference) {
+      return res.status(400).json({ error: "Missing order reference parameter." });
+    }
+
+    const orderData = await getOrderConfirmationRecord(reference);
+    if (!orderData) {
+      return res.status(404).json({ error: "Order reference not found." });
+    }
+
+    return res.json({ success: true, order: orderData });
+  } catch (error: any) {
+    console.error("[Order Lookup Exception in Express]", error);
+    return res.status(500).json({ error: "Failed to retrieve order confirmation." });
+  }
+});
+
+async function startServer() {
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },
