@@ -625,7 +625,7 @@ app.post("/api/shopify/webhooks", async (req, res) => {
 });
 
 // Shipping Rates Calculation Endpoint
-app.all(["/api/shopify/shipping-rates"], async (req, res) => {
+app.all(["/api/shopify/shipping-rates", "/api/shipping-rates", "/api/checkout/shipping-rates"], async (req, res) => {
   const body = req.method === "POST" ? req.body : req.query;
   const config = getConfig();
   const items = body?.items || [];
@@ -635,7 +635,7 @@ app.all(["/api/shopify/shipping-rates"], async (req, res) => {
 });
 
 // Headless Checkout Order Creation Endpoint (Shopify Admin API + Cash on Delivery)
-app.post("/api/shopify/order/create", async (req, res) => {
+app.post(["/api/checkout/create", "/api/shopify/order/create", "/api/order/create"], async (req, res) => {
   try {
     const { customer, shippingAddress, items, shippingMethodId, discountCode, notes } = req.body || {};
 
@@ -716,7 +716,6 @@ app.post("/api/shopify/order/create", async (req, res) => {
     if (!orderCreationResult.success) {
       return res.status(500).json({
         error: orderCreationResult.error || "Failed to create order on Shopify.",
-        authUrl: orderCreationResult.authUrl,
       });
     }
 
@@ -738,7 +737,7 @@ app.post("/api/shopify/order/create", async (req, res) => {
 });
 
 // Order Lookup Endpoint for Confirmation Page
-app.get("/api/shopify/order/:reference", async (req, res) => {
+app.get(["/api/shopify/order/:reference", "/api/order/:reference"], async (req, res) => {
   try {
     const reference = req.params.reference || (req.query.reference as string) || "";
     if (!reference) {

@@ -230,32 +230,53 @@ class ShopifyDatabaseSessionStorage {
       }
     }
 
-    // 2. Check Firebase Firestore (collection: "shopify_tokens", doc: key)
+    // 2. Check Firebase Firestore (collections: "shopify_tokens", "shopify_sessions", "sessions", "shopify_auth")
     const db = getFirestoreDb();
     if (db) {
-      try {
-        const docRef = db.collection("shopify_tokens").doc(key);
-        const snap = await docRef.get();
-        if (snap.exists) {
-          const data = snap.data();
-          if (data && data.accessToken) {
-            const record: ShopifySessionRecord = {
-              shop: data.shop || key,
-              accessToken: data.accessToken,
-              scope: data.scope || REQUIRED_ADMIN_SCOPES.join(","),
-              installedAt: data.installedAt || new Date().toISOString(),
-              updatedAt: data.updatedAt || new Date().toISOString(),
-              expiresAt: data.expiresAt || undefined,
-              isOnline: false,
-            };
-            this.inMemorySessions.set(key, record);
-            if (!record.expiresAt || record.expiresAt > Date.now() + 60000) {
-              return record;
+      const collectionNames = ["shopify_tokens", "shopify_sessions", "sessions", "shopify_auth"];
+      const docKeys = [
+        key,
+        `offline_${key}`,
+        key.replace(".myshopify.com", ""),
+        `offline_${key.replace(".myshopify.com", "")}`,
+        "default",
+        "active",
+      ];
+
+      for (const col of collectionNames) {
+        for (const dKey of docKeys) {
+          try {
+            const snap = await db.collection(col).doc(dKey).get();
+            if (snap.exists) {
+              const data = snap.data();
+              const foundToken =
+                data?.accessToken ||
+                data?.access_token ||
+                data?.token ||
+                data?.admin_token ||
+                data?.session?.accessToken ||
+                data?.session?.access_token;
+
+              if (foundToken) {
+                const record: ShopifySessionRecord = {
+                  shop: data.shop || key,
+                  accessToken: foundToken,
+                  scope: data.scope || REQUIRED_ADMIN_SCOPES.join(","),
+                  installedAt: data.installedAt || new Date().toISOString(),
+                  updatedAt: data.updatedAt || new Date().toISOString(),
+                  expiresAt: data.expiresAt || data.expires_at || undefined,
+                  isOnline: false,
+                };
+                this.inMemorySessions.set(key, record);
+                if (!record.expiresAt || record.expiresAt > Date.now() + 60000) {
+                  return record;
+                }
+              }
             }
+          } catch (e) {
+            // continue checking other paths
           }
         }
-      } catch (e) {
-        console.error("[Shopify Storage] Error fetching cached token from Firestore:", e);
       }
     }
 
@@ -277,6 +298,8 @@ class ShopifyDatabaseSessionStorage {
         process.env.SHOPIFY_CLIENT_ID ||
         process.env.SHOPIFY_API_KEY ||
         process.env.SHOPIFY_APP_CLIENT_ID ||
+        process.env.SHOPIFY_API_KEY_ID ||
+        process.env.SHOPIFY_KEY ||
         process.env.VITE_SHOPIFY_CLIENT_ID ||
         ""
       ).trim();
@@ -286,6 +309,8 @@ class ShopifyDatabaseSessionStorage {
         process.env.SHOPIFY_API_SECRET ||
         process.env.SHOPIFY_APP_CLIENT_SECRET ||
         process.env.SHOPIFY_SECRET ||
+        process.env.SHOPIFY_SECRET_KEY ||
+        process.env.VITE_SHOPIFY_CLIENT_SECRET ||
         ""
       ).trim();
 
@@ -294,11 +319,13 @@ class ShopifyDatabaseSessionStorage {
         return null;
       }
 
+      const tokenEndpoint = `https://${key}/admin/oauth/access_token`;
+
+      // 1. Try JSON body grant
       try {
         console.log(`[Shopify Client Credentials] Requesting Admin API access token for ${key}...`);
-        const tokenEndpoint = `https://${key}/admin/oauth/access_token`;
 
-        const response = await fetch(tokenEndpoint, {
+        let response = await fetch(tokenEndpoint, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -311,6 +338,23 @@ class ShopifyDatabaseSessionStorage {
           }),
         });
 
+        // 2. If JSON not accepted, try urlencoded
+        if (!response.ok) {
+          const params = new URLSearchParams();
+          params.append("client_id", clientId);
+          params.append("client_secret", clientSecret);
+          params.append("grant_type", "client_credentials");
+
+          response = await fetch(tokenEndpoint, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+              Accept: "application/json",
+            },
+            body: params.toString(),
+          });
+        }
+
         if (!response.ok) {
           const errText = await response.text();
           console.warn(`[Shopify Client Credentials Notice] Status: ${response.status} | Response: ${errText}`);
@@ -318,7 +362,8 @@ class ShopifyDatabaseSessionStorage {
         }
 
         const data = await response.json();
-        if (!data.access_token) {
+        const token = data.access_token || data.token;
+        if (!token) {
           return null;
         }
 
@@ -327,7 +372,7 @@ class ShopifyDatabaseSessionStorage {
 
         const record: ShopifySessionRecord = {
           shop: key,
-          accessToken: data.access_token,
+          accessToken: token,
           scope: data.scope || REQUIRED_ADMIN_SCOPES.join(","),
           installedAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
@@ -337,7 +382,7 @@ class ShopifyDatabaseSessionStorage {
 
         this.inMemorySessions.set(key, record);
 
-        // Save fresh token to Firestore
+        // Save fresh token to Firestore (shopify_tokens)
         const db = getFirestoreDb();
         if (db) {
           try {
@@ -897,10 +942,66 @@ export async function fetchShopifyShippingRates(
       }
     }
   } catch (err) {
-    console.error("[Shopify Shipping Rates Exception]:", err);
+    console.error("[Shopify Shipping Rates Storefront Exception]:", err);
   }
 
-  // Fallback if no specific shipping zone exists for address
+  // 2. Fallback: Query Shopify Admin API Shipping Zones using server session
+  try {
+    const adminToken = await shopifyStorage.getOrFetchAdminToken(domain);
+    if (adminToken) {
+      const zoneEndpoint = `https://${domain}/admin/api/${STABLE_ADMIN_API_VERSION}/shipping_zones.json`;
+      const zRes = await fetch(zoneEndpoint, {
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "X-Shopify-Access-Token": adminToken,
+        },
+      });
+
+      if (zRes.ok) {
+        const zData = await zRes.json();
+        const zones = zData?.shipping_zones || [];
+        const zoneRates: Array<{
+          id: string;
+          title: string;
+          price: number;
+          currency: string;
+          estimatedDays: string;
+          description: string;
+        }> = [];
+
+        for (const zone of zones) {
+          const countryMatch = !zone.countries || zone.countries.length === 0 || zone.countries.some(
+            (c: any) => c.code === "PK" || c.name?.toLowerCase() === "pakistan"
+          );
+
+          if (countryMatch) {
+            if (Array.isArray(zone.price_based_shipping_rates)) {
+              for (const rate of zone.price_based_shipping_rates) {
+                const pNum = parseFloat(rate.price || "0");
+                zoneRates.push({
+                  id: String(rate.id || rate.name).toLowerCase().replace(/[^a-z0-9]/g, "-"),
+                  title: rate.name || "Standard Courier Delivery",
+                  price: pNum,
+                  currency: "PKR",
+                  estimatedDays: pNum === 0 ? "2-4 Business Days (Free Shipping)" : "2-4 Business Days",
+                  description: pNum === 0 ? "Free shipping configured in Shopify" : "Shopify Standard Delivery",
+                });
+              }
+            }
+          }
+        }
+
+        if (zoneRates.length > 0) {
+          return zoneRates;
+        }
+      }
+    }
+  } catch (e) {
+    console.warn("[Shipping Zones Lookup Note]", e);
+  }
+
+  // Standard delivery fallback if no custom rate rules matched
   return [
     {
       id: "standard",
@@ -958,23 +1059,18 @@ export async function createShopifyAdminOrder(orderPayload: {
   currency: string;
   orderData?: any;
   error?: string;
-  authUrl?: string;
 }> {
   const domain = shopifyStorage.cleanDomain(orderPayload.storeDomain);
   let token = await shopifyStorage.getOrFetchAdminToken(domain);
 
   if (!token) {
-    const config = getConfig();
-    const host = orderPayload.reqHost || "therevivetech.pk";
-    const authUrl = `https://${host}/api/shopify/auth?shop=${encodeURIComponent(domain)}`;
     return {
       success: false,
       orderReference: "",
       orderNumber: "",
       totalPrice: 0,
       currency: "PKR",
-      error: `Unable to obtain Shopify Admin API authorization for ${domain}. Please authenticate the app via OAuth at ${authUrl} or verify SHOPIFY_CLIENT_ID and SHOPIFY_CLIENT_SECRET.`,
-      authUrl,
+      error: `Shopify server authentication error: Could not obtain Admin API access token for ${domain}. Please verify SHOPIFY_CLIENT_ID and SHOPIFY_CLIENT_SECRET.`,
     };
   }
 

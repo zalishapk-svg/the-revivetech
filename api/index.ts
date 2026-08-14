@@ -505,7 +505,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // -------------------------------------------------------------------------
 
     // 5a. Calculate Dynamic Shopify Shipping Rates
-    if (path === "shopify/shipping-rates") {
+    if (path === "shopify/shipping-rates" || path === "shipping-rates" || path === "checkout/shipping-rates") {
       const body = req.method === "POST" ? req.body : req.query;
       const items = body?.items || [];
       const shippingAddress = body?.shippingAddress;
@@ -513,8 +513,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json({ success: true, rates });
     }
 
-    // 5b. Create Custom COD / Online Order
-    if (path === "shopify/order/create") {
+    // 5b. Create Custom COD / Online Order (Shopify Admin API + Client Credentials)
+    if (
+      path === "checkout/create" ||
+      path === "shopify/order/create" ||
+      path === "order/create" ||
+      path === "shopify/checkout/create"
+    ) {
       if (req.method !== "POST") {
         return res.status(405).json({ error: "Method not allowed. Use POST." });
       }
@@ -598,7 +603,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (!orderCreationResult.success) {
         return res.status(500).json({
           error: orderCreationResult.error || "Failed to create order on Shopify.",
-          authUrl: orderCreationResult.authUrl,
         });
       }
 
@@ -614,11 +618,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // 5c. Get Order Details by Reference / ID
-    if (path.startsWith("shopify/order/") || path === "shopify/order/get") {
+    if (
+      path.startsWith("shopify/order/") ||
+      path.startsWith("order/") ||
+      path === "shopify/order/get" ||
+      path === "order/get"
+    ) {
       let reference = (req.query.reference as string) || "";
 
       if (!reference && path.startsWith("shopify/order/")) {
         reference = path.replace(/^shopify\/order\//, "").trim();
+      } else if (!reference && path.startsWith("order/")) {
+        reference = path.replace(/^order\//, "").trim();
       }
 
       if (!reference) {

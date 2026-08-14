@@ -20,7 +20,6 @@ import {
   Tag,
   Clock,
   Package,
-  ExternalLink,
 } from "lucide-react";
 
 export const CheckoutPage: React.FC = () => {
@@ -80,7 +79,6 @@ export const CheckoutPage: React.FC = () => {
   const [isLoadingRates, setIsLoadingRates] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [authRequiredUrl, setAuthRequiredUrl] = useState<string | null>(null);
 
   // Form Validation Errors
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -235,7 +233,6 @@ export const CheckoutPage: React.FC = () => {
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
-    setAuthRequiredUrl(null);
 
     if (cartLines.length === 0) {
       setErrorMessage("Your cart is empty. Please add items to proceed.");
@@ -264,7 +261,7 @@ export const CheckoutPage: React.FC = () => {
         quantity: line.quantity,
       }));
 
-      const res = await fetch("/api/shopify/order/create", {
+      const res = await fetch("/api/checkout/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -284,9 +281,6 @@ export const CheckoutPage: React.FC = () => {
           data.error ||
           "We encountered an issue creating your order with Shopify. Please verify your details or try again.";
         setErrorMessage(errorText);
-        if (data.authUrl) {
-          setAuthRequiredUrl(data.authUrl);
-        }
         setIsSubmitting(false);
         window.scrollTo({ top: 0, behavior: "smooth" });
         return;
@@ -378,17 +372,6 @@ export const CheckoutPage: React.FC = () => {
               </div>
             </div>
             <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
-              {authRequiredUrl && (
-                <a
-                  href={authRequiredUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-lg transition-colors flex items-center gap-1.5"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  Connect Shopify App
-                </a>
-              )}
               <button
                 type="button"
                 onClick={() => setErrorMessage(null)}
