@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { Product, Collection, BlogArticle, CartLineItem, ViewState, Customer } from "../types";
-import { getProductsFromShopify, getCollectionsFromShopify, getBlogArticlesFromShopify } from "../lib/shopify";
+import { getProductsFromShopify, getCollectionsFromShopify, getBlogArticlesFromShopify, STOREFRONT_QUERIES } from "../lib/shopify";
 
 interface ShopifyContextType {
   // Navigation View State
