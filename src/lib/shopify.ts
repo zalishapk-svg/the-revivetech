@@ -606,10 +606,7 @@ export const MOCK_TECH_PRODUCTS: Product[] = [
       minVariantPrice: { amount: "649.99", currencyCode: "USD" },
       maxVariantPrice: { amount: "649.99", currencyCode: "USD" },
     },
-    compareAtPriceRange: {
-      minVariantPrice: { amount: "699.99", currencyCode: "USD" },
-      maxVariantPrice: { amount: "699.99", currencyCode: "USD" },
-    },
+    compareAtPriceRange: null,
     featuredImage: {
       id: "img1006",
       url: "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?auto=format&fit=crop&w=1200&q=80",
@@ -617,12 +614,11 @@ export const MOCK_TECH_PRODUCTS: Product[] = [
     },
     images: [{ id: "img1006", url: "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?auto=format&fit=crop&w=1200&q=80", altText: "CPU Chip" }],
     options: [{ id: "optCPU", name: "Packaging", values: ["Boxed Processor"] }],
-    variants: [{ id: "gid://shopify/ProductVariant/1006-1", title: "Boxed Processor", sku: "AMD-RYZ-9950X", availableForSale: true, price: { amount: "649.99", currencyCode: "USD" }, compareAtPrice: { amount: "699.99", currencyCode: "USD" }, selectedOptions: [{ name: "Packaging", value: "Boxed Processor" }] }],
+    variants: [{ id: "gid://shopify/ProductVariant/1006-1", title: "Boxed Processor", sku: "AMD-RYZ-9950X", availableForSale: true, price: { amount: "649.99", currencyCode: "USD" }, compareAtPrice: null, selectedOptions: [{ name: "Packaging", value: "Boxed Processor" }] }],
     rating: 4.9,
     reviewsCount: 112,
     specs: { "Cores / Threads": "16 / 32", "Max Boost Clock": "5.7 GHz", "Total Cache": "80 MB", "TDP": "170W", "Socket": "AM5" },
     isBestSeller: true,
-    discountPercentage: 7,
   },
   {
     id: "gid://shopify/Product/1007",
@@ -664,15 +660,12 @@ export const MOCK_TECH_PRODUCTS: Product[] = [
     vendor: "ElgatoStyle",
     productType: "Accessories",
     tags: ["Accessories", "Boom Arm", "Microphone", "Streaming", "Desk Setup"],
-    availableForSale: true,
+    availableForSale: false,
     priceRange: {
       minVariantPrice: { amount: "89.99", currencyCode: "USD" },
       maxVariantPrice: { amount: "89.99", currencyCode: "USD" },
     },
-    compareAtPriceRange: {
-      minVariantPrice: { amount: "109.99", currencyCode: "USD" },
-      maxVariantPrice: { amount: "109.99", currencyCode: "USD" },
-    },
+    compareAtPriceRange: null,
     featuredImage: {
       id: "img1008",
       url: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=1200&q=80",
@@ -680,7 +673,7 @@ export const MOCK_TECH_PRODUCTS: Product[] = [
     },
     images: [{ id: "img1008", url: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=1200&q=80", altText: "Boom Arm Setup" }],
     options: [{ id: "optACC", name: "Finish", values: ["Matte Black", "Silver Satin"] }],
-    variants: [{ id: "gid://shopify/ProductVariant/1008-1", title: "Matte Black", sku: "TRT-ACC-ARM-BLK", availableForSale: true, price: { amount: "89.99", currencyCode: "USD" }, compareAtPrice: { amount: "109.99", currencyCode: "USD" }, selectedOptions: [{ name: "Finish", value: "Matte Black" }] }],
+    variants: [{ id: "gid://shopify/ProductVariant/1008-1", title: "Matte Black", sku: "TRT-ACC-ARM-BLK", availableForSale: false, price: { amount: "89.99", currencyCode: "USD" }, compareAtPrice: null, selectedOptions: [{ name: "Finish", value: "Matte Black" }] }],
     rating: 4.8,
     reviewsCount: 45,
     specs: { "Reach": "740mm Horizontal", "Max Weight": "2.5kg (5.5 lbs)", "Desk Clamp Gap": "Up to 60mm" },

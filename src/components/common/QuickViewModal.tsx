@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ShoppingBag, Heart, Star, Check, ShieldCheck, Truck, ArrowRight } from "lucide-react";
 import { useShopify } from "../../context/ShopifyContext";
-import { formatMoney, calculateDiscount } from "../../lib/utils";
+import { formatMoney, calculateDiscount, hasCompareAtDiscount } from "../../lib/utils";
 import { getProductReviews } from "../../lib/reviews";
 
 export const QuickViewModal: React.FC = () => {
@@ -42,7 +42,8 @@ export const QuickViewModal: React.FC = () => {
 
   const priceAmount = product.priceRange?.minVariantPrice?.amount || "0.00";
   const compareAtAmount = product.compareAtPriceRange?.minVariantPrice?.amount;
-  const discountPercent = calculateDiscount(priceAmount, compareAtAmount);
+  const hasDiscount = hasCompareAtDiscount(priceAmount, compareAtAmount);
+  const discountPercent = hasDiscount ? calculateDiscount(priceAmount, compareAtAmount) : 0;
 
   return (
     <AnimatePresence>
@@ -119,7 +120,7 @@ export const QuickViewModal: React.FC = () => {
                 <span className="text-2xl font-black text-emerald-400 font-mono">
                   {formatMoney(priceAmount)}
                 </span>
-                {compareAtAmount && (
+                {hasDiscount && compareAtAmount && (
                   <span className="text-sm line-through text-slate-500 font-mono">
                     {formatMoney(compareAtAmount)}
                   </span>
@@ -155,13 +156,19 @@ export const QuickViewModal: React.FC = () => {
               {/* Actions */}
               <div className="flex items-center gap-3 pt-2">
                 <button
+                  disabled={!product.availableForSale}
                   onClick={() => {
+                    if (!product.availableForSale) return;
                     addToCart(product, selectedVariantId, quantity);
                     setQuickViewHandle(null);
                   }}
-                  className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/50"
+                  className={`flex-1 py-3 font-black text-xs uppercase tracking-wider rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg ${
+                    product.availableForSale
+                      ? "bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-emerald-950/50 cursor-pointer"
+                      : "bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed"
+                  }`}
                 >
-                  <ShoppingBag className="w-4 h-4" /> Add to Cart
+                  <ShoppingBag className="w-4 h-4" /> {product.availableForSale ? "Add to Cart" : "Out of Stock"}
                 </button>
 
                 <button

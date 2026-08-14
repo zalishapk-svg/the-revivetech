@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { Heart, Eye, ShoppingBag, Check, Layers } from "lucide-react";
 import { Product } from "../../types";
 import { useShopify } from "../../context/ShopifyContext";
-import { formatMoney, calculateDiscount } from "../../lib/utils";
+import { formatMoney, calculateDiscount, hasCompareAtDiscount } from "../../lib/utils";
 
 interface ProductCardProps {
   product: Product;
@@ -40,8 +40,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className = "
   const currencyCode = product.priceRange?.minVariantPrice?.currencyCode || "PKR";
   const compareAtAmount = product.compareAtPriceRange?.minVariantPrice?.amount;
 
-  const discountPercent = calculateDiscount(priceAmount, compareAtAmount);
-  const hasDiscount = discountPercent > 0;
+  const hasDiscount = hasCompareAtDiscount(priceAmount, compareAtAmount);
+  const discountPercent = hasDiscount ? calculateDiscount(priceAmount, compareAtAmount) : 0;
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -166,15 +166,21 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className = "
           <button
             onClick={handleAddToCart}
             disabled={!product.availableForSale}
-            aria-label="Add to Cart"
+            aria-label={product.availableForSale ? "Add to Cart" : "Out of Stock"}
             title={product.availableForSale ? "Add to Cart" : "Out of Stock"}
-            className={`p-1.5 sm:p-2.5 rounded-full shadow-xl border backdrop-blur-md transition-all duration-300 ease-out transform opacity-100 translate-y-0 scale-100 sm:opacity-0 sm:translate-y-4 sm:scale-90 sm:group-hover/productcard:opacity-100 sm:group-hover/productcard:translate-y-0 sm:group-hover/productcard:scale-100 delay-150 hover:scale-110 active:scale-95 focus:outline-none cursor-pointer ${
-              isAdded
-                ? "bg-emerald-500 text-slate-950 border-emerald-400"
-                : "bg-slate-950/90 text-slate-200 hover:bg-emerald-500 hover:text-slate-950 border-emerald-500/40 disabled:opacity-50 disabled:hover:bg-slate-950"
+            className={`p-1.5 sm:p-2.5 rounded-full shadow-xl border backdrop-blur-md transition-all duration-300 ease-out transform opacity-100 translate-y-0 scale-100 sm:opacity-0 sm:translate-y-4 sm:scale-90 sm:group-hover/productcard:opacity-100 sm:group-hover/productcard:translate-y-0 sm:group-hover/productcard:scale-100 delay-150 focus:outline-none ${
+              !product.availableForSale
+                ? "bg-slate-950/90 text-slate-500 border-slate-800 cursor-not-allowed opacity-60"
+                : isAdded
+                ? "bg-emerald-500 text-slate-950 border-emerald-400 cursor-pointer hover:scale-110 active:scale-95"
+                : "bg-slate-950/90 text-slate-200 hover:bg-emerald-500 hover:text-slate-950 border-emerald-500/40 cursor-pointer hover:scale-110 active:scale-95"
             }`}
           >
-            {isAdded ? <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+            {isAdded ? (
+              <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            ) : (
+              <ShoppingBag className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${!product.availableForSale ? "opacity-40" : ""}`} />
+            )}
           </button>
         </div>
       </div>

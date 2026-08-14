@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useShopify } from "../../context/ShopifyContext";
-import { formatMoney, calculateDiscount } from "../../lib/utils";
+import { formatMoney, calculateDiscount, hasCompareAtDiscount } from "../../lib/utils";
 import { YellowTape } from "../common/YellowTape";
 import { ProductCard } from "../common/ProductCard";
 import { ProductSkeletonCard } from "../common/ProductSkeletonCard";
@@ -35,11 +35,12 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
   // Base Products List: Filter ONLY discounted items if on Sale page
   const baseProducts = useMemo(() => {
     if (isSale) {
-      return products.filter((p) => {
-        const price = parseFloat(p.priceRange?.minVariantPrice?.amount || "0");
-        const compareAt = parseFloat(p.compareAtPriceRange?.minVariantPrice?.amount || "0");
-        return compareAt > price;
-      });
+      return products.filter((p) => 
+        hasCompareAtDiscount(
+          p.priceRange?.minVariantPrice?.amount,
+          p.compareAtPriceRange?.minVariantPrice?.amount
+        )
+      );
     }
     return products;
   }, [products, isSale]);
@@ -134,7 +135,7 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
       if (inStockOnly && !p.availableForSale) return false;
 
       // Sale
-      if (onSaleOnly && !p.compareAtPriceRange?.minVariantPrice?.amount) return false;
+      if (onSaleOnly && !hasCompareAtDiscount(p.priceRange.minVariantPrice.amount, p.compareAtPriceRange?.minVariantPrice?.amount)) return false;
 
       // Price limit
       const priceNum = parseFloat(p.priceRange.minVariantPrice.amount);
@@ -515,16 +516,26 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
                         </p>
                         <div className="flex items-center gap-3 pt-2">
                           <span className="text-base font-mono font-bold text-emerald-400">{formatMoney(minPrice)}</span>
-                          {comparePrice && <span className="text-xs font-mono text-slate-500 line-through">{formatMoney(comparePrice)}</span>}
+                          {hasCompareAtDiscount(minPrice, comparePrice) && comparePrice && (
+                            <span className="text-xs font-mono text-slate-500 line-through">{formatMoney(comparePrice)}</span>
+                          )}
                         </div>
                       </div>
 
                       <div className="shrink-0 flex sm:flex-col gap-2 w-full sm:w-auto justify-end">
                         <button
-                          onClick={() => addToCart(p)}
-                          className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-5 py-2.5 rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                          disabled={!p.availableForSale}
+                          onClick={() => {
+                            if (!p.availableForSale) return;
+                            addToCart(p);
+                          }}
+                          className={`px-5 py-2.5 rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-2 ${
+                            p.availableForSale
+                              ? "bg-emerald-500 hover:bg-emerald-400 text-slate-950 cursor-pointer"
+                              : "bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed"
+                          }`}
                         >
-                          <ShoppingBag className="w-4 h-4" /> Add to Cart
+                          <ShoppingBag className="w-4 h-4" /> {p.availableForSale ? "Add to Cart" : "Out of Stock"}
                         </button>
                         <button
                           onClick={() => setQuickViewHandle(p.handle)}

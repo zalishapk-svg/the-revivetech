@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { ProductCarousel } from "../common/ProductCarousel";
 import { useShopify } from "../../context/ShopifyContext";
-import { formatMoney, calculateDiscount } from "../../lib/utils";
+import { formatMoney, calculateDiscount, hasCompareAtDiscount } from "../../lib/utils";
 import { getProductReviews } from "../../lib/reviews";
 
 interface ProductPageProps {
@@ -63,9 +63,19 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
   const isWishlisted = isInWishlist(product.handle);
   const isCompared = isInCompare(product.handle);
 
-  const priceAmount = product.priceRange?.minVariantPrice?.amount || "0.00";
-  const compareAtAmount = product.compareAtPriceRange?.minVariantPrice?.amount;
-  const discountPercent = calculateDiscount(priceAmount, compareAtAmount);
+  const selectedVariant = product.variants?.find((v) => v.id === selectedVariantId) || product.variants?.[0];
+
+  const priceAmount = selectedVariant
+    ? selectedVariant.price.amount
+    : (product.priceRange?.minVariantPrice?.amount || "0.00");
+
+  const compareAtAmount = selectedVariant
+    ? selectedVariant.compareAtPrice?.amount
+    : product.compareAtPriceRange?.minVariantPrice?.amount;
+
+  const hasDiscount = hasCompareAtDiscount(priceAmount, compareAtAmount);
+  const discountPercent = hasDiscount ? calculateDiscount(priceAmount, compareAtAmount) : 0;
+  const isAvailable = selectedVariant ? selectedVariant.availableForSale : product.availableForSale;
 
   const relatedProducts = products.filter((p) => p.handle !== product.handle).slice(0, 4);
 
@@ -153,14 +163,20 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
               <span className="text-3xl font-black text-emerald-400 font-mono">
                 {formatMoney(priceAmount)}
               </span>
-              {compareAtAmount && (
+              {hasDiscount && compareAtAmount && (
                 <span className="text-sm line-through text-slate-500 font-mono">
                   {formatMoney(compareAtAmount)}
                 </span>
               )}
-              <span className="ml-auto text-[11px] text-emerald-400 font-mono font-bold bg-emerald-950 px-2 py-0.5 rounded border border-emerald-800">
-                In Stock & Ready to Dispatch
-              </span>
+              {isAvailable ? (
+                <span className="ml-auto text-[11px] text-emerald-400 font-mono font-bold bg-emerald-950 px-2 py-0.5 rounded border border-emerald-800">
+                  In Stock & Ready to Dispatch
+                </span>
+              ) : (
+                <span className="ml-auto text-[11px] text-rose-400 font-mono font-bold bg-rose-950/80 px-2 py-0.5 rounded border border-rose-800">
+                  Out of Stock
+                </span>
+              )}
             </div>
 
             {/* Variant Selector */}
@@ -195,10 +211,15 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
                 </div>
 
                 <button
+                  disabled={!isAvailable}
                   onClick={() => addToCart(product, selectedVariantId, quantity)}
-                  className="flex-1 py-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl transition-colors flex items-center justify-center gap-2 shadow-xl shadow-emerald-950/60"
+                  className={`flex-1 py-4 font-black text-xs uppercase tracking-wider rounded-xl transition-colors flex items-center justify-center gap-2 shadow-xl ${
+                    isAvailable
+                      ? "bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-emerald-950/60 cursor-pointer"
+                      : "bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed"
+                  }`}
                 >
-                  <ShoppingBag className="w-4 h-4" /> Add to Cart ({quantity})
+                  <ShoppingBag className="w-4 h-4" /> {isAvailable ? `Add to Cart (${quantity})` : "Out of Stock"}
                 </button>
               </div>
 
