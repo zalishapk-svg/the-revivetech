@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { X, ShoppingBag, Heart, Star, Check, ShieldCheck, Truck, ArrowRight } from "lucide-react";
 import { useShopify } from "../../context/ShopifyContext";
 import { formatMoney, calculateDiscount, hasCompareAtDiscount } from "../../lib/utils";

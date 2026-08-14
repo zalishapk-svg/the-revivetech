@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { X, Settings, Check, RefreshCw, Globe, Key, ShieldCheck, Database, Server, Cpu } from "lucide-react";
 import { useShopify } from "../../context/ShopifyContext";
 

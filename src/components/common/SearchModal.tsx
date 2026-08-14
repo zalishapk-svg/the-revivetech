@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { Search, X, ArrowRight, Tag, BookOpen, Layers, Sparkles } from "lucide-react";
 import { useShopify } from "../../context/ShopifyContext";
 import { formatMoney } from "../../lib/utils";

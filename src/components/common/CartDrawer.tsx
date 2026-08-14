@@ -1,6 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { X, Trash2, Plus, Minus, ShoppingBag, Truck, Tag, ExternalLink, ArrowRight, ShieldCheck, Zap, Loader2 } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import {
+  X,
+  Trash2,
+  Plus,
+  Minus,
+  ShoppingBag,
+  Truck,
+  Tag,
+  ExternalLink,
+  ArrowRight,
+  ShieldCheck,
+  Zap,
+  Loader2,
+  Lock,
+} from "lucide-react";
 import { useShopify } from "../../context/ShopifyContext";
 import { formatMoney, getOptimizedImageUrl } from "../../lib/utils";
 
@@ -19,6 +33,7 @@ export const CartDrawer: React.FC = () => {
     freeShippingThreshold,
     products,
     navigateToProduct,
+    navigateToCart,
     storeDomain,
     handleCheckout,
     isCheckingOut,
@@ -298,14 +313,29 @@ export const CartDrawer: React.FC = () => {
                 </div>
               </div>
 
-              {/* Proceed to Checkout */}
-              <button
-                onClick={handleCheckout}
-                className="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 disabled:opacity-50 disabled:cursor-not-allowed text-slate-950 font-black text-sm uppercase tracking-wider rounded-xl shadow-xl shadow-emerald-950/60 transition-all flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <Lock className="w-4 h-4" />
-                <span>Proceed to Checkout</span>
-              </button>
+              {/* Proceed to Checkout & View Cart Actions */}
+              <div className="space-y-2 pt-1">
+                <button
+                  id="btn-cart-drawer-checkout"
+                  onClick={handleCheckout}
+                  className="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 disabled:opacity-50 disabled:cursor-not-allowed text-slate-950 font-black text-sm uppercase tracking-wider rounded-xl shadow-xl shadow-emerald-950/60 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Lock className="w-4 h-4" />
+                  <span>Proceed to Checkout</span>
+                </button>
+
+                <button
+                  id="btn-cart-drawer-view-cart"
+                  onClick={() => {
+                    setIsCartOpen(false);
+                    navigateToCart();
+                  }}
+                  className="w-full py-2.5 bg-slate-900/90 hover:bg-slate-800 border border-emerald-900/40 text-slate-200 hover:text-white font-semibold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <ShoppingBag className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>View Detailed Cart Page</span>
+                </button>
+              </div>
 
               <div className="flex items-center justify-center gap-2 text-[10px] text-slate-400 pt-1">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
