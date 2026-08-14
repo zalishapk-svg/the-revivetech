@@ -448,7 +448,7 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
           {/* Product Grid / List Section */}
           <main className="lg:col-span-3 w-full">
             {useShopify().isLoadingData ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-2 gap-3 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {[...Array(9)].map((_, idx) => (
                   <ProductSkeletonCard key={`shop-skeleton-${idx}`} />
                 ))}
@@ -470,7 +470,7 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
                 </button>
               </div>
             ) : viewMode === "grid" ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-2 gap-3 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {paginatedProducts.map((p) => (
                   <ProductCard key={p.id} product={p} />
                 ))}

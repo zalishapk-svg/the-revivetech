@@ -114,14 +114,14 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({
         <div className="relative">
           <div
             ref={scrollRef}
-            className="flex items-stretch gap-4 sm:gap-6 overflow-x-auto scrollbar-none py-2 px-0.5 select-none"
+            className="flex items-stretch gap-3 sm:gap-6 overflow-x-auto scrollbar-none py-2 px-0.5 select-none"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
             {isLoading ? (
               [...Array(initialLimit)].map((_, idx) => (
                 <div
                   key={`skeleton-${idx}`}
-                  className="flex-none w-[240px] sm:w-[280px] md:w-[290px] lg:w-[295px]"
+                  className="flex-none w-[calc(50%-6px)] sm:w-[280px] md:w-[290px] lg:w-[295px]"
                 >
                   <ProductSkeletonCard />
                 </div>
@@ -130,7 +130,7 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({
               displayedProducts.map((product) => (
                 <div
                   key={product.id}
-                  className="flex-none w-[240px] sm:w-[280px] md:w-[290px] lg:w-[295px]"
+                  className="flex-none w-[calc(50%-6px)] sm:w-[280px] md:w-[290px] lg:w-[295px]"
                 >
                   <ProductCard product={product} />
                 </div>

@@ -122,20 +122,20 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className = "
           </div>
         )}
 
-        {/* Hover Action Overlay Icons - Smooth Animated Entrance & Exit */}
-        <div className="absolute bottom-3 left-0 right-0 z-20 flex items-center justify-center gap-2 px-3 pointer-events-none group-hover/productcard:pointer-events-auto">
+        {/* Hover Action Overlay Icons - Always accessible on mobile, animated hover on desktop */}
+        <div className="absolute bottom-2 sm:bottom-3 left-0 right-0 z-20 flex items-center justify-center gap-1 sm:gap-2 px-1 sm:px-3 pointer-events-auto sm:pointer-events-none sm:group-hover/productcard:pointer-events-auto">
           {/* Wishlist Button */}
           <button
             onClick={handleToggleWishlist}
             aria-label="Toggle Wishlist"
             title={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
-            className={`p-2.5 rounded-full shadow-xl border backdrop-blur-md transition-all duration-300 ease-out transform opacity-0 translate-y-4 scale-90 group-hover/productcard:opacity-100 group-hover/productcard:translate-y-0 group-hover/productcard:scale-100 delay-0 hover:scale-110 active:scale-95 focus:outline-none cursor-pointer ${
+            className={`p-1.5 sm:p-2.5 rounded-full shadow-xl border backdrop-blur-md transition-all duration-300 ease-out transform opacity-100 translate-y-0 scale-100 sm:opacity-0 sm:translate-y-4 sm:scale-90 sm:group-hover/productcard:opacity-100 sm:group-hover/productcard:translate-y-0 sm:group-hover/productcard:scale-100 delay-0 hover:scale-110 active:scale-95 focus:outline-none cursor-pointer ${
               isWishlisted
                 ? "bg-rose-500 text-white border-rose-400"
-                : "bg-slate-950/85 text-slate-200 hover:bg-emerald-500 hover:text-slate-950 border-emerald-500/40"
+                : "bg-slate-950/90 text-slate-200 hover:bg-emerald-500 hover:text-slate-950 border-emerald-500/40"
             }`}
           >
-            <Heart className={`w-4 h-4 ${isWishlisted ? "fill-white" : ""}`} />
+            <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isWishlisted ? "fill-white" : ""}`} />
           </button>
 
           {/* Compare Button */}
@@ -143,13 +143,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className = "
             onClick={handleToggleCompare}
             aria-label="Compare Product"
             title={isCompared ? "Remove from Compare" : "Compare Product"}
-            className={`p-2.5 rounded-full shadow-xl border backdrop-blur-md transition-all duration-300 ease-out transform opacity-0 translate-y-4 scale-90 group-hover/productcard:opacity-100 group-hover/productcard:translate-y-0 group-hover/productcard:scale-100 delay-75 hover:scale-110 active:scale-95 focus:outline-none cursor-pointer ${
+            className={`p-1.5 sm:p-2.5 rounded-full shadow-xl border backdrop-blur-md transition-all duration-300 ease-out transform opacity-100 translate-y-0 scale-100 sm:opacity-0 sm:translate-y-4 sm:scale-90 sm:group-hover/productcard:opacity-100 sm:group-hover/productcard:translate-y-0 sm:group-hover/productcard:scale-100 delay-75 hover:scale-110 active:scale-95 focus:outline-none cursor-pointer ${
               isCompared
                 ? "bg-amber-500 text-slate-950 border-amber-400 font-bold"
-                : "bg-slate-950/85 text-slate-200 hover:bg-emerald-500 hover:text-slate-950 border-emerald-500/40"
+                : "bg-slate-950/90 text-slate-200 hover:bg-emerald-500 hover:text-slate-950 border-emerald-500/40"
             }`}
           >
-            <Layers className="w-4 h-4" />
+            <Layers className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
 
           {/* Quick View Button */}
@@ -157,9 +157,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className = "
             onClick={handleQuickView}
             aria-label="Quick View"
             title="Quick View"
-            className="p-2.5 rounded-full bg-slate-950/85 text-slate-200 hover:bg-emerald-500 hover:text-slate-950 border border-emerald-500/40 backdrop-blur-md shadow-xl transition-all duration-300 ease-out transform opacity-0 translate-y-4 scale-90 group-hover/productcard:opacity-100 group-hover/productcard:translate-y-0 group-hover/productcard:scale-100 delay-100 hover:scale-110 active:scale-95 focus:outline-none cursor-pointer"
+            className="p-1.5 sm:p-2.5 rounded-full bg-slate-950/90 text-slate-200 hover:bg-emerald-500 hover:text-slate-950 border border-emerald-500/40 backdrop-blur-md shadow-xl transition-all duration-300 ease-out transform opacity-100 translate-y-0 scale-100 sm:opacity-0 sm:translate-y-4 sm:scale-90 sm:group-hover/productcard:opacity-100 sm:group-hover/productcard:translate-y-0 sm:group-hover/productcard:scale-100 delay-100 hover:scale-110 active:scale-95 focus:outline-none cursor-pointer"
           >
-            <Eye className="w-4 h-4" />
+            <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
 
           {/* Add to Cart Button */}
@@ -168,19 +168,19 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className = "
             disabled={!product.availableForSale}
             aria-label="Add to Cart"
             title={product.availableForSale ? "Add to Cart" : "Out of Stock"}
-            className={`p-2.5 rounded-full shadow-xl border backdrop-blur-md transition-all duration-300 ease-out transform opacity-0 translate-y-4 scale-90 group-hover/productcard:opacity-100 group-hover/productcard:translate-y-0 group-hover/productcard:scale-100 delay-150 hover:scale-110 active:scale-95 focus:outline-none cursor-pointer ${
+            className={`p-1.5 sm:p-2.5 rounded-full shadow-xl border backdrop-blur-md transition-all duration-300 ease-out transform opacity-100 translate-y-0 scale-100 sm:opacity-0 sm:translate-y-4 sm:scale-90 sm:group-hover/productcard:opacity-100 sm:group-hover/productcard:translate-y-0 sm:group-hover/productcard:scale-100 delay-150 hover:scale-110 active:scale-95 focus:outline-none cursor-pointer ${
               isAdded
                 ? "bg-emerald-500 text-slate-950 border-emerald-400"
-                : "bg-slate-950/85 text-slate-200 hover:bg-emerald-500 hover:text-slate-950 border-emerald-500/40 disabled:opacity-50 disabled:hover:bg-slate-950"
+                : "bg-slate-950/90 text-slate-200 hover:bg-emerald-500 hover:text-slate-950 border-emerald-500/40 disabled:opacity-50 disabled:hover:bg-slate-950"
             }`}
           >
-            {isAdded ? <Check className="w-4 h-4" /> : <ShoppingBag className="w-4 h-4" />}
+            {isAdded ? <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
           </button>
         </div>
       </div>
 
       {/* Product Details */}
-      <div className="p-4 flex flex-col justify-between flex-grow">
+      <div className="p-2.5 sm:p-4 flex flex-col justify-between flex-grow">
         <div>
           {/* Vendor */}
           {product.vendor && (

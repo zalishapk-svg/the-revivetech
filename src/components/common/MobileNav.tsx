@@ -32,7 +32,7 @@ export const MobileNav: React.FC = () => {
     collections,
   } = useShopify();
 
-  const [openSection, setOpenSection] = useState<string | null>("collections");
+  const [openSection, setOpenSection] = useState<string | null>(null);
 
   const onClose = () => setIsMobileNavOpen(false);
 
