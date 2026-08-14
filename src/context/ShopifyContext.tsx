@@ -65,6 +65,8 @@ interface ShopifyContextType {
   applyDiscountCode: (code: string) => void;
   discountPercentage: number;
   freeShippingThreshold: number;
+  handleCheckout: () => Promise<void>;
+  isCheckingOut: boolean;
 
   // Wishlist
   wishlistHandles: string[];
@@ -664,6 +666,54 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   };
 
+  const [isCheckingOut, setIsCheckingOut] = useState<boolean>(false);
+
+  const handleCheckout = async () => {
+    if (cartLines.length === 0) {
+      showToast("Your cart is empty");
+      return;
+    }
+
+    setIsCheckingOut(true);
+    try {
+      const linesInput = cartLines.map((item) => ({
+        merchandiseId: item.merchandise.id,
+        quantity: item.quantity,
+      }));
+
+      const response = await fetch("/api/shopify/graphql", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          query: STOREFRONT_QUERIES.CART_CREATE,
+          variables: {
+            input: {
+              lines: linesInput,
+            },
+          },
+        }),
+      });
+
+      const resJson = await response.json();
+      const cartData = resJson?.data?.cartCreate?.cart;
+      const checkoutUrl = cartData?.checkoutUrl;
+
+      if (checkoutUrl) {
+        showToast("Redirecting to Shopify Checkout...");
+        window.location.href = checkoutUrl;
+      } else {
+        const errorMsg = resJson?.data?.cartCreate?.userErrors?.[0]?.message || "Could not generate checkout link.";
+        console.error("Shopify Cart Create Error:", resJson);
+        showToast(errorMsg);
+        setIsCheckingOut(false);
+      }
+    } catch (err: any) {
+      console.error("Checkout process error:", err);
+      showToast("Error initiating checkout. Please try again.");
+      setIsCheckingOut(false);
+    }
+  };
+
   // Wishlist functions
   const toggleWishlist = (handle: string) => {
     setWishlistHandles((prev) => {
@@ -800,6 +850,8 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
         applyDiscountCode,
         discountPercentage,
         freeShippingThreshold,
+        handleCheckout,
+        isCheckingOut,
         wishlistHandles,
         toggleWishlist,
         isInWishlist,

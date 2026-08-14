@@ -293,10 +293,121 @@ export const STOREFRONT_QUERIES = {
             }
           }
         }
+        userErrors { field message }
+      }
+    }
+  `,
+
+  CART_LINES_ADD: `
+    mutation cartLinesAdd($cartId: ID!, $lines: [CartLineInput!]!) {
+      cartLinesAdd(cartId: $cartId, lines: $lines) {
+        cart {
+          id
+          checkoutUrl
+          totalQuantity
+          cost {
+            subtotalAmount { amount currencyCode }
+            totalAmount { amount currencyCode }
+          }
+          lines(first: 50) {
+            edges {
+              node {
+                id
+                quantity
+                merchandise {
+                  ... on ProductVariant {
+                    id
+                    title
+                    price { amount currencyCode }
+                    product {
+                      id
+                      handle
+                      title
+                      featuredImage { id url altText }
+                      vendor
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        userErrors { field message }
+      }
+    }
+  `,
+
+  CART_LINES_UPDATE: `
+    mutation cartLinesUpdate($cartId: ID!, $lines: [CartLineUpdateInput!]!) {
+      cartLinesUpdate(cartId: $cartId, lines: $lines) {
+        cart {
+          id
+          checkoutUrl
+          totalQuantity
+          cost {
+            subtotalAmount { amount currencyCode }
+            totalAmount { amount currencyCode }
+          }
+        }
+        userErrors { field message }
+      }
+    }
+  `,
+
+  CART_LINES_REMOVE: `
+    mutation cartLinesRemove($cartId: ID!, $lineIds: [ID!]!) {
+      cartLinesRemove(cartId: $cartId, lineIds: $lineIds) {
+        cart {
+          id
+          checkoutUrl
+          totalQuantity
+          cost {
+            subtotalAmount { amount currencyCode }
+            totalAmount { amount currencyCode }
+          }
+        }
+        userErrors { field message }
+      }
+    }
+  `,
+
+  GET_CART: `
+    query getCart($cartId: ID!) {
+      cart(id: $cartId) {
+        id
+        checkoutUrl
+        totalQuantity
+        cost {
+          subtotalAmount { amount currencyCode }
+          totalAmount { amount currencyCode }
+        }
+        lines(first: 50) {
+          edges {
+            node {
+              id
+              quantity
+              merchandise {
+                ... on ProductVariant {
+                  id
+                  title
+                  price { amount currencyCode }
+                  product {
+                    id
+                    handle
+                    title
+                    featuredImage { id url altText }
+                    vendor
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   `,
 };
+
 
 // Rich default Shopify Tech Data catalog representing live storefront items
 export const MOCK_TECH_PRODUCTS: Product[] = [

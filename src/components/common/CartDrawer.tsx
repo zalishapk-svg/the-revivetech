@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Trash2, Plus, Minus, ShoppingBag, Truck, Tag, ExternalLink, ArrowRight, ShieldCheck, Zap } from "lucide-react";
+import { X, Trash2, Plus, Minus, ShoppingBag, Truck, Tag, ExternalLink, ArrowRight, ShieldCheck, Zap, Loader2 } from "lucide-react";
 import { useShopify } from "../../context/ShopifyContext";
-import { formatMoney } from "../../lib/utils";
+import { formatMoney, getOptimizedImageUrl } from "../../lib/utils";
 
 export const CartDrawer: React.FC = () => {
   const {
@@ -20,6 +20,8 @@ export const CartDrawer: React.FC = () => {
     products,
     navigateToProduct,
     storeDomain,
+    handleCheckout,
+    isCheckingOut,
   } = useShopify();
 
   const [inputCode, setInputCode] = useState("");
@@ -58,16 +60,6 @@ export const CartDrawer: React.FC = () => {
 
   // Suggested accessories add-ons
   const addOnProducts = products.filter((p) => p.productType === "Accessories" || p.tags.includes("Accessories")).slice(0, 2);
-
-  const handleCheckout = () => {
-    // Generate official Shopify Web Checkout URL
-    const shopifyCheckoutDomain = storeDomain === "mock.shop" ? "mock.shop" : storeDomain;
-    const checkoutUrl = `https://${shopifyCheckoutDomain}/cart/${cartLines
-      .map((item) => `${item.merchandise.id.replace(/\D/g, '') || '1001'}:${item.quantity}`)
-      .join(',')}`;
-    
-    window.open(checkoutUrl, "_blank");
-  };
 
   return (
     <AnimatePresence>
@@ -160,9 +152,10 @@ export const CartDrawer: React.FC = () => {
                   <div className="w-16 h-16 rounded-lg bg-slate-900 overflow-hidden shrink-0 border border-emerald-900/40">
                     {line.merchandise.image ? (
                       <img
-                        src={line.merchandise.image.url}
+                        src={getOptimizedImageUrl(line.merchandise.image.url, 200)}
                         alt={line.merchandise.product.title}
                         referrerPolicy="no-referrer"
+                        loading="lazy"
                         className="w-full h-full object-cover"
                       />
                     ) : (
@@ -308,10 +301,20 @@ export const CartDrawer: React.FC = () => {
               {/* Proceed to Official Shopify Checkout */}
               <button
                 onClick={handleCheckout}
-                className="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-sm uppercase tracking-wider rounded-xl shadow-xl shadow-emerald-950/60 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                disabled={isCheckingOut}
+                className="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 disabled:opacity-50 disabled:cursor-not-allowed text-slate-950 font-black text-sm uppercase tracking-wider rounded-xl shadow-xl shadow-emerald-950/60 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
-                <span>Proceed to Shopify Checkout</span>
-                <ExternalLink className="w-4 h-4" />
+                {isCheckingOut ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Preparing Checkout...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Proceed to Shopify Checkout</span>
+                    <ExternalLink className="w-4 h-4" />
+                  </>
+                )}
               </button>
 
               <div className="flex items-center justify-center gap-2 text-[10px] text-slate-400 pt-1">

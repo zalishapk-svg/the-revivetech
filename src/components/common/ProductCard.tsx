@@ -2,14 +2,15 @@ import React, { useState, useMemo } from "react";
 import { Heart, Eye, ShoppingBag, Check, Layers } from "lucide-react";
 import { Product } from "../../types";
 import { useShopify } from "../../context/ShopifyContext";
-import { formatMoney, calculateDiscount, hasCompareAtDiscount } from "../../lib/utils";
+import { formatMoney, calculateDiscount, hasCompareAtDiscount, getOptimizedImageUrl, getImageSrcSet } from "../../lib/utils";
 
 interface ProductCardProps {
   product: Product;
   className?: string;
+  priority?: boolean;
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({ product, className = "" }) => {
+export const ProductCard: React.FC<ProductCardProps> = ({ product, className = "", priority = false }) => {
   const {
     addToCart,
     toggleWishlist,
@@ -22,19 +23,24 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className = "
   } = useShopify();
 
   const [isAdded, setIsAdded] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   const isWishlisted = isInWishlist(product.handle);
   const isCompared = isInCompare(product.handle);
 
-  const primaryImage = product.featuredImage?.url || (product.images && product.images[0]?.url);
+  const rawPrimaryImage = product.featuredImage?.url || (product.images && product.images[0]?.url);
+  const primaryImage = useMemo(() => getOptimizedImageUrl(rawPrimaryImage, 600), [rawPrimaryImage]);
+  const primarySrcSet = useMemo(() => getImageSrcSet(rawPrimaryImage, [300, 600, 900]), [rawPrimaryImage]);
 
   // Safely extract second image if available and distinct from primary image
-  const secondImage = useMemo(() => {
+  const rawSecondImage = useMemo(() => {
     if (!product.images || product.images.length < 2) return null;
     const second = product.images[1]?.url;
-    if (!second || second === primaryImage) return null;
+    if (!second || second === rawPrimaryImage) return null;
     return second;
-  }, [product.images, primaryImage]);
+  }, [product.images, rawPrimaryImage]);
+
+  const secondImage = useMemo(() => (rawSecondImage ? getOptimizedImageUrl(rawSecondImage, 600) : null), [rawSecondImage]);
 
   const priceAmount = product.priceRange?.minVariantPrice?.amount || "0";
   const currencyCode = product.priceRange?.minVariantPrice?.currencyCode || "PKR";
@@ -72,6 +78,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className = "
   return (
     <div
       onClick={() => navigateToProduct(product.handle)}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       className={`group/productcard relative bg-gradient-to-b from-[#082015] via-[#04140c] to-[#020b06] rounded-2xl overflow-hidden border border-emerald-900/50 transition-all duration-300 hover:border-emerald-500 hover:shadow-[0_12px_30px_rgba(16,185,129,0.15)] flex flex-col justify-between cursor-pointer h-full select-none ${className}`}
     >
       {/* Badges */}
@@ -95,23 +103,27 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className = "
             {/* Primary Image */}
             <img
               src={primaryImage}
+              srcSet={primarySrcSet}
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
               alt={product.title}
               referrerPolicy="no-referrer"
-              loading="lazy"
+              loading={priority ? "eager" : "lazy"}
+              decoding="async"
               className={`absolute inset-0 w-full h-full object-cover object-center transition-all duration-500 ease-out ${
-                secondImage
+                secondImage && isHovered
                   ? "opacity-100 group-hover/productcard:opacity-0 group-hover/productcard:scale-105"
                   : "group-hover/productcard:scale-105"
               }`}
             />
 
-            {/* Second Image Crossfade (only rendered if distinct 2nd image exists) */}
-            {secondImage && (
+            {/* Second Image Crossfade (only rendered when hovered to save bandwidth) */}
+            {secondImage && isHovered && (
               <img
                 src={secondImage}
                 alt={`${product.title} alternate view`}
                 referrerPolicy="no-referrer"
                 loading="lazy"
+                decoding="async"
                 className="absolute inset-0 w-full h-full object-cover object-center opacity-0 group-hover/productcard:opacity-100 transition-all duration-500 ease-out scale-100 group-hover/productcard:scale-105 pointer-events-none"
               />
             )}

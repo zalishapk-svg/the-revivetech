@@ -1,28 +1,23 @@
 import React from "react";
 import { useShopify } from "../../context/ShopifyContext";
-import { formatMoney } from "../../lib/utils";
+import { formatMoney, getOptimizedImageUrl } from "../../lib/utils";
 import { YellowTape } from "../common/YellowTape";
 import { 
   ShoppingBag, Trash2, Plus, Minus, ArrowRight, ShieldCheck, 
-  Truck, Tag, ChevronRight, Lock
+  Truck, Tag, ChevronRight, Lock, Loader2
 } from "lucide-react";
 
 export const CartPage: React.FC = () => {
   const { 
     cartLines, updateQuantity, removeFromCart, clearCart, 
     cartSubtotal, freeShippingThreshold, discountCode, applyDiscountCode, 
-    discountPercentage, navigateToShop 
+    discountPercentage, navigateToShop, handleCheckout, isCheckingOut
   } = useShopify();
 
   const discountAmount = (cartSubtotal * discountPercentage) / 100;
   const finalTotal = Math.max(0, cartSubtotal - discountAmount);
   const remainingForFreeShipping = Math.max(0, freeShippingThreshold - cartSubtotal);
   const freeShippingPct = Math.min(100, (cartSubtotal / freeShippingThreshold) * 100);
-
-  const handleCheckout = () => {
-    // Redirect to Shopify Checkout or show Toast
-    alert(`Proceeding to Shopify Checkout for total ${formatMoney(finalTotal)}`);
-  };
 
   if (cartLines.length === 0) {
     return (
@@ -108,8 +103,9 @@ export const CartPage: React.FC = () => {
                   className="bg-[#05140b] border border-emerald-900/40 rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row items-center gap-4 sm:gap-6 shadow-xl"
                 >
                   <img
-                    src={line.merchandise.image?.url || "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=400&auto=format&fit=crop&q=80"}
+                    src={getOptimizedImageUrl(line.merchandise.image?.url, 200)}
                     alt={line.merchandise.product.title}
+                    loading="lazy"
                     className="w-20 h-20 object-contain bg-[#030e07] rounded-xl p-2 border border-emerald-900/60 shrink-0"
                   />
 
