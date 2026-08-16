@@ -76,7 +76,7 @@ export const GamingSetupShowcase: React.FC = () => {
                   <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center font-bold text-xs shadow-lg transition-colors ${
                     isActive
                       ? "bg-amber-400 border-white text-slate-950 font-black shadow-amber-400/50"
-                      : "bg-slate-950/90 border-emerald-400 text-emerald-400 hover:bg-emerald-500 hover:text-slate-950"
+                      : "bg-[#161616]/90 border-emerald-400 text-emerald-400 hover:bg-emerald-500 hover:text-slate-950"
                   }`}>
                     <Plus className="w-4 h-4" />
                   </div>

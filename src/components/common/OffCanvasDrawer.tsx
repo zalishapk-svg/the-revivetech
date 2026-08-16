@@ -52,7 +52,7 @@ export const OffCanvasDrawer: React.FC<OffCanvasDrawerProps> = ({
             transition={{ duration: 0.2 }}
             onClick={onClose}
             aria-label="Close panel overlay"
-            className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm cursor-pointer"
+            className="absolute inset-0 bg-[#161616]/80 backdrop-blur-sm cursor-pointer"
           />
 
           {/* Slide-In Drawer */}

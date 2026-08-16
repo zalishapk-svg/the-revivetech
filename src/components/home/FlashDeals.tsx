@@ -44,7 +44,7 @@ export const FlashDeals: React.FC = () => {
           <div className="flex items-center gap-2 text-slate-200">
             <Clock className="w-3.5 h-3.5 text-amber-400" />
             <span>Offer expires in:</span>
-            <div className="flex items-center gap-1 font-bold text-emerald-300 bg-slate-900 px-2 py-0.5 rounded border border-emerald-800/50">
+            <div className="flex items-center gap-1 font-bold text-emerald-300 bg-[#161616] px-2 py-0.5 rounded border border-emerald-800/50">
               <span>{String(timeLeft.hours).padStart(2, "0")}h</span>
               <span>:</span>
               <span>{String(timeLeft.minutes).padStart(2, "0")}m</span>

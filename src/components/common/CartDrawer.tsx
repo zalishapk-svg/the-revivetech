@@ -85,7 +85,7 @@ export const CartDrawer: React.FC = () => {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={() => setIsCartOpen(false)}
-          className="fixed inset-0 bg-slate-950/80 backdrop-blur-md cursor-pointer"
+          className="fixed inset-0 bg-[#161616]/80 backdrop-blur-md cursor-pointer"
         />
 
         {/* Drawer Panel */}
@@ -164,7 +164,7 @@ export const CartDrawer: React.FC = () => {
                   className="flex gap-3 p-3 bg-emerald-950/20 border border-emerald-900/30 rounded-xl relative group"
                 >
                   {/* Image */}
-                  <div className="w-16 h-16 rounded-lg bg-slate-900 overflow-hidden shrink-0 border border-emerald-900/40">
+                  <div className="w-16 h-16 rounded-lg bg-[#161616] overflow-hidden shrink-0 border border-emerald-900/40">
                     {line.merchandise.image ? (
                       <img
                         src={getOptimizedImageUrl(line.merchandise.image.url, 200)}
@@ -174,7 +174,7 @@ export const CartDrawer: React.FC = () => {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full bg-slate-900 flex items-center justify-center text-xs text-slate-500">
+                      <div className="w-full h-full bg-[#161616] flex items-center justify-center text-xs text-slate-500">
                         TRT
                       </div>
                     )}
@@ -194,7 +194,7 @@ export const CartDrawer: React.FC = () => {
                       </span>
 
                       {/* Quantity Controls */}
-                      <div className="flex items-center border border-emerald-800/60 rounded-lg bg-slate-950 overflow-hidden">
+                      <div className="flex items-center border border-emerald-800/60 rounded-lg bg-[#161616] overflow-hidden">
                         <button
                           onClick={() => updateQuantity(line.id, line.quantity - 1)}
                           className="p-1 hover:bg-emerald-900/50 text-slate-300 hover:text-white cursor-pointer"
@@ -268,7 +268,7 @@ export const CartDrawer: React.FC = () => {
                     value={inputCode}
                     onChange={(e) => setInputCode(e.target.value)}
                     placeholder="Discount code (e.g. REVIVE10)"
-                    className="w-full pl-8 pr-2 py-1.5 bg-slate-950 border border-emerald-800/40 rounded-lg text-xs text-white uppercase placeholder:normal-case focus:outline-none focus:border-emerald-500"
+                    className="w-full pl-8 pr-2 py-1.5 bg-[#161616] border border-emerald-800/40 rounded-lg text-xs text-white uppercase placeholder:normal-case focus:outline-none focus:border-emerald-500"
                   />
                 </div>
                 <button
@@ -340,7 +340,7 @@ export const CartDrawer: React.FC = () => {
                     setIsCartOpen(false);
                     navigateToCart();
                   }}
-                  className="w-full py-2.5 bg-slate-900/90 hover:bg-slate-800 border border-emerald-900/40 text-slate-200 hover:text-white font-semibold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                  className="w-full py-2.5 bg-[#1c1c1c] hover:bg-[#252525] border border-emerald-900/40 text-slate-200 hover:text-white font-semibold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <ShoppingBag className="w-3.5 h-3.5 text-emerald-400" />
                   <span>View Detailed Cart Page</span>

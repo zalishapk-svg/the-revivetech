@@ -92,7 +92,7 @@ export const ShopifyConfigModal: React.FC = () => {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={() => setIsConfigModalOpen(false)}
-          className="fixed inset-0 bg-slate-950/80 backdrop-blur-md"
+          className="fixed inset-0 bg-[#161616]/80 backdrop-blur-md"
         />
 
         <motion.div
@@ -120,7 +120,7 @@ export const ShopifyConfigModal: React.FC = () => {
 
           <div className="space-y-4">
             {/* Connection Diagnostics Card */}
-            <div className="p-4 bg-slate-950/70 border border-emerald-900/50 rounded-2xl space-y-3">
+            <div className="p-4 bg-[#161616]/70 border border-emerald-900/50 rounded-2xl space-y-3">
               <div className="flex items-center justify-between border-b border-emerald-900/40 pb-2">
                 <span className="text-xs font-bold text-slate-200 flex items-center gap-1.5 uppercase tracking-wider">
                   <Cpu className="w-3.5 h-3.5 text-emerald-400" />
@@ -138,7 +138,7 @@ export const ShopifyConfigModal: React.FC = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                 {/* Frontend Firebase */}
-                <div className="p-2.5 bg-slate-900/80 rounded-xl border border-slate-800 flex items-center justify-between">
+                <div className="p-2.5 bg-[#1c1c1c]/80 rounded-xl border border-slate-800 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Globe className="w-3.5 h-3.5 text-sky-400" />
                     <span className="text-slate-300 font-medium text-[11px]">Firebase Frontend</span>
@@ -149,7 +149,7 @@ export const ShopifyConfigModal: React.FC = () => {
                 </div>
 
                 {/* Backend Firebase Admin / Firestore */}
-                <div className="p-2.5 bg-slate-900/80 rounded-xl border border-slate-800 flex items-center justify-between">
+                <div className="p-2.5 bg-[#1c1c1c]/80 rounded-xl border border-slate-800 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Database className="w-3.5 h-3.5 text-amber-400" />
                     <span className="text-slate-300 font-medium text-[11px]">Firestore Backend</span>
@@ -183,7 +183,7 @@ export const ShopifyConfigModal: React.FC = () => {
                 value={domainInput}
                 onChange={(e) => setDomainInput(e.target.value)}
                 placeholder="e.g. dbbys1-nd.myshopify.com"
-                className="w-full px-3.5 py-2.5 bg-slate-950 border border-emerald-800/40 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 font-mono"
+                className="w-full px-3.5 py-2.5 bg-[#161616] border border-emerald-800/40 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 font-mono"
               />
             </div>
 
@@ -197,7 +197,7 @@ export const ShopifyConfigModal: React.FC = () => {
                 value={tokenInput}
                 onChange={(e) => setTokenInput(e.target.value)}
                 placeholder="Storefront API Token"
-                className="w-full px-3.5 py-2.5 bg-slate-950 border border-emerald-800/40 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 font-mono"
+                className="w-full px-3.5 py-2.5 bg-[#161616] border border-emerald-800/40 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 font-mono"
               />
               <p className="text-[11px] text-slate-400 mt-1">
                 Token stays server-side in proxy endpoints and is never exposed in client JS bundle.

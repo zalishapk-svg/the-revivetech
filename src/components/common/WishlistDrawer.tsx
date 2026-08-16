@@ -53,7 +53,7 @@ export const WishlistDrawer: React.FC = () => {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={() => setIsWishlistOpen(false)}
-          className="fixed inset-0 bg-slate-950/80 backdrop-blur-md cursor-pointer"
+          className="fixed inset-0 bg-[#161616]/80 backdrop-blur-md cursor-pointer"
         />
 
         {/* Drawer Panel */}
@@ -101,7 +101,7 @@ export const WishlistDrawer: React.FC = () => {
                   <img
                     src={product.featuredImage?.url}
                     alt={product.title}
-                    className="w-16 h-16 rounded-lg object-cover bg-slate-900 shrink-0"
+                    className="w-16 h-16 rounded-lg object-cover bg-[#161616] shrink-0"
                   />
                   <div className="flex-1 min-w-0">
                     <h4 className="text-xs font-bold text-white truncate">{product.title}</h4>

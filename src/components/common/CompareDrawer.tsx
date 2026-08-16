@@ -41,7 +41,7 @@ export const CompareDrawer: React.FC = () => {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={() => setIsCompareOpen(false)}
-          className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm"
+          className="fixed inset-0 bg-[#161616]/70 backdrop-blur-sm"
         />
 
         <motion.div
@@ -72,7 +72,7 @@ export const CompareDrawer: React.FC = () => {
                   {compareProducts.map((p) => (
                     <th key={p.id} className="p-3 min-w-[180px] align-top">
                       <div className="relative group">
-                        <img src={p.featuredImage?.url} alt={p.title} className="w-20 h-20 rounded-lg object-cover bg-slate-900 mx-auto mb-2" />
+                        <img src={p.featuredImage?.url} alt={p.title} className="w-20 h-20 rounded-lg object-cover bg-[#161616] mx-auto mb-2" />
                         <button
                           onClick={() => toggleCompare(p.handle)}
                           className="absolute top-0 right-0 p-1 bg-rose-950/80 text-rose-400 rounded-full hover:bg-rose-900"

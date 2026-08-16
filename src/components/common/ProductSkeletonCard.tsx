@@ -2,7 +2,7 @@ import React from "react";
 
 export const ProductSkeletonCard: React.FC = () => {
   return (
-    <div className="w-full rounded-2xl bg-[#07170e]/80 border border-emerald-900/30 p-4 shadow-md animate-pulse flex flex-col h-full">
+    <div className="w-full rounded-2xl bg-[#1c1c1c] border border-emerald-900/30 p-4 shadow-md animate-pulse flex flex-col h-full">
       {/* Aspect Ratio Image Box */}
       <div className="w-full aspect-square rounded-xl bg-emerald-950/40 border border-emerald-900/20 mb-4 relative overflow-hidden flex items-center justify-center">
         <div className="w-12 h-12 rounded-full bg-emerald-900/30 border border-emerald-800/30" />

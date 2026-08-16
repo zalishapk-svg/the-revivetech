@@ -53,7 +53,7 @@ export const QuickViewModal: React.FC = () => {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={() => setQuickViewHandle(null)}
-          className="fixed inset-0 bg-slate-950/80 backdrop-blur-md"
+          className="fixed inset-0 bg-[#161616]/80 backdrop-blur-md"
         />
 
         <motion.div
@@ -64,14 +64,14 @@ export const QuickViewModal: React.FC = () => {
         >
           <button
             onClick={() => setQuickViewHandle(null)}
-            className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white bg-slate-900/80 rounded-full"
+            className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white bg-[#161616]/80 rounded-full"
           >
             <X className="w-5 h-5" />
           </button>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             {/* Image Gallery Preview */}
-            <div className="relative rounded-2xl overflow-hidden bg-slate-900 border border-emerald-900/40 aspect-square">
+            <div className="relative rounded-2xl overflow-hidden bg-[#161616] border border-emerald-900/40 aspect-square">
               <img
                 src={product.featuredImage?.url}
                 alt={product.title}

@@ -70,7 +70,7 @@ export const SearchModal: React.FC = () => {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={() => setIsSearchOpen(false)}
-          className="fixed inset-0 bg-slate-950/80 backdrop-blur-md"
+          className="fixed inset-0 bg-[#161616]/80 backdrop-blur-md"
         />
 
         {/* Modal Window */}
@@ -97,7 +97,7 @@ export const SearchModal: React.FC = () => {
                 <X className="w-4 h-4" />
               </button>
             )}
-            <kbd className="hidden sm:inline-block bg-slate-900 border border-emerald-800/60 text-[10px] text-slate-400 px-2 py-0.5 rounded font-mono">
+            <kbd className="hidden sm:inline-block bg-[#161616] border border-emerald-800/60 text-[10px] text-slate-400 px-2 py-0.5 rounded font-mono">
               ESC
             </kbd>
           </div>
@@ -128,7 +128,7 @@ export const SearchModal: React.FC = () => {
                       }}
                       className="flex items-center gap-3 p-2 rounded-xl bg-emerald-950/30 hover:bg-emerald-900/40 border border-emerald-900/30 hover:border-emerald-500/40 transition-all text-left group"
                     >
-                      <div className="w-12 h-12 rounded-lg overflow-hidden bg-slate-900 shrink-0">
+                      <div className="w-12 h-12 rounded-lg overflow-hidden bg-[#161616] shrink-0">
                         {product.featuredImage?.url ? (
                           <img
                             src={product.featuredImage.url}
@@ -213,7 +213,7 @@ export const SearchModal: React.FC = () => {
           </div>
 
           {/* Modal Footer */}
-          <div className="px-4 py-2.5 bg-slate-950 border-t border-emerald-900/40 text-[11px] text-slate-400 flex items-center justify-between">
+          <div className="px-4 py-2.5 bg-[#161616] border-t border-emerald-900/40 text-[11px] text-slate-400 flex items-center justify-between">
             <span>Search Pakistan's Premier Tech Catalog</span>
             <span>Press <kbd className="font-mono text-emerald-400">ESC</kbd> to exit</span>
           </div>

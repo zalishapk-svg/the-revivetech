@@ -97,7 +97,7 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
           
           {/* Gallery Column */}
           <div className="lg:col-span-7 space-y-4">
-            <div className="relative rounded-3xl overflow-hidden bg-slate-900 border border-emerald-800/50 aspect-square shadow-2xl">
+            <div className="relative rounded-3xl overflow-hidden bg-[#1c1c1c] border border-emerald-800/50 aspect-square shadow-2xl">
               {images[selectedImageIdx] && (
                 <img
                   src={images[selectedImageIdx].url}
@@ -120,7 +120,7 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
                   <button
                     key={idx}
                     onClick={() => setSelectedImageIdx(idx)}
-                    className={`w-20 h-20 rounded-xl overflow-hidden border-2 bg-slate-900 shrink-0 transition-all ${
+                    className={`w-20 h-20 rounded-xl overflow-hidden border-2 bg-[#1c1c1c] shrink-0 transition-all ${
                       selectedImageIdx === idx ? "border-emerald-400 scale-105" : "border-emerald-900/40 hover:border-emerald-700"
                     }`}
                   >
@@ -159,7 +159,7 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
             </div>
 
             {/* Price Box */}
-            <div className="p-4 bg-slate-950/80 rounded-2xl border border-emerald-900/40 flex items-baseline gap-3">
+            <div className="p-4 bg-[#161616] rounded-2xl border border-emerald-900/40 flex items-baseline gap-3">
               <span className="text-3xl font-black text-emerald-400 font-mono">
                 {formatMoney(priceAmount)}
               </span>
@@ -191,7 +191,7 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
                       className={`px-3.5 py-2 text-xs font-bold rounded-xl border transition-all ${
                         selectedVariantId === product.variants[vIdx]?.id || vIdx === 0
                           ? "bg-emerald-500 text-slate-950 border-emerald-400 shadow-md"
-                          : "bg-slate-950 text-slate-300 border-emerald-900/40 hover:border-emerald-700"
+                          : "bg-[#161616] text-slate-300 border-emerald-900/40 hover:border-emerald-700"
                       }`}
                     >
                       {val}
@@ -204,7 +204,7 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
             {/* Quantity & CTA Buttons */}
             <div className="space-y-3 pt-2">
               <div className="flex items-center gap-3">
-                <div className="flex items-center border border-emerald-800/60 rounded-xl bg-slate-950 overflow-hidden px-2 py-1">
+                <div className="flex items-center border border-emerald-800/60 rounded-xl bg-[#161616] overflow-hidden px-2 py-1">
                   <button onClick={() => setQuantity((q) => Math.max(1, q - 1))} className="px-2 text-slate-300 font-bold hover:text-white">-</button>
                   <span className="px-3 font-mono font-bold text-xs text-white">{quantity}</span>
                   <button onClick={() => setQuantity((q) => q + 1)} className="px-2 text-slate-300 font-bold hover:text-white">+</button>
@@ -227,7 +227,7 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
                 <button
                   onClick={() => toggleWishlist(product.handle)}
                   className={`flex-1 py-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-colors ${
-                    isWishlisted ? "bg-rose-950/60 border-rose-500 text-rose-400" : "bg-slate-950 border-emerald-900/40 text-slate-300 hover:text-white"
+                    isWishlisted ? "bg-rose-950/60 border-rose-500 text-rose-400" : "bg-[#161616] border-emerald-900/40 text-slate-300 hover:text-white"
                   }`}
                 >
                   <Heart className={`w-4 h-4 ${isWishlisted ? "fill-rose-400" : ""}`} /> Wishlist
@@ -236,7 +236,7 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
                 <button
                   onClick={() => toggleCompare(product.handle)}
                   className={`flex-1 py-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-colors ${
-                    isCompared ? "bg-amber-950/60 border-amber-500 text-amber-400" : "bg-slate-950 border-emerald-900/40 text-slate-300 hover:text-white"
+                    isCompared ? "bg-amber-950/60 border-amber-500 text-amber-400" : "bg-[#161616] border-emerald-900/40 text-slate-300 hover:text-white"
                   }`}
                 >
                   <Layers className="w-4 h-4" /> Compare Specs
@@ -246,15 +246,15 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
 
             {/* Badges */}
             <div className="grid grid-cols-3 gap-2 pt-4 border-t border-emerald-900/40 text-[11px] text-slate-400 text-center">
-              <div className="p-2 bg-slate-950/60 rounded-xl border border-emerald-900/30">
+              <div className="p-2 bg-[#161616] rounded-xl border border-emerald-900/30">
                 <Truck className="w-4 h-4 text-emerald-400 mx-auto mb-1" />
                 <span>Express Shipping</span>
               </div>
-              <div className="p-2 bg-slate-950/60 rounded-xl border border-emerald-900/30">
+              <div className="p-2 bg-[#161616] rounded-xl border border-emerald-900/30">
                 <ShieldCheck className="w-4 h-4 text-emerald-400 mx-auto mb-1" />
                 <span>Authentic Product</span>
               </div>
-              <div className="p-2 bg-slate-950/60 rounded-xl border border-emerald-900/30">
+              <div className="p-2 bg-[#161616] rounded-xl border border-emerald-900/30">
                 <RotateCcw className="w-4 h-4 text-emerald-400 mx-auto mb-1" />
                 <span>30-Day Returns</span>
               </div>
@@ -301,7 +301,7 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
             {activeTab === "specs" && product.specs && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 font-mono">
                 {Object.entries(product.specs).map(([key, val]) => (
-                  <div key={key} className="flex justify-between p-3 bg-slate-950 rounded-xl border border-emerald-900/30">
+                  <div key={key} className="flex justify-between p-3 bg-[#161616] rounded-xl border border-emerald-900/30">
                     <span className="text-slate-400">{key}:</span>
                     <span className="text-emerald-400 font-bold">{val}</span>
                   </div>
@@ -312,7 +312,7 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
             {activeTab === "reviews" && (
               <div className="space-y-6">
                 {/* Summary Box */}
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-6 p-6 bg-slate-950/80 rounded-2xl border border-emerald-900/40 items-center">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-6 p-6 bg-[#161616] rounded-2xl border border-emerald-900/40 items-center">
                   {/* Left: Rating & Stars */}
                   <div className="md:col-span-4 text-center md:text-left space-y-1 border-b md:border-b-0 md:border-r border-emerald-900/30 pb-4 md:pb-0 md:pr-4">
                     <div className="flex items-baseline justify-center md:justify-start gap-2">
@@ -344,7 +344,7 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
                       return (
                         <div key={stars} className="flex items-center gap-2">
                           <span className="w-8 text-slate-400 shrink-0 text-right">{stars} ★</span>
-                          <div className="flex-1 h-2 bg-slate-900 rounded-full overflow-hidden border border-emerald-950">
+                          <div className="flex-1 h-2 bg-[#1c1c1c] rounded-full overflow-hidden border border-emerald-950">
                             <div
                               className="h-full bg-emerald-400 rounded-full transition-all duration-300"
                               style={{ width: `${pct}%` }}
@@ -371,7 +371,7 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
                   {reviewSummary.reviews.map((rev) => (
                     <div
                       key={rev.id}
-                      className="p-5 bg-slate-950/90 rounded-2xl border border-emerald-900/40 hover:border-emerald-800/60 transition-colors space-y-3"
+                      className="p-5 bg-[#161616] rounded-2xl border border-emerald-900/40 hover:border-emerald-800/60 transition-colors space-y-3"
                     >
                       {/* Review Header */}
                       <div className="flex flex-wrap items-center justify-between gap-2">

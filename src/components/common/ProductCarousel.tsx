@@ -54,7 +54,7 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({
 
   return (
     <section
-      className="py-10 bg-[#030705]/80 border-b border-emerald-900/30 text-slate-100"
+      className="py-10 bg-[#161616] border-b border-emerald-900/30 text-slate-100"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
@@ -94,14 +94,14 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({
                 <button
                   onClick={() => scroll("left")}
                   aria-label="Scroll left"
-                  className="p-2 rounded-lg bg-slate-900 hover:bg-emerald-500 hover:text-slate-950 text-slate-300 border border-emerald-900/40 transition-colors focus:outline-none"
+                  className="p-2 rounded-lg bg-[#1c1c1c] hover:bg-emerald-500 hover:text-slate-950 text-slate-300 border border-emerald-900/40 transition-colors focus:outline-none"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => scroll("right")}
                   aria-label="Scroll right"
-                  className="p-2 rounded-lg bg-slate-900 hover:bg-emerald-500 hover:text-slate-950 text-slate-300 border border-emerald-900/40 transition-colors focus:outline-none"
+                  className="p-2 rounded-lg bg-[#1c1c1c] hover:bg-emerald-500 hover:text-slate-950 text-slate-300 border border-emerald-900/40 transition-colors focus:outline-none"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
