@@ -30,7 +30,7 @@ export const GamingSetupShowcase: React.FC = () => {
   }
 
   return (
-    <section className="py-16 bg-[#030e07] border-b border-emerald-900/40 text-slate-100 overflow-hidden">
+    <section className="py-16 bg-[#161616] border-b border-emerald-900/40 text-slate-100 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div className="mb-8">
@@ -48,7 +48,7 @@ export const GamingSetupShowcase: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
           
           {/* Setup Image with Interactive Hotspots */}
-          <div className="lg:col-span-8 relative rounded-3xl overflow-hidden border border-emerald-800/50 bg-slate-900 shadow-2xl">
+          <div className="lg:col-span-8 relative rounded-3xl overflow-hidden border border-emerald-800/50 bg-[#161616] shadow-2xl">
             <img
               src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1600&q=80"
               alt="Cyberpunk Gaming Battlestation Setup"
@@ -86,12 +86,12 @@ export const GamingSetupShowcase: React.FC = () => {
           </div>
 
           {/* Active Product Preview Card */}
-          <div className="lg:col-span-4 bg-[#071910] border border-emerald-800/50 rounded-3xl p-6 space-y-4 shadow-xl">
+          <div className="lg:col-span-4 bg-[#1c1c1c] border border-emerald-800/50 rounded-3xl p-6 space-y-4 shadow-xl">
             <span className="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest bg-amber-400/10 px-2.5 py-1 rounded border border-amber-400/30">
               HOTSPOT #{activeHotspot.id}: {activeHotspot.label}
             </span>
 
-            <div className="relative rounded-2xl overflow-hidden bg-slate-900 border border-emerald-900/40 aspect-video">
+            <div className="relative rounded-2xl overflow-hidden bg-[#161616] border border-emerald-900/40 aspect-video">
               <img
                 src={activeProduct.featuredImage?.url}
                 alt={activeProduct.title}

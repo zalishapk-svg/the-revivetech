@@ -79,7 +79,7 @@ export const SearchModal: React.FC = () => {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: -10 }}
           transition={{ duration: 0.15 }}
-          className="relative w-full max-w-2xl bg-[#071910] border border-emerald-800/40 rounded-2xl shadow-2xl overflow-hidden text-slate-100"
+          className="relative w-full max-w-2xl bg-[#1c1c1c] border border-emerald-800/40 rounded-2xl shadow-2xl overflow-hidden text-slate-100"
         >
           {/* Search Input Bar */}
           <div className="flex items-center gap-3 px-4 py-3.5 border-b border-emerald-900/40 bg-emerald-950/40">

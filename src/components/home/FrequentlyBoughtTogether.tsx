@@ -20,7 +20,7 @@ export const FrequentlyBoughtTogether: React.FC = () => {
 
   if (isLoadingData) {
     return (
-      <section className="py-14 bg-slate-950/80 border-b border-emerald-900/30 text-slate-100">
+      <section className="py-14 bg-[#161616] border-b border-emerald-900/30 text-slate-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
           <ProductCarousel
             title="Complementary Hardware Upgrades"
@@ -70,11 +70,11 @@ export const FrequentlyBoughtTogether: React.FC = () => {
   };
 
   return (
-    <section className="py-14 bg-slate-950/80 border-b border-emerald-900/30 text-slate-100">
+    <section className="py-14 bg-[#161616] border-b border-emerald-900/30 text-slate-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
         
         {/* Bundle Calculator Card */}
-        <div className="bg-slate-900 border border-emerald-800/50 rounded-3xl p-6 sm:p-10 shadow-2xl space-y-8">
+        <div className="bg-[#1c1c1c] border border-emerald-800/50 rounded-3xl p-6 sm:p-10 shadow-2xl space-y-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-emerald-900/40 pb-6">
             <div>
               <span className="text-[10px] font-mono font-bold text-emerald-400 uppercase tracking-widest bg-emerald-950 px-2.5 py-0.5 rounded border border-emerald-800/40 inline-flex items-center gap-1.5 mb-1">
@@ -105,10 +105,10 @@ export const FrequentlyBoughtTogether: React.FC = () => {
                       className={`flex-1 w-full p-4 rounded-2xl border transition-all cursor-pointer text-center relative ${
                         isSelected
                           ? "bg-emerald-950/60 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.2)]"
-                          : "bg-slate-950/50 border-slate-800 opacity-50 hover:opacity-80"
+                          : "bg-[#161616] border-slate-800 opacity-50 hover:opacity-80"
                       }`}
                     >
-                      <div className="w-20 h-20 bg-slate-950 rounded-xl overflow-hidden mx-auto mb-3">
+                      <div className="w-20 h-20 bg-[#161616] rounded-xl overflow-hidden mx-auto mb-3">
                         <img
                           src={item.featuredImage?.url || item.images?.[0]?.url}
                           alt={item.title}
@@ -140,7 +140,7 @@ export const FrequentlyBoughtTogether: React.FC = () => {
             </div>
 
             {/* Total Savings & Add Bundle Action */}
-            <div className="lg:col-span-4 bg-slate-950 p-6 rounded-2xl border border-emerald-900/50 flex flex-col justify-between space-y-4">
+            <div className="lg:col-span-4 bg-[#161616] p-6 rounded-2xl border border-emerald-900/50 flex flex-col justify-between space-y-4">
               <div>
                 <span className="text-xs text-slate-400 font-mono uppercase block">Bundle Subtotal</span>
                 <div className="flex items-baseline gap-2 mt-1">

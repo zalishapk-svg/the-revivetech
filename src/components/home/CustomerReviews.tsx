@@ -30,7 +30,7 @@ const STORE_REVIEWS = [
 
 export const CustomerReviews: React.FC = () => {
   return (
-    <section className="py-14 bg-slate-950 border-b border-emerald-900/30 text-slate-100">
+    <section className="py-14 bg-[#161616] border-b border-emerald-900/30 text-slate-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-10 pb-4 border-b border-emerald-900/40">
@@ -61,7 +61,7 @@ export const CustomerReviews: React.FC = () => {
           {STORE_REVIEWS.map((rev, idx) => (
             <div
               key={idx}
-              className="bg-slate-900 border border-emerald-900/40 p-6 rounded-2xl space-y-4 relative hover:border-emerald-500/40 transition-colors"
+              className="bg-[#1c1c1c] border border-emerald-900/40 p-6 rounded-2xl space-y-4 relative hover:border-emerald-500/40 transition-colors"
             >
               <Quote className="w-8 h-8 text-emerald-500/10 absolute top-4 right-4" />
               <div className="flex items-center justify-between">

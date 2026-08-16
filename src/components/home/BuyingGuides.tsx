@@ -27,7 +27,7 @@ export const BuyingGuides: React.FC = () => {
   const { navigateToBlog } = useShopify();
 
   return (
-    <section className="py-16 bg-[#05140b] border-b border-emerald-900/40 text-slate-100">
+    <section className="py-16 bg-[#161616] border-b border-emerald-900/40 text-slate-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4">
@@ -49,7 +49,7 @@ export const BuyingGuides: React.FC = () => {
             <div
               key={i}
               onClick={navigateToBlog}
-              className="bg-[#071910] border border-emerald-900/40 p-6 rounded-2xl cursor-pointer hover:border-emerald-500/50 transition-all space-y-3"
+              className="bg-[#1c1c1c] border border-emerald-900/40 p-6 rounded-2xl cursor-pointer hover:border-emerald-500/50 transition-all space-y-3"
             >
               <div className="flex justify-between items-center text-[10px] font-mono text-emerald-400 font-bold">
                 <span>{g.category}</span>

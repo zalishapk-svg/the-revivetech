@@ -65,7 +65,7 @@ export const AboutPage: React.FC = () => {
   ];
 
   return (
-    <div className="w-full bg-[#030e07] text-slate-100 min-h-screen py-10 px-4 sm:px-6 lg:px-8">
+    <div className="w-full bg-[#161616] text-slate-100 min-h-screen py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto space-y-16">
         
         {/* Hero Section */}
@@ -82,7 +82,7 @@ export const AboutPage: React.FC = () => {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 bg-[#05140b] border border-emerald-900/40 rounded-3xl p-8 shadow-2xl">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 bg-[#1c1c1c] border border-emerald-900/40 rounded-3xl p-8 shadow-2xl">
           {stats.map((s, i) => (
             <div key={i} className="text-center space-y-1">
               <div className="text-3xl sm:text-4xl font-black font-mono text-emerald-400">{s.value}</div>
@@ -93,7 +93,7 @@ export const AboutPage: React.FC = () => {
 
         {/* Story, Mission & Vision */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="bg-[#05140b] border border-emerald-900/40 rounded-3xl p-8 space-y-4 hover:border-emerald-500/40 transition-colors">
+          <div className="bg-[#1c1c1c] border border-emerald-900/40 rounded-3xl p-8 space-y-4 hover:border-emerald-500/40 transition-colors">
             <div className="w-12 h-12 rounded-2xl bg-emerald-950/80 border border-emerald-800/60 flex items-center justify-center text-emerald-400">
               <Sparkles className="w-6 h-6" />
             </div>
@@ -103,7 +103,7 @@ export const AboutPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="bg-[#05140b] border border-emerald-900/40 rounded-3xl p-8 space-y-4 hover:border-emerald-500/40 transition-colors">
+          <div className="bg-[#1c1c1c] border border-emerald-900/40 rounded-3xl p-8 space-y-4 hover:border-emerald-500/40 transition-colors">
             <div className="w-12 h-12 rounded-2xl bg-emerald-950/80 border border-emerald-800/60 flex items-center justify-center text-emerald-400">
               <Target className="w-6 h-6" />
             </div>
@@ -113,7 +113,7 @@ export const AboutPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="bg-[#05140b] border border-emerald-900/40 rounded-3xl p-8 space-y-4 hover:border-emerald-500/40 transition-colors">
+          <div className="bg-[#1c1c1c] border border-emerald-900/40 rounded-3xl p-8 space-y-4 hover:border-emerald-500/40 transition-colors">
             <div className="w-12 h-12 rounded-2xl bg-emerald-950/80 border border-emerald-800/60 flex items-center justify-center text-emerald-400">
               <Award className="w-6 h-6" />
             </div>
@@ -125,7 +125,7 @@ export const AboutPage: React.FC = () => {
         </div>
 
         {/* Vertical Timeline */}
-        <div className="space-y-8 bg-[#05140b] border border-emerald-900/40 rounded-3xl p-8 md:p-12 shadow-2xl">
+        <div className="space-y-8 bg-[#1c1c1c] border border-emerald-900/40 rounded-3xl p-8 md:p-12 shadow-2xl">
           <div className="text-center max-w-xl mx-auto space-y-2">
             <h2 className="text-2xl sm:text-3xl font-black text-white">OUR JOURNEY & MILESTONES</h2>
             <p className="text-xs text-slate-400">How we evolved into Pakistan's top gaming hardware provider</p>
@@ -140,9 +140,9 @@ export const AboutPage: React.FC = () => {
                 </div>
 
                 {/* Timeline Dot Marker */}
-                <div className="absolute -left-[9px] top-1.5 w-4 h-4 rounded-full bg-[#030e07] border-2 border-emerald-500 group-hover:bg-emerald-400 group-hover:scale-125 transition-all" />
+                <div className="absolute -left-[9px] top-1.5 w-4 h-4 rounded-full bg-[#161616] border-2 border-emerald-500 group-hover:bg-emerald-400 group-hover:scale-125 transition-all" />
 
-                <div className="bg-[#030e07] border border-emerald-900/60 rounded-2xl p-6 hover:border-emerald-500/50 transition-colors">
+                <div className="bg-[#161616] border border-emerald-900/60 rounded-2xl p-6 hover:border-emerald-500/50 transition-colors">
                   <div className="flex items-center justify-between gap-4 mb-2">
                     <span className="md:hidden text-emerald-400 font-mono font-bold text-sm">{m.year}</span>
                     <h4 className="text-lg font-bold text-white">{m.title}</h4>
@@ -165,25 +165,25 @@ export const AboutPage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-[#05140b] border border-emerald-900/40 rounded-2xl p-6 space-y-3">
+            <div className="bg-[#1c1c1c] border border-emerald-900/40 rounded-2xl p-6 space-y-3">
               <ShieldCheck className="w-8 h-8 text-emerald-400" />
               <h4 className="font-bold text-white text-sm">Authentic Products</h4>
               <p className="text-xs text-slate-400">All products are 100% genuine original hardware with direct brand verification.</p>
             </div>
 
-            <div className="bg-[#05140b] border border-emerald-900/40 rounded-2xl p-6 space-y-3">
+            <div className="bg-[#1c1c1c] border border-emerald-900/40 rounded-2xl p-6 space-y-3">
               <Truck className="w-8 h-8 text-emerald-400" />
               <h4 className="font-bold text-white text-sm">Express Shipping in PK</h4>
               <p className="text-xs text-slate-400">Same-day delivery in Lahore & Karachi, 24-48 hours tracked shipping nationwide.</p>
             </div>
 
-            <div className="bg-[#05140b] border border-emerald-900/40 rounded-2xl p-6 space-y-3">
+            <div className="bg-[#1c1c1c] border border-emerald-900/40 rounded-2xl p-6 space-y-3">
               <Cpu className="w-8 h-8 text-emerald-400" />
               <h4 className="font-bold text-white text-sm">100% Genuine Hardware</h4>
               <p className="text-xs text-slate-400">Directly imported from authorized global brand hubs. Zero counterfeits guarantee.</p>
             </div>
 
-            <div className="bg-[#05140b] border border-emerald-900/40 rounded-2xl p-6 space-y-3">
+            <div className="bg-[#1c1c1c] border border-emerald-900/40 rounded-2xl p-6 space-y-3">
               <Headphones className="w-8 h-8 text-emerald-400" />
               <h4 className="font-bold text-white text-sm">24/7 Tech Support</h4>
               <p className="text-xs text-slate-400">Get expert advice on switch selection, sensor tuning, and compatibility from our team.</p>
@@ -200,7 +200,7 @@ export const AboutPage: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {team.map((member, idx) => (
-              <div key={idx} className="bg-[#05140b] border border-emerald-900/40 rounded-3xl p-6 space-y-4 hover:border-emerald-500/50 transition-colors">
+              <div key={idx} className="bg-[#1c1c1c] border border-emerald-900/40 rounded-3xl p-6 space-y-4 hover:border-emerald-500/50 transition-colors">
                 <img
                   src={member.img}
                   alt={member.name}
@@ -217,7 +217,7 @@ export const AboutPage: React.FC = () => {
         </div>
 
         {/* Call to Action */}
-        <div className="bg-gradient-to-r from-emerald-950 via-[#052212] to-[#030e07] border border-emerald-800/60 rounded-3xl p-10 md:p-14 text-center space-y-6 shadow-2xl">
+        <div className="bg-gradient-to-r from-[#1c1c1c] via-[#222222] to-[#161616] border border-emerald-800/60 rounded-3xl p-10 md:p-14 text-center space-y-6 shadow-2xl">
           <h2 className="text-3xl sm:text-4xl font-black text-white">
             READY TO UPGRADE YOUR <YellowTape text="BATTLESTATION?" />
           </h2>

@@ -30,7 +30,7 @@ const INSTAGRAM_POSTS = [
 
 export const CommunityStories: React.FC = () => {
   return (
-    <section className="py-14 bg-slate-950/90 border-b border-emerald-900/30 text-slate-100">
+    <section className="py-14 bg-[#161616] border-b border-emerald-900/30 text-slate-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-4 border-b border-emerald-900/40">
@@ -61,7 +61,7 @@ export const CommunityStories: React.FC = () => {
               href={post.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="group relative h-72 rounded-2xl overflow-hidden border border-emerald-900/40 bg-slate-900 block hover:border-emerald-500/60 transition-all shadow-md"
+              className="group relative h-72 rounded-2xl overflow-hidden border border-emerald-900/40 bg-[#1c1c1c] block hover:border-emerald-500/60 transition-all shadow-md"
             >
               <img
                 src={post.image}
@@ -69,9 +69,9 @@ export const CommunityStories: React.FC = () => {
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-70 group-hover:opacity-90"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#161616] via-[#161616]/20 to-transparent" />
               
-              <div className="absolute top-3 right-3 bg-slate-950/80 backdrop-blur-md p-2 rounded-full border border-emerald-500/30 text-rose-400 group-hover:scale-110 transition-transform">
+              <div className="absolute top-3 right-3 bg-[#161616]/80 backdrop-blur-md p-2 rounded-full border border-emerald-500/30 text-rose-400 group-hover:scale-110 transition-transform">
                 <Instagram className="w-4 h-4 text-pink-400" />
               </div>
 
@@ -82,7 +82,7 @@ export const CommunityStories: React.FC = () => {
                   </h3>
                   <span className="text-[10px] text-emerald-400 font-mono">@therevivetech</span>
                 </div>
-                <span className="flex items-center gap-1 text-[10px] font-mono text-rose-300 font-bold bg-slate-950/90 px-2 py-0.5 rounded border border-rose-900/40">
+                <span className="flex items-center gap-1 text-[10px] font-mono text-rose-300 font-bold bg-[#161616]/90 px-2 py-0.5 rounded border border-rose-900/40">
                   <Heart className="w-3 h-3 fill-rose-400" /> {post.likes}
                 </span>
               </div>

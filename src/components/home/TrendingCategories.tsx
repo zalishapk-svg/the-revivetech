@@ -19,7 +19,7 @@ export const TrendingCategories: React.FC = () => {
 
   return (
     <section
-      className="py-14 bg-[#040806] border-b border-emerald-900/30 text-slate-100 overflow-hidden"
+      className="py-14 bg-[#161616] border-b border-emerald-900/30 text-slate-100 overflow-hidden"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
@@ -40,14 +40,14 @@ export const TrendingCategories: React.FC = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={() => scroll("left")}
-              className="p-2.5 rounded-lg bg-slate-900 hover:bg-emerald-500 hover:text-slate-950 text-slate-300 border border-emerald-900/40 transition-colors focus:outline-none"
+              className="p-2.5 rounded-lg bg-[#1c1c1c] hover:bg-emerald-500 hover:text-slate-950 text-slate-300 border border-emerald-900/40 transition-colors focus:outline-none"
               aria-label="Previous Slide"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
             <button
               onClick={() => scroll("right")}
-              className="p-2.5 rounded-lg bg-slate-900 hover:bg-emerald-500 hover:text-slate-950 text-slate-300 border border-emerald-900/40 transition-colors focus:outline-none"
+              className="p-2.5 rounded-lg bg-[#1c1c1c] hover:bg-emerald-500 hover:text-slate-950 text-slate-300 border border-emerald-900/40 transition-colors focus:outline-none"
               aria-label="Next Slide"
             >
               <ChevronRight className="w-5 h-5" />
@@ -65,7 +65,7 @@ export const TrendingCategories: React.FC = () => {
             <div
               key={col.id}
               onClick={() => navigateToCollection(col.handle)}
-              className="min-w-[220px] sm:min-w-[260px] group/colcard relative h-56 rounded-2xl overflow-hidden border border-emerald-900/40 bg-slate-900 text-left transition-all duration-300 hover:border-emerald-500/50 hover:shadow-[0_10px_30px_rgba(16,185,129,0.15)] cursor-pointer flex flex-col justify-end p-5"
+              className="min-w-[220px] sm:min-w-[260px] group/colcard relative h-56 rounded-2xl overflow-hidden border border-emerald-900/40 bg-[#1c1c1c] text-left transition-all duration-300 hover:border-emerald-500/50 hover:shadow-[0_10px_30px_rgba(16,185,129,0.15)] cursor-pointer flex flex-col justify-end p-5"
             >
               {col.image ? (
                 <img
@@ -77,7 +77,7 @@ export const TrendingCategories: React.FC = () => {
               ) : (
                 <div className="absolute inset-0 bg-emerald-950" />
               )}
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#161616] via-[#161616]/50 to-transparent" />
 
               <div className="relative z-10">
                 <h3 className="text-base font-bold text-white group-hover/colcard:text-emerald-300 transition-colors">

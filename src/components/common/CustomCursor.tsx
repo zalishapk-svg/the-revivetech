@@ -61,7 +61,7 @@ export const CustomCursor: React.FC = () => {
       <div
         className={`pointer-events-none fixed z-[9998] -translate-x-1/2 -translate-y-1/2 rounded-full border transition-all duration-200 ease-out ${
           isHovered
-            ? "h-10 w-10 border-emerald-400/80 bg-emerald-500/10 scale-110 shadow-[0_0_12px_rgba(16,185,129,0.3)]"
+            ? "h-10 w-10 border-emerald-400/80 bg-emerald-500/10 scale-110 shadow-[0_0_12px_rgba(192,254,45,0.4)]"
             : "h-6 w-6 border-emerald-500/40 bg-transparent"
         }`}
         style={{

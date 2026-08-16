@@ -202,7 +202,7 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
             handlePageChange(1);
             if (onItemSelect) onItemSelect();
           }}
-          className="w-full bg-[#030e07] border border-emerald-900/60 rounded-xl p-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
+          className="w-full bg-[#161616] border border-emerald-900/60 rounded-xl p-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
         >
           <option value="all">All Categories</option>
           {categories.map((cat) => (
@@ -221,7 +221,7 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
             handlePageChange(1);
             if (onItemSelect) onItemSelect();
           }}
-          className="w-full bg-[#030e07] border border-emerald-900/60 rounded-xl p-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
+          className="w-full bg-[#161616] border border-emerald-900/60 rounded-xl p-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
         >
           <option value="all">All Brands</option>
           {vendors.map((v) => (
@@ -264,7 +264,7 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
               setInStockOnly(e.target.checked);
               handlePageChange(1);
             }}
-            className="rounded bg-[#030e07] border-emerald-800 text-emerald-500 focus:ring-0 w-4 h-4"
+            className="rounded bg-[#161616] border-emerald-800 text-emerald-500 focus:ring-0 w-4 h-4"
           />
           <span>In Stock Only</span>
         </label>
@@ -277,7 +277,7 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
               setOnSaleOnly(e.target.checked);
               handlePageChange(1);
             }}
-            className="rounded bg-[#030e07] border-emerald-800 text-emerald-500 focus:ring-0 w-4 h-4"
+            className="rounded bg-[#161616] border-emerald-800 text-emerald-500 focus:ring-0 w-4 h-4"
           />
           <span>Special Sale Deals</span>
         </label>
@@ -306,7 +306,7 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
   );
 
   return (
-    <div className="w-full bg-[#030e07] text-slate-100 min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+    <div className="w-full bg-[#161616] text-slate-100 min-h-screen py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         
         {/* Breadcrumb Navigation */}
@@ -331,7 +331,7 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
         />
 
         {/* Filter Toolbar Header */}
-        <div className="bg-[#05140b] border border-emerald-900/40 rounded-2xl p-4 mb-8 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl">
+        <div className="bg-[#1c1c1c] border border-emerald-900/40 rounded-2xl p-4 mb-8 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl">
           {/* Search bar inside catalog */}
           <div className="relative w-full md:w-80">
             <Search className="w-4 h-4 text-emerald-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -343,7 +343,7 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
                 handlePageChange(1);
               }}
               placeholder="Search products, brands, specs..."
-              className="w-full bg-[#030e07] border border-emerald-900/60 rounded-xl pl-10 pr-4 py-2 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
+              className="w-full bg-[#161616] border border-emerald-900/60 rounded-xl pl-10 pr-4 py-2 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
             />
             {searchQuery && (
               <button onClick={() => { setSearchQuery(""); handlePageChange(1); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white cursor-pointer">
@@ -373,7 +373,7 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="bg-[#030e07] border border-emerald-900/60 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
+                className="bg-[#161616] border border-emerald-900/60 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
               >
                 <option value="featured">Featured</option>
                 <option value="best-selling">Best Selling</option>
@@ -384,7 +384,7 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
               </select>
 
               {/* Layout Toggle */}
-              <div className="hidden sm:flex border border-emerald-900/60 rounded-xl p-1 bg-[#030e07]">
+              <div className="hidden sm:flex border border-emerald-900/60 rounded-xl p-1 bg-[#161616]">
                 <button
                   onClick={() => setViewMode("grid")}
                   className={`p-1.5 rounded-lg transition-colors cursor-pointer ${viewMode === "grid" ? "bg-emerald-500 text-slate-950" : "text-slate-400 hover:text-white"}`}
@@ -408,7 +408,7 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
           
           {/* Sticky Desktop Sidebar Filters */}
-          <aside className="hidden lg:block lg:col-span-1 space-y-6 bg-[#05140b] border border-emerald-900/40 rounded-2xl p-6 shadow-xl lg:sticky lg:top-24">
+          <aside className="hidden lg:block lg:col-span-1 space-y-6 bg-[#1c1c1c] border border-emerald-900/40 rounded-2xl p-6 shadow-xl lg:sticky lg:top-24">
             {renderSidebarControls()}
           </aside>
 
@@ -430,7 +430,7 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
                 ))}
               </div>
             ) : filteredProducts.length === 0 ? (
-              <div className="bg-[#05140b] border border-emerald-900/40 rounded-2xl p-12 text-center my-8">
+              <div className="bg-[#1c1c1c] border border-emerald-900/40 rounded-2xl p-12 text-center my-8">
                 <div className="w-16 h-16 bg-emerald-950/60 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-800/40">
                   <Search className="w-8 h-8 text-emerald-500" />
                 </div>
@@ -461,11 +461,11 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
                   return (
                     <div
                       key={p.id}
-                      className="bg-[#05140b] border border-emerald-900/40 hover:border-emerald-500/50 rounded-2xl p-4 transition-all duration-300 flex flex-col sm:flex-row items-center gap-6"
+                      className="bg-[#1c1c1c] border border-emerald-900/40 hover:border-emerald-500/50 rounded-2xl p-4 transition-all duration-300 flex flex-col sm:flex-row items-center gap-6"
                     >
                       <div 
                         onClick={() => navigateToProduct(p.handle)}
-                        className="w-full sm:w-44 h-36 bg-[#030e07] rounded-xl overflow-hidden shrink-0 cursor-pointer p-2 flex items-center justify-center"
+                        className="w-full sm:w-44 h-36 bg-[#161616] rounded-xl overflow-hidden shrink-0 cursor-pointer p-2 flex items-center justify-center"
                       >
                         <img
                           src={p.featuredImage?.url || "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=600&auto=format&fit=crop&q=80"}
@@ -531,7 +531,7 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
                 <button
                   disabled={currentPage === 1}
                   onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
-                  className="px-4 py-2 rounded-xl bg-[#05140b] border border-emerald-900/60 text-xs font-mono font-bold text-slate-300 hover:bg-emerald-500 hover:text-slate-950 disabled:opacity-30 transition-all disabled:hover:bg-[#05140b] disabled:hover:text-slate-300 cursor-pointer disabled:cursor-not-allowed"
+                  className="px-4 py-2 rounded-xl bg-[#1c1c1c] border border-emerald-900/60 text-xs font-mono font-bold text-slate-300 hover:bg-emerald-500 hover:text-slate-950 disabled:opacity-30 transition-all disabled:hover:bg-[#1c1c1c] disabled:hover:text-slate-300 cursor-pointer disabled:cursor-not-allowed"
                 >
                   ← Prev
                 </button>
@@ -543,7 +543,7 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
                     className={`w-10 h-10 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer ${
                       currentPage === page
                         ? "bg-emerald-500 text-slate-950 font-black shadow-lg shadow-emerald-500/20"
-                        : "bg-[#05140b] border border-emerald-900/60 text-slate-300 hover:bg-slate-800"
+                        : "bg-[#1c1c1c] border border-emerald-900/60 text-slate-300 hover:bg-slate-800"
                     }`}
                   >
                     {page}
@@ -553,7 +553,7 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
                 <button
                   disabled={currentPage === totalPages}
                   onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
-                  className="px-4 py-2 rounded-xl bg-[#05140b] border border-emerald-900/60 text-xs font-mono font-bold text-slate-300 hover:bg-emerald-500 hover:text-slate-950 disabled:opacity-30 transition-all disabled:hover:bg-[#05140b] disabled:hover:text-slate-300 cursor-pointer disabled:cursor-not-allowed"
+                  className="px-4 py-2 rounded-xl bg-[#1c1c1c] border border-emerald-900/60 text-xs font-mono font-bold text-slate-300 hover:bg-emerald-500 hover:text-slate-950 disabled:opacity-30 transition-all disabled:hover:bg-[#1c1c1c] disabled:hover:text-slate-300 cursor-pointer disabled:cursor-not-allowed"
                 >
                   Next →
                 </button>

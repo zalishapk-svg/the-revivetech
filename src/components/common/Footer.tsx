@@ -26,7 +26,7 @@ export const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="bg-[#020503] border-t border-emerald-900/50 text-slate-300 pt-16 pb-12 relative overflow-hidden">
+    <footer className="bg-[#161616] border-t border-emerald-900/50 text-slate-300 pt-16 pb-12 relative overflow-hidden">
       
       {/* Background Accent Mesh */}
       <div className="absolute top-0 right-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
@@ -198,7 +198,7 @@ export const Footer: React.FC = () => {
                   value={emailInput}
                   onChange={(e) => setEmailInput(e.target.value)}
                   placeholder="Enter your email address"
-                  className="w-full px-3 py-2 bg-slate-950 border border-emerald-800/40 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                  className="w-full px-3 py-2 bg-[#222222] border border-emerald-800/40 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
                 />
                 <button
                   type="submit"

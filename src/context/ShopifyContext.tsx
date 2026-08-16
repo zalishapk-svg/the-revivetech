@@ -1,6 +1,18 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { Product, Collection, BlogArticle, CartLineItem, ViewState, Customer } from "../types";
-import { getProductsFromShopify, getCollectionsFromShopify, getBlogArticlesFromShopify, STOREFRONT_QUERIES } from "../lib/shopify";
+import { 
+  getProductsFromShopify, 
+  getCollectionsFromShopify, 
+  getBlogArticlesFromShopify, 
+  STOREFRONT_QUERIES,
+  ensureVariantGid,
+  getShopifyCart,
+  createShopifyCart,
+  addLinesToShopifyCart,
+  updateLinesInShopifyCart,
+  removeLinesFromShopifyCart,
+  getOrCreateShopifyCartCheckoutUrl
+} from "../lib/shopify";
 
 interface ShopifyContextType {
   // Navigation View State
@@ -53,7 +65,7 @@ interface ShopifyContextType {
   isMockShop: boolean;
   updateStoreConfig: (domain: string, token: string) => Promise<boolean>;
 
-  // Cart Management
+  // Cart Management (Shopify Storefront Cart API)
   cartLines: CartLineItem[];
   addToCart: (product: Product, variantId?: string, quantity?: number) => void;
   removeFromCart: (lineId: string) => void;
@@ -69,6 +81,8 @@ interface ShopifyContextType {
   freeShippingThreshold: number;
   handleCheckout: () => Promise<void>;
   isCheckingOut: boolean;
+  shopifyCartId: string;
+  cartCheckoutUrl: string;
 
   // Wishlist
   wishlistHandles: string[];
@@ -245,9 +259,18 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
       return [];
     }
   });
+  const [shopifyCartId, setShopifyCartId] = useState<string>(() => {
+    try {
+      return localStorage.getItem("shopify_cart_id") || "";
+    } catch {
+      return "";
+    }
+  });
+  const [cartCheckoutUrl, setCartCheckoutUrl] = useState<string>("");
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
   const [discountCode, setDiscountCode] = useState<string>("");
   const [discountPercentage, setDiscountPercentage] = useState<number>(0);
+  const [isCheckingOut, setIsCheckingOut] = useState<boolean>(false);
   const freeShippingThreshold = 200;
 
   // Wishlist State
@@ -602,7 +625,7 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const navigateToCart = () => setViewState({ type: "cart" });
   const navigateToCheckout = () => {
     setIsCartOpen(false);
-    setViewState({ type: "checkout" });
+    handleCheckout();
   };
   const navigateToOrderConfirmation = (orderReference: string) => {
     setIsCartOpen(false);
@@ -610,23 +633,32 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
   const navigateToPage = (handle: string) => setViewState({ type: "page", handle });
 
-  // Cart functions
+  // ---------------------------------------------------------------------------
+  // SHOPIFY STOREFRONT CART MANAGEMENT
+  // ---------------------------------------------------------------------------
+
   const addToCart = (product: Product, variantId?: string, quantity: number = 1) => {
     const selectedVariant = product.variants.find((v) => v.id === variantId) || product.variants[0];
-    const lineId = `${product.id}-${selectedVariant?.id || "default"}`;
+    const actualVariantId = selectedVariant?.id || product.id;
+    const formattedVariantGid = ensureVariantGid(actualVariantId);
+    const lineId = `${product.id}-${actualVariantId}`;
 
     setCartLines((prev) => {
-      const existing = prev.find((item) => item.id === lineId);
+      const existing = prev.find(
+        (item) => item.id === lineId || item.merchandise.id === formattedVariantGid
+      );
       if (existing) {
         return prev.map((item) =>
-          item.id === lineId ? { ...item, quantity: item.quantity + quantity } : item
+          item.id === lineId || item.merchandise.id === formattedVariantGid
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
         );
       }
       const newItem: CartLineItem = {
         id: lineId,
         quantity,
         merchandise: {
-          id: selectedVariant?.id || product.id,
+          id: formattedVariantGid,
           title: selectedVariant?.title || "Standard",
           product: {
             id: product.id,
@@ -645,6 +677,21 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     showToast(`Added "${product.title}" to cart`);
     setIsCartOpen(true);
+
+    // Asynchronously synchronize with Shopify Cart API in background
+    if (shopifyCartId) {
+      addLinesToShopifyCart(shopifyCartId, [
+        { merchandiseId: formattedVariantGid, quantity },
+      ])
+        .then((updatedCart) => {
+          if (updatedCart?.checkoutUrl) {
+            setCartCheckoutUrl(updatedCart.checkoutUrl);
+          }
+        })
+        .catch((err) => {
+          console.warn("Shopify Cart API sync note:", err);
+        });
+    }
   };
 
   const removeFromCart = (lineId: string) => {
@@ -661,7 +708,13 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
     );
   };
 
-  const clearCart = () => setCartLines([]);
+  const clearCart = () => {
+    setCartLines([]);
+    setCartCheckoutUrl("");
+    try {
+      localStorage.removeItem("trt_cart_lines");
+    } catch {}
+  };
 
   const cartSubtotal = cartLines.reduce((total, item) => {
     const price = parseFloat(item.merchandise.price.amount) || 0;
@@ -685,14 +738,41 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   };
 
-  const [isCheckingOut, setIsCheckingOut] = useState<boolean>(false);
-
+  /**
+   * Official Headless Shopify Checkout Redirect
+   * 1. Generates/Retrieves real Shopify Cart from Storefront Cart API
+   * 2. Obtains official checkoutUrl
+   * 3. Redirects customer directly to Shopify Web Checkout (shipping, COD, payment, order creation)
+   */
   const handleCheckout = async () => {
     if (cartLines.length === 0) {
-      showToast("Your cart is empty");
+      showToast("Your cart is empty. Add items to proceed.");
       return;
     }
-    navigateToCheckout();
+
+    setIsCheckingOut(true);
+    showToast("Redirecting to official Shopify Checkout...");
+
+    try {
+      const result = await getOrCreateShopifyCartCheckoutUrl(cartLines, shopifyCartId);
+      if (result && result.checkoutUrl) {
+        setShopifyCartId(result.cartId);
+        setCartCheckoutUrl(result.checkoutUrl);
+        try {
+          localStorage.setItem("shopify_cart_id", result.cartId);
+        } catch {}
+
+        // Immediate direct redirect to official Shopify Web Checkout
+        window.location.href = result.checkoutUrl;
+        return;
+      }
+      showToast("Could not initiate Shopify checkout. Please try again.");
+    } catch (err: any) {
+      console.error("Shopify Checkout Redirect Error:", err);
+      showToast("Connection issue with Shopify. Please retry.");
+    } finally {
+      setIsCheckingOut(false);
+    }
   };
 
   // Wishlist functions
@@ -835,6 +915,8 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
         freeShippingThreshold,
         handleCheckout,
         isCheckingOut,
+        shopifyCartId,
+        cartCheckoutUrl,
         wishlistHandles,
         toggleWishlist,
         isInWishlist,

@@ -60,7 +60,7 @@ export const QuickViewModal: React.FC = () => {
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.95, opacity: 0 }}
-          className="relative w-full max-w-3xl bg-[#071910] border border-emerald-800/40 rounded-3xl p-6 sm:p-8 shadow-2xl text-slate-100 z-50 my-8"
+          className="relative w-full max-w-3xl bg-[#1c1c1c] border border-emerald-800/40 rounded-3xl p-6 sm:p-8 shadow-2xl text-slate-100 z-50 my-8"
         >
           <button
             onClick={() => setQuickViewHandle(null)}

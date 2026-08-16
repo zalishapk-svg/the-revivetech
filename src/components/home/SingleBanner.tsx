@@ -5,7 +5,7 @@ export const SingleBanner: React.FC = () => {
   const imageUrl = "https://cdn.shopify.com/s/files/1/0610/4642/3631/files/govee.jpg?v=1786431339";
 
   return (
-    <section className="w-full bg-slate-950 overflow-hidden my-2 border-t border-b border-emerald-900/30">
+    <section className="w-full bg-[#161616] overflow-hidden my-2 border-t border-b border-emerald-900/30">
       <motion.a
         href={imageUrl}
         target="_blank"

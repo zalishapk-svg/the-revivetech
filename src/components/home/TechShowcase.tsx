@@ -3,7 +3,7 @@ import { Cpu, ShieldCheck, Zap, Radio, Sparkles } from "lucide-react";
 
 export const TechShowcase: React.FC = () => {
   return (
-    <section className="py-20 bg-[#030e07] border-b border-emerald-900/40 text-slate-100">
+    <section className="py-20 bg-[#161616] border-b border-emerald-900/40 text-slate-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div className="text-center max-w-3xl mx-auto mb-16">
@@ -20,7 +20,7 @@ export const TechShowcase: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           
-          <div className="bg-[#071910] border border-emerald-900/40 p-8 rounded-3xl space-y-4 hover:border-emerald-500/40 transition-colors">
+          <div className="bg-[#1c1c1c] border border-emerald-900/40 p-8 rounded-3xl space-y-4 hover:border-emerald-500/40 transition-colors">
             <div className="w-12 h-12 bg-emerald-950 rounded-2xl flex items-center justify-center text-emerald-400 border border-emerald-800/40">
               <Zap className="w-6 h-6" />
             </div>
@@ -30,7 +30,7 @@ export const TechShowcase: React.FC = () => {
             </p>
           </div>
 
-          <div className="bg-[#071910] border border-emerald-900/40 p-8 rounded-3xl space-y-4 hover:border-emerald-500/40 transition-colors">
+          <div className="bg-[#1c1c1c] border border-emerald-900/40 p-8 rounded-3xl space-y-4 hover:border-emerald-500/40 transition-colors">
             <div className="w-12 h-12 bg-emerald-950 rounded-2xl flex items-center justify-center text-emerald-400 border border-emerald-800/40">
               <Radio className="w-6 h-6" />
             </div>
@@ -40,7 +40,7 @@ export const TechShowcase: React.FC = () => {
             </p>
           </div>
 
-          <div className="bg-[#071910] border border-emerald-900/40 p-8 rounded-3xl space-y-4 hover:border-emerald-500/40 transition-colors">
+          <div className="bg-[#1c1c1c] border border-emerald-900/40 p-8 rounded-3xl space-y-4 hover:border-emerald-500/40 transition-colors">
             <div className="w-12 h-12 bg-emerald-950 rounded-2xl flex items-center justify-center text-emerald-400 border border-emerald-800/40">
               <Cpu className="w-6 h-6" />
             </div>

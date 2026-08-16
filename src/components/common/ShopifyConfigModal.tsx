@@ -99,7 +99,7 @@ export const ShopifyConfigModal: React.FC = () => {
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.95, opacity: 0 }}
-          className="relative w-full max-w-lg bg-[#071910] border border-emerald-800/60 rounded-3xl p-6 sm:p-8 shadow-2xl text-slate-100 z-50 max-h-[90vh] overflow-y-auto"
+          className="relative w-full max-w-lg bg-[#1c1c1c] border border-emerald-800/60 rounded-3xl p-6 sm:p-8 shadow-2xl text-slate-100 z-50 max-h-[90vh] overflow-y-auto"
         >
           <button
             onClick={() => setIsConfigModalOpen(false)}

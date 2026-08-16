@@ -15,11 +15,11 @@ export const CollectionsListPage: React.FC = () => {
   }, [hasMoreCollections, isFetchingMoreCollections]);
 
   return (
-    <div className="bg-[#030e07] text-slate-100 min-h-screen py-10">
+    <div className="bg-[#161616] text-slate-100 min-h-screen py-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
         
         {/* Banner Header */}
-        <div className="bg-[#071910] border border-emerald-800/50 p-8 sm:p-12 rounded-3xl relative overflow-hidden">
+        <div className="bg-[#1c1c1c] border border-emerald-800/50 p-8 sm:p-12 rounded-3xl relative overflow-hidden">
           <div className="relative z-10 space-y-3">
             <span className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-2">
               <Grid className="w-4 h-4" /> OFFICIAL HARDWARE COLLECTIONS
@@ -41,7 +41,7 @@ export const CollectionsListPage: React.FC = () => {
               <div
                 key={col.id}
                 onClick={() => navigateToCollection(col.handle)}
-                className="group cursor-pointer bg-[#071910] border border-emerald-900/40 hover:border-emerald-500/50 rounded-3xl overflow-hidden transition-all duration-300 flex flex-col justify-between hover:shadow-2xl hover:shadow-emerald-950/50"
+                className="group cursor-pointer bg-[#1c1c1c] border border-emerald-900/40 hover:border-emerald-500/50 rounded-3xl overflow-hidden transition-all duration-300 flex flex-col justify-between hover:shadow-2xl hover:shadow-emerald-950/50"
               >
                 <div className="relative aspect-video overflow-hidden bg-slate-900">
                   {bgImage ? (
@@ -56,7 +56,7 @@ export const CollectionsListPage: React.FC = () => {
                       <Layers className="w-16 h-16" />
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#071910] via-transparent to-transparent opacity-80" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#1c1c1c] via-transparent to-transparent opacity-80" />
                   <span className="absolute top-4 right-4 bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-mono text-xs px-3 py-1 rounded-full font-bold backdrop-blur-md">
                     {itemCount} {itemCount === 1 ? "Item" : "Items"}
                   </span>

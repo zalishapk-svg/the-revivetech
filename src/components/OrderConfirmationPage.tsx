@@ -89,7 +89,7 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
 
   if (isLoading) {
     return (
-      <div id="order-loading-screen" className="min-h-[70vh] flex flex-col items-center justify-center px-4 py-16 bg-slate-950 text-slate-100">
+      <div id="order-loading-screen" className="min-h-[70vh] flex flex-col items-center justify-center px-4 py-16 bg-[#161616] text-slate-100">
         <Loader2 className="w-12 h-12 text-emerald-400 animate-spin mb-4" />
         <h2 className="text-xl font-bold text-white mb-2">Loading Order Confirmation...</h2>
         <p className="text-sm text-slate-400">Verifying order #{orderReference} with Shopify</p>
@@ -114,10 +114,10 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
       });
 
   return (
-    <div id="order-confirmation-page" className="min-h-screen bg-slate-950 text-slate-100 py-10 px-4 sm:px-6 lg:px-8 print:bg-white print:text-black">
+    <div id="order-confirmation-page" className="min-h-screen bg-[#161616] text-slate-100 py-10 px-4 sm:px-6 lg:px-8 print:bg-white print:text-black">
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Success Header Box */}
-        <div className="bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border border-slate-800 rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden text-center print:border-none print:shadow-none">
+        <div className="bg-[#1c1c1c] border border-emerald-900/40 rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden text-center print:border-none print:shadow-none">
           <div className="absolute -top-24 -right-24 w-60 h-60 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute -bottom-24 -left-24 w-60 h-60 bg-green-500/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -138,7 +138,7 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
           </p>
 
           {/* Quick Metrics Bar */}
-          <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4 text-left">
+          <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-3 bg-[#161616] border border-emerald-900/40 rounded-2xl p-4 text-left">
             <div>
               <span className="block text-[11px] uppercase tracking-wider text-slate-400 font-semibold">
                 Shopify Order #
@@ -176,7 +176,7 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
         </div>
 
         {/* Order Status Timeline */}
-        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl print:hidden">
+        <div className="bg-[#1c1c1c] border border-emerald-900/40 rounded-2xl p-6 shadow-xl print:hidden">
           <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-6 flex items-center gap-2">
             <Clock className="w-4 h-4 text-emerald-400" />
             Live Delivery Journey
@@ -204,7 +204,7 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
             </div>
 
             <div className="flex sm:flex-col items-center sm:items-start gap-3 opacity-60">
-              <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 text-slate-400 flex items-center justify-center font-bold text-xs shrink-0">
+              <div className="w-8 h-8 rounded-full bg-[#161616] border border-emerald-900/40 text-slate-400 flex items-center justify-center font-bold text-xs shrink-0">
                 3
               </div>
               <div>
@@ -214,7 +214,7 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
             </div>
 
             <div className="flex sm:flex-col items-center sm:items-start gap-3 opacity-60">
-              <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 text-slate-400 flex items-center justify-center font-bold text-xs shrink-0">
+              <div className="w-8 h-8 rounded-full bg-[#161616] border border-emerald-900/40 text-slate-400 flex items-center justify-center font-bold text-xs shrink-0">
                 4
               </div>
               <div>
@@ -228,8 +228,8 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
         {/* Detailed Breakdown Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Customer & Shipping Details */}
-          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2 pb-3 border-b border-slate-800">
+          <div className="bg-[#1c1c1c] border border-emerald-900/40 rounded-2xl p-6 shadow-xl space-y-4">
+            <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2 pb-3 border-b border-emerald-900/40">
               <MapPin className="w-4 h-4 text-emerald-400" />
               Delivery & Contact Details
             </h3>
@@ -270,14 +270,14 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
           </div>
 
           {/* Payment & Logistics Method */}
-          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2 pb-3 border-b border-slate-800">
+          <div className="bg-[#1c1c1c] border border-emerald-900/40 rounded-2xl p-6 shadow-xl space-y-4">
+            <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2 pb-3 border-b border-emerald-900/40">
               <CreditCard className="w-4 h-4 text-emerald-400" />
               Payment & Shipping Method
             </h3>
 
             <div className="space-y-4 text-xs">
-              <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 flex items-start gap-3">
+              <div className="p-3.5 rounded-xl bg-[#161616] border border-emerald-900/40 flex items-start gap-3">
                 <Package className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
                 <div>
                   <span className="font-bold text-white block">Cash on Delivery (COD)</span>
@@ -287,7 +287,7 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 flex items-start gap-3">
+              <div className="p-3.5 rounded-xl bg-[#161616] border border-emerald-900/40 flex items-start gap-3">
                 <Truck className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
                 <div>
                   <span className="font-bold text-white block">
@@ -303,17 +303,17 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
         </div>
 
         {/* Ordered Line Items & Price Summary */}
-        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-xl">
-          <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2 pb-4 mb-4 border-b border-slate-800">
+        <div className="bg-[#1c1c1c] border border-emerald-900/40 rounded-2xl p-6 shadow-xl">
+          <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2 pb-4 mb-4 border-b border-emerald-900/40">
             <ShoppingBag className="w-4 h-4 text-emerald-400" />
             Ordered Items ({order?.items?.length || 1})
           </h3>
 
-          <div className="space-y-3 divide-y divide-slate-800/60 mb-6">
+          <div className="space-y-3 divide-y divide-emerald-900/30 mb-6">
             {order?.items?.map((item) => (
               <div key={item.id} className="pt-3 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-slate-950 border border-slate-800 overflow-hidden flex items-center justify-center shrink-0">
+                  <div className="w-12 h-12 rounded-xl bg-[#161616] border border-emerald-900/40 overflow-hidden flex items-center justify-center shrink-0">
                     {item.imageUrl ? (
                       <img
                         src={item.imageUrl}
@@ -346,7 +346,7 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
           </div>
 
           {/* Pricing Totals */}
-          <div className="border-t border-slate-800 pt-4 space-y-2 text-xs">
+          <div className="border-t border-emerald-900/40 pt-4 space-y-2 text-xs">
             <div className="flex justify-between text-slate-300">
               <span>Subtotal:</span>
               <span className="font-semibold text-white">
@@ -370,7 +370,7 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
               </span>
             </div>
 
-            <div className="flex justify-between items-baseline pt-3 border-t border-slate-800 text-sm">
+            <div className="flex justify-between items-baseline pt-3 border-t border-emerald-900/40 text-sm">
               <span className="font-extrabold text-white">Total Amount Due (COD):</span>
               <span className="text-2xl font-black text-emerald-400">
                 Rs. {(order?.total || 0).toLocaleString()}
@@ -386,7 +386,7 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
               id="btn-order-print"
               type="button"
               onClick={handlePrint}
-              className="px-5 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 font-semibold text-xs transition-colors flex items-center gap-2"
+              className="px-5 py-3 rounded-xl bg-[#161616] hover:bg-[#222222] border border-emerald-900/40 text-slate-200 font-semibold text-xs transition-colors flex items-center gap-2"
             >
               <Printer className="w-4 h-4" />
               Print Receipt

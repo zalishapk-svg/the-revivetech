@@ -24,7 +24,7 @@ export const FAQSection: React.FC = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <section className="py-16 bg-[#05140b] border-b border-emerald-900/40 text-slate-100">
+    <section className="py-16 bg-[#161616] border-b border-emerald-900/40 text-slate-100">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div className="text-center mb-12">
@@ -42,7 +42,7 @@ export const FAQSection: React.FC = () => {
             return (
               <div
                 key={idx}
-                className="bg-[#071910] border border-emerald-900/40 rounded-2xl overflow-hidden transition-colors"
+                className="bg-[#1c1c1c] border border-emerald-900/40 rounded-2xl overflow-hidden transition-colors"
               >
                 <button
                   onClick={() => setOpenIndex(isOpen ? null : idx)}

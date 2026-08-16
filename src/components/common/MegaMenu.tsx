@@ -16,7 +16,7 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onClose }) => {
       {isOpen && (
         <>
           <div
-            className="fixed inset-0 top-20 z-40 bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 top-20 z-40 bg-[#161616]/70 backdrop-blur-sm"
             onClick={onClose}
           />
           <motion.div
@@ -24,7 +24,7 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onClose }) => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 6, scale: 0.98 }}
             transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute top-full left-0 w-full bg-[#05110a]/98 border-b border-emerald-900/50 shadow-[0_30px_60px_-12px_rgba(0,0,0,0.95)] z-50 text-slate-100 max-h-[80vh] overflow-y-auto"
+            className="absolute top-full left-0 w-full bg-[#1c1c1c]/98 border-b border-emerald-900/50 shadow-2xl z-50 text-slate-100 max-h-[80vh] overflow-y-auto"
           >
           <div className="max-w-7xl mx-auto p-6 md:p-8">
             {/* Header / Meta bar */}
@@ -63,9 +63,9 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onClose }) => {
                         navigateToCollection(col.handle);
                         onClose();
                       }}
-                      className="group p-3.5 rounded-2xl bg-slate-900/80 hover:bg-emerald-950/80 border border-emerald-900/40 hover:border-emerald-500/60 transition-all duration-200 text-left flex items-center gap-3.5 shadow-md hover:shadow-[0_0_20px_rgba(16,185,129,0.2)]"
+                      className="group p-3.5 rounded-2xl bg-[#161616] hover:bg-emerald-950/80 border border-emerald-900/40 hover:border-emerald-500/60 transition-all duration-200 text-left flex items-center gap-3.5 shadow-md hover:shadow-[0_0_20px_rgba(192,254,45,0.2)]"
                     >
-                      <div className="w-12 h-12 rounded-xl bg-slate-950 overflow-hidden shrink-0 border border-emerald-900/50 relative group-hover:border-emerald-400 transition-colors">
+                      <div className="w-12 h-12 rounded-xl bg-[#161616] overflow-hidden shrink-0 border border-emerald-900/50 relative group-hover:border-emerald-400 transition-colors">
                         {bgImage ? (
                           <img
                             src={bgImage}

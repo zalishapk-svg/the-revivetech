@@ -111,7 +111,7 @@ export const FAQPage: React.FC = () => {
   }, [selectedCategory, searchQuery]);
 
   return (
-    <div className="w-full bg-[#030e07] text-slate-100 min-h-screen py-10 px-4 sm:px-6 lg:px-8">
+    <div className="w-full bg-[#161616] text-slate-100 min-h-screen py-10 px-4 sm:px-6 lg:px-8">
       {/* Inject FAQ Schema JSON-LD */}
       <script
         type="application/ld+json"
@@ -153,7 +153,7 @@ export const FAQPage: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search questions (e.g. warranty, COD, delivery time)..."
-              className="w-full bg-[#05140b] border border-emerald-900/60 rounded-2xl pl-11 pr-4 py-3 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 shadow-xl"
+              className="w-full bg-[#1c1c1c] border border-emerald-900/60 rounded-2xl pl-11 pr-4 py-3 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 shadow-xl"
             />
           </div>
         </div>
@@ -167,7 +167,7 @@ export const FAQPage: React.FC = () => {
               className={`px-4 py-2 rounded-xl text-xs font-medium transition-all ${
                 selectedCategory === cat
                   ? "bg-emerald-500 text-slate-950 font-bold shadow-lg shadow-emerald-950/40"
-                  : "bg-[#05140b] border border-emerald-900/40 text-slate-300 hover:text-emerald-400 hover:border-emerald-700/60"
+                  : "bg-[#1c1c1c] border border-emerald-900/40 text-slate-300 hover:text-emerald-400 hover:border-emerald-700/60"
               }`}
             >
               {cat}
@@ -178,7 +178,7 @@ export const FAQPage: React.FC = () => {
         {/* FAQ Accordion List */}
         <div className="space-y-4">
           {filteredFAQs.length === 0 ? (
-            <div className="bg-[#05140b] border border-emerald-900/40 rounded-2xl p-10 text-center">
+            <div className="bg-[#1c1c1c] border border-emerald-900/40 rounded-2xl p-10 text-center">
               <HelpCircle className="w-10 h-10 text-emerald-500 mx-auto mb-2" />
               <h3 className="text-base font-bold text-white mb-1">No matching questions found</h3>
               <p className="text-xs text-slate-400 mb-4">Try typing different keywords or browse all categories.</p>
@@ -195,7 +195,7 @@ export const FAQPage: React.FC = () => {
               return (
                 <div
                   key={item.id}
-                  className="bg-[#05140b] border border-emerald-900/40 rounded-2xl overflow-hidden transition-colors hover:border-emerald-700/60 shadow-lg"
+                  className="bg-[#1c1c1c] border border-emerald-900/40 rounded-2xl overflow-hidden transition-colors hover:border-emerald-700/60 shadow-lg"
                 >
                   <button
                     onClick={() => toggleAccordion(item.id)}
@@ -215,7 +215,7 @@ export const FAQPage: React.FC = () => {
                   </button>
 
                   {isOpen && (
-                    <div className="px-5 pb-5 text-xs sm:text-sm text-slate-300 leading-relaxed border-t border-emerald-900/30 pt-4 bg-[#030e07]/60">
+                    <div className="px-5 pb-5 text-xs sm:text-sm text-slate-300 leading-relaxed border-t border-emerald-900/30 pt-4 bg-[#161616]/60">
                       {item.answer}
                     </div>
                   )}
@@ -226,7 +226,7 @@ export const FAQPage: React.FC = () => {
         </div>
 
         {/* Still Have Questions Banner */}
-        <div className="bg-gradient-to-r from-emerald-950 via-[#052212] to-[#030e07] border border-emerald-800/60 rounded-3xl p-8 text-center space-y-4 shadow-2xl">
+        <div className="bg-gradient-to-r from-[#1c1c1c] via-[#222222] to-[#161616] border border-emerald-800/60 rounded-3xl p-8 text-center space-y-4 shadow-2xl">
           <h3 className="text-xl font-bold text-white">Still have questions?</h3>
           <p className="text-xs text-slate-300 max-w-md mx-auto">
             Our hardware engineers in Lahore & Karachi are available on live chat and WhatsApp to assist you.

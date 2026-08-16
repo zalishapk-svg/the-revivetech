@@ -33,7 +33,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({ initialQuery = "" }) => 
   }, [articles, query]);
 
   return (
-    <div className="w-full bg-[#030e07] text-slate-100 min-h-screen py-10 px-4 sm:px-6 lg:px-8">
+    <div className="w-full bg-[#161616] text-slate-100 min-h-screen py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto space-y-8">
         
         {/* Breadcrumb */}
@@ -46,7 +46,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({ initialQuery = "" }) => 
         </nav>
 
         {/* Search Header */}
-        <div className="bg-[#05140b] border border-emerald-900/40 rounded-3xl p-8 shadow-2xl space-y-4">
+        <div className="bg-[#1c1c1c] border border-emerald-900/40 rounded-3xl p-8 shadow-2xl space-y-4">
           <h1 className="text-2xl sm:text-3xl font-black text-white">Search Hardware & Knowledge Base</h1>
           <div className="relative max-w-xl">
             <Search className="w-4 h-4 text-emerald-400 absolute left-4 top-1/2 -translate-y-1/2" />
@@ -55,7 +55,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({ initialQuery = "" }) => 
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search products, switch types, brands, or articles..."
-              className="w-full bg-[#030e07] border border-emerald-900/60 rounded-2xl pl-11 pr-4 py-3 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
+              className="w-full bg-[#161616] border border-emerald-900/60 rounded-2xl pl-11 pr-4 py-3 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
             />
           </div>
           <p className="text-xs text-slate-400 font-mono">
@@ -67,7 +67,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({ initialQuery = "" }) => 
         <div className="space-y-4">
           <h2 className="text-xl font-bold text-white uppercase tracking-wider">Product Results</h2>
           {matchedProducts.length === 0 ? (
-            <div className="bg-[#05140b] border border-emerald-900/40 rounded-2xl p-8 text-center text-xs text-slate-400">
+            <div className="bg-[#1c1c1c] border border-emerald-900/40 rounded-2xl p-8 text-center text-xs text-slate-400">
               No products found matching "{query}".
             </div>
           ) : (

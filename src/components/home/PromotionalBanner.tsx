@@ -7,13 +7,13 @@ export const PromotionalBanner: React.FC = () => {
   const { navigateToProduct, navigateToShop, products } = useShopify();
 
   return (
-    <section className="py-20 bg-gradient-to-r from-[#030e07] via-[#082214] to-[#030e07] border-b border-emerald-900/40 text-slate-100 relative overflow-hidden">
+    <section className="py-20 bg-[#161616] border-b border-emerald-900/40 text-slate-100 relative overflow-hidden">
       
       {/* Background Accent Lines */}
       <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:16px_16px]" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-[#071910]/90 border border-emerald-800/50 rounded-3xl p-8 sm:p-12 shadow-2xl">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-[#1c1c1c] border border-emerald-800/50 rounded-3xl p-8 sm:p-12 shadow-2xl">
           
           <div className="lg:col-span-7 space-y-6">
             <span className="inline-flex items-center gap-1.5 bg-amber-400 text-slate-950 text-xs font-black px-3 py-1 rounded-full uppercase tracking-widest">

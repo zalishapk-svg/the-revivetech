@@ -35,7 +35,7 @@ const ShopifyConfigModal = lazy(() => import("./components/common/ShopifyConfigM
 
 const PageFallback: React.FC = () => (
   <div className="min-h-[50vh] flex items-center justify-center">
-    <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+    <div className="w-8 h-8 border-2 border-[#C0FE2D] border-t-transparent rounded-full animate-spin" />
   </div>
 );
 
@@ -47,7 +47,7 @@ const MainLayout: React.FC = () => {
   const activeOrderRef = "orderReference" in viewState ? (viewState as any).orderReference : "";
 
   return (
-    <div className="min-h-screen bg-[#030705] text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-slate-950">
+    <div className="min-h-screen bg-[#161616] text-slate-100 flex flex-col font-sans selection:bg-[#C0FE2D] selection:text-[#161616]">
       <SEOHead />
 
       {/* Header Navigation Stack */}
@@ -100,8 +100,8 @@ const MainLayout: React.FC = () => {
 
       {/* Floating Global Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-emerald-500 text-slate-950 px-4 py-3 rounded-2xl shadow-2xl font-bold text-xs flex items-center gap-2 border border-emerald-300 animate-bounce">
-          <span className="w-2 h-2 rounded-full bg-slate-950" />
+        <div className="fixed bottom-6 right-6 z-50 bg-[#C0FE2D] text-[#161616] px-4 py-3 rounded-2xl shadow-2xl font-bold text-xs flex items-center gap-2 border border-[#D4FF66] animate-bounce">
+          <span className="w-2 h-2 rounded-full bg-[#161616]" />
           <span>{toastMessage}</span>
         </div>
       )}

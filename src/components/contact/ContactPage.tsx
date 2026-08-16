@@ -29,7 +29,7 @@ export const ContactPage: React.FC = () => {
   };
 
   return (
-    <div className="w-full bg-[#030e07] text-slate-100 min-h-screen py-10 px-4 sm:px-6 lg:px-8">
+    <div className="w-full bg-[#161616] text-slate-100 min-h-screen py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto space-y-12">
         
         {/* Header */}
@@ -47,7 +47,7 @@ export const ContactPage: React.FC = () => {
 
         {/* Top Info Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="bg-[#05140b] border border-emerald-900/40 rounded-2xl p-6 space-y-3 flex flex-col justify-between">
+          <div className="bg-[#1c1c1c] border border-emerald-900/40 rounded-2xl p-6 space-y-3 flex flex-col justify-between">
             <div className="w-10 h-10 rounded-xl bg-emerald-950/80 border border-emerald-800/60 flex items-center justify-center text-emerald-400">
               <MapPin className="w-5 h-5" />
             </div>
@@ -60,7 +60,7 @@ export const ContactPage: React.FC = () => {
             <span className="text-[10px] text-emerald-400 font-mono">Main Distribution Hub</span>
           </div>
 
-          <div className="bg-[#05140b] border border-emerald-900/40 rounded-2xl p-6 space-y-3 flex flex-col justify-between">
+          <div className="bg-[#1c1c1c] border border-emerald-900/40 rounded-2xl p-6 space-y-3 flex flex-col justify-between">
             <div className="w-10 h-10 rounded-xl bg-emerald-950/80 border border-emerald-800/60 flex items-center justify-center text-emerald-400">
               <Phone className="w-5 h-5" />
             </div>
@@ -80,7 +80,7 @@ export const ContactPage: React.FC = () => {
             </a>
           </div>
 
-          <div className="bg-[#05140b] border border-emerald-900/40 rounded-2xl p-6 space-y-3 flex flex-col justify-between">
+          <div className="bg-[#1c1c1c] border border-emerald-900/40 rounded-2xl p-6 space-y-3 flex flex-col justify-between">
             <div className="w-10 h-10 rounded-xl bg-emerald-950/80 border border-emerald-800/60 flex items-center justify-center text-emerald-400">
               <Mail className="w-5 h-5" />
             </div>
@@ -93,7 +93,7 @@ export const ContactPage: React.FC = () => {
             <span className="text-[10px] text-emerald-400 font-mono">Fast Response Guaranteed</span>
           </div>
 
-          <div className="bg-[#05140b] border border-emerald-900/40 rounded-2xl p-6 space-y-3 flex flex-col justify-between">
+          <div className="bg-[#1c1c1c] border border-emerald-900/40 rounded-2xl p-6 space-y-3 flex flex-col justify-between">
             <div className="w-10 h-10 rounded-xl bg-emerald-950/80 border border-emerald-800/60 flex items-center justify-center text-emerald-400">
               <Clock className="w-5 h-5" />
             </div>
@@ -112,7 +112,7 @@ export const ContactPage: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           
           {/* Contact Form */}
-          <div className="bg-[#05140b] border border-emerald-900/40 rounded-3xl p-8 shadow-2xl space-y-6">
+          <div className="bg-[#1c1c1c] border border-emerald-900/40 rounded-3xl p-8 shadow-2xl space-y-6">
             <div>
               <h3 className="text-xl font-bold text-white mb-1">Send Support Ticket</h3>
               <p className="text-xs text-slate-400">Fill out the form below and an engineer will assist you.</p>
@@ -145,7 +145,7 @@ export const ContactPage: React.FC = () => {
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       placeholder="Ali Khan"
-                      className="w-full bg-[#030e07] border border-emerald-900/60 rounded-xl px-4 py-2.5 text-xs text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500"
+                      className="w-full bg-[#161616] border border-emerald-900/60 rounded-xl px-4 py-2.5 text-xs text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500"
                     />
                   </div>
 
@@ -157,7 +157,7 @@ export const ContactPage: React.FC = () => {
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       placeholder="ali@example.com"
-                      className="w-full bg-[#030e07] border border-emerald-900/60 rounded-xl px-4 py-2.5 text-xs text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500"
+                      className="w-full bg-[#161616] border border-emerald-900/60 rounded-xl px-4 py-2.5 text-xs text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500"
                     />
                   </div>
                 </div>
@@ -170,7 +170,7 @@ export const ContactPage: React.FC = () => {
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       placeholder="+92 300 0000000"
-                      className="w-full bg-[#030e07] border border-emerald-900/60 rounded-xl px-4 py-2.5 text-xs text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500"
+                      className="w-full bg-[#161616] border border-emerald-900/60 rounded-xl px-4 py-2.5 text-xs text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500"
                     />
                   </div>
 
@@ -181,7 +181,7 @@ export const ContactPage: React.FC = () => {
                       value={formData.orderId}
                       onChange={(e) => setFormData({ ...formData, orderId: e.target.value })}
                       placeholder="#TRT-1042"
-                      className="w-full bg-[#030e07] border border-emerald-900/60 rounded-xl px-4 py-2.5 text-xs text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500"
+                      className="w-full bg-[#161616] border border-emerald-900/60 rounded-xl px-4 py-2.5 text-xs text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500"
                     />
                   </div>
                 </div>
@@ -191,7 +191,7 @@ export const ContactPage: React.FC = () => {
                   <select
                     value={formData.subject}
                     onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                    className="w-full bg-[#030e07] border border-emerald-900/60 rounded-xl px-4 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-[#161616] border border-emerald-900/60 rounded-xl px-4 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-500"
                   >
                     <option value="Order Inquiry">Order Inquiry / Shipping Tracking</option>
                     <option value="Product Spec Question">Product Specs & Switch Compatibility</option>
@@ -208,7 +208,7 @@ export const ContactPage: React.FC = () => {
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                     placeholder="Describe your query in detail..."
-                    className="w-full bg-[#030e07] border border-emerald-900/60 rounded-xl p-4 text-xs text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 resize-none"
+                    className="w-full bg-[#161616] border border-emerald-900/60 rounded-xl p-4 text-xs text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 resize-none"
                   />
                 </div>
 
@@ -226,12 +226,12 @@ export const ContactPage: React.FC = () => {
           <div className="space-y-6">
             
             {/* Map Preview Container */}
-            <div className="bg-[#05140b] border border-emerald-900/40 rounded-3xl p-6 space-y-4 shadow-2xl">
+            <div className="bg-[#1c1c1c] border border-emerald-900/40 rounded-3xl p-6 space-y-4 shadow-2xl">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
                 <MapPin className="w-5 h-5 text-emerald-400" /> Store & Service Center Location
               </h3>
               
-              <div className="w-full h-64 bg-[#030e07] rounded-2xl overflow-hidden border border-emerald-900/60 relative group flex items-center justify-center p-4">
+              <div className="w-full h-64 bg-[#161616] rounded-2xl overflow-hidden border border-emerald-900/60 relative group flex items-center justify-center p-4">
                 <iframe
                   title="ThereReviveTech Map Location"
                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3401.378772392812!2d74.3432!3d31.5122!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3919045a2820a28b%3A0x62955f1f9e2b1!2sHafeez%20Centre!5e0!3m2!1sen!2spk!4v1700000000000"
@@ -257,7 +257,7 @@ export const ContactPage: React.FC = () => {
             </div>
 
             {/* Quick FAQ Shortcut Banner */}
-            <div className="bg-gradient-to-r from-emerald-950 via-[#052212] to-[#030e07] border border-emerald-800/60 rounded-3xl p-6 flex items-center justify-between gap-4">
+            <div className="bg-gradient-to-r from-[#1c1c1c] via-[#222222] to-[#161616] border border-emerald-800/60 rounded-3xl p-6 flex items-center justify-between gap-4">
               <div className="space-y-1">
                 <h4 className="font-bold text-white text-sm flex items-center gap-1.5">
                   <HelpCircle className="w-4 h-4 text-emerald-400" /> Have a quick question?

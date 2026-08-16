@@ -63,10 +63,10 @@ export const OffCanvasDrawer: React.FC<OffCanvasDrawerProps> = ({
             transition={{ type: "spring", damping: 25, stiffness: 220 }}
             className={`fixed top-0 ${
               side === "left" ? "left-0 border-r" : "right-0 border-l"
-            } bottom-0 z-50 w-full sm:w-[360px] max-w-full bg-[#05140b] border-emerald-900/60 shadow-2xl flex flex-col h-[100dvh] max-h-[100dvh] overflow-hidden`}
+            } bottom-0 z-50 w-full sm:w-[360px] max-w-full bg-[#1c1c1c] border-emerald-900/60 shadow-2xl flex flex-col h-[100dvh] max-h-[100dvh] overflow-hidden`}
           >
             {/* Header */}
-            <div className="p-4 sm:p-5 border-b border-emerald-900/60 bg-[#030e07] flex items-center justify-between shrink-0">
+            <div className="p-4 sm:p-5 border-b border-emerald-900/60 bg-[#161616] flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2 text-white font-bold text-sm uppercase tracking-wider font-mono">
                 <SlidersHorizontal className="w-4 h-4 text-emerald-400" />
                 <span>{title}</span>

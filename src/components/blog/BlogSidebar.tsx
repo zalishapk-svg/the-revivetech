@@ -89,7 +89,7 @@ export const BlogSidebar: React.FC<BlogSidebarProps> = ({
               if (onSearchChange) onSearchChange(e.target.value);
             }}
             placeholder="Search guide, review..."
-            className="w-full bg-[#030e07] border border-emerald-900/60 rounded-xl pl-9 pr-3 py-2.5 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
+            className="w-full bg-[#161616] border border-emerald-900/60 rounded-xl pl-9 pr-3 py-2.5 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
           />
         </form>
       </div>
@@ -181,7 +181,7 @@ export const BlogSidebar: React.FC<BlogSidebarProps> = ({
                 className={`text-[11px] font-mono px-2.5 py-1 rounded-lg border transition-all cursor-pointer ${
                   selectedTag === t
                     ? "bg-emerald-500 text-slate-950 font-bold border-emerald-400"
-                    : "bg-[#030e07] text-slate-300 border-emerald-900/60 hover:border-emerald-500/60"
+                    : "bg-[#161616] text-slate-300 border-emerald-900/60 hover:border-emerald-500/60"
                 }`}
               >
                 #{t}
@@ -206,7 +206,7 @@ export const BlogSidebar: React.FC<BlogSidebarProps> = ({
             onChange={(e) => setNewsletterEmail(e.target.value)}
             placeholder="Your gaming email..."
             required
-            className="w-full bg-[#030e07] border border-emerald-900/60 rounded-xl px-3 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
+            className="w-full bg-[#161616] border border-emerald-900/60 rounded-xl px-3 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
           />
           <button
             type="submit"

@@ -161,7 +161,7 @@ export const SingleBlogPostPage: React.FC<SingleBlogPostPageProps> = ({ handle }
 
   if (loading) {
     return (
-      <div className="bg-[#030e07] text-slate-100 min-h-screen py-16">
+      <div className="bg-[#161616] text-slate-100 min-h-screen py-16">
         <div className="max-w-5xl mx-auto px-4 space-y-8 animate-pulse">
           <div className="h-4 w-32 bg-emerald-950/60 rounded" />
           <div className="h-12 w-3/4 bg-emerald-950/80 rounded-2xl" />
@@ -179,8 +179,8 @@ export const SingleBlogPostPage: React.FC<SingleBlogPostPageProps> = ({ handle }
 
   if (!article) {
     return (
-      <div className="bg-[#030e07] text-slate-100 min-h-screen py-20 flex items-center justify-center">
-        <div className="text-center space-y-4 bg-[#071910] border border-emerald-900/60 p-12 rounded-3xl max-w-md mx-auto shadow-2xl">
+      <div className="bg-[#161616] text-slate-100 min-h-screen py-20 flex items-center justify-center">
+        <div className="text-center space-y-4 bg-[#1c1c1c] border border-emerald-900/60 p-12 rounded-3xl max-w-md mx-auto shadow-2xl">
           <BookOpen className="w-12 h-12 text-emerald-500 mx-auto" />
           <h2 className="text-2xl font-black text-white">Article Not Found</h2>
           <p className="text-xs text-slate-400">The requested blog post could not be retrieved from Shopify Storefront.</p>
@@ -198,7 +198,7 @@ export const SingleBlogPostPage: React.FC<SingleBlogPostPageProps> = ({ handle }
   const category = article.tags && article.tags.length > 0 ? article.tags[0] : "Hardware Review";
 
   return (
-    <article className="bg-[#030e07] text-slate-100 min-h-screen py-10 selection:bg-emerald-500 selection:text-slate-950">
+    <article className="bg-[#161616] text-slate-100 min-h-screen py-10 selection:bg-emerald-500 selection:text-slate-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
         
         {/* Header Breadcrumb Navigation */}
@@ -262,7 +262,7 @@ export const SingleBlogPostPage: React.FC<SingleBlogPostPageProps> = ({ handle }
               referrerPolicy="no-referrer" 
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#030e07] via-transparent to-transparent opacity-60" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#161616] via-transparent to-transparent opacity-60" />
           </div>
         )}
 
@@ -273,7 +273,7 @@ export const SingleBlogPostPage: React.FC<SingleBlogPostPageProps> = ({ handle }
           <main className="lg:col-span-8 space-y-10">
             
             {/* Rich Text Editorial Body */}
-            <div className="bg-[#071910] border border-emerald-900/50 p-6 sm:p-10 rounded-3xl text-slate-200 text-base sm:text-lg leading-relaxed shadow-xl space-y-6">
+            <div className="bg-[#1c1c1c] border border-emerald-900/50 p-6 sm:p-10 rounded-3xl text-slate-200 text-base sm:text-lg leading-relaxed shadow-xl space-y-6">
               <div 
                 className="blog-content prose prose-invert prose-emerald max-w-none prose-p:leading-relaxed prose-p:text-slate-300 prose-headings:text-white prose-a:text-emerald-400 prose-a:no-underline hover:prose-a:underline prose-strong:text-white prose-blockquote:border-emerald-500 prose-blockquote:bg-emerald-950/40 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r-xl prose-li:text-slate-300"
                 dangerouslySetInnerHTML={{ __html: processedContentHtml }}
@@ -281,7 +281,7 @@ export const SingleBlogPostPage: React.FC<SingleBlogPostPageProps> = ({ handle }
             </div>
 
             {/* Social Sharing & Tags */}
-            <div className="bg-[#071910] border border-emerald-900/40 p-6 rounded-2xl flex flex-wrap items-center justify-between gap-4 shadow-lg">
+            <div className="bg-[#1c1c1c] border border-emerald-900/40 p-6 rounded-2xl flex flex-wrap items-center justify-between gap-4 shadow-lg">
               <div className="flex items-center gap-2">
                 <Tag className="w-4 h-4 text-emerald-400" />
                 <span className="text-xs font-mono text-slate-400 uppercase font-bold">Topics:</span>
@@ -332,7 +332,7 @@ export const SingleBlogPostPage: React.FC<SingleBlogPostPageProps> = ({ handle }
             </div>
 
             {/* Author Profile Box */}
-            <div className="bg-[#071910] border border-emerald-900/50 p-6 rounded-3xl flex items-center gap-5 shadow-xl">
+            <div className="bg-[#1c1c1c] border border-emerald-900/50 p-6 rounded-3xl flex items-center gap-5 shadow-xl">
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-800 flex items-center justify-center text-slate-950 font-black text-2xl shrink-0 shadow-md">
                 {(article.author || "TR")[0]}
               </div>
@@ -350,7 +350,7 @@ export const SingleBlogPostPage: React.FC<SingleBlogPostPageProps> = ({ handle }
               {prevArticle ? (
                 <button
                   onClick={() => navigateToArticle(prevArticle.handle)}
-                  className="bg-[#071910] border border-emerald-900/50 p-4 rounded-2xl text-left hover:border-emerald-500 transition-all group space-y-1"
+                  className="bg-[#1c1c1c] border border-emerald-900/50 p-4 rounded-2xl text-left hover:border-emerald-500 transition-all group space-y-1"
                 >
                   <span className="text-[10px] font-mono text-emerald-400 font-bold uppercase flex items-center gap-1">
                     <ArrowLeft className="w-3 h-3" /> Previous Article
@@ -364,7 +364,7 @@ export const SingleBlogPostPage: React.FC<SingleBlogPostPageProps> = ({ handle }
               {nextArticle && (
                 <button
                   onClick={() => navigateToArticle(nextArticle.handle)}
-                  className="bg-[#071910] border border-emerald-900/50 p-4 rounded-2xl text-right hover:border-emerald-500 transition-all group space-y-1 ml-auto w-full"
+                  className="bg-[#1c1c1c] border border-emerald-900/50 p-4 rounded-2xl text-right hover:border-emerald-500 transition-all group space-y-1 ml-auto w-full"
                 >
                   <span className="text-[10px] font-mono text-emerald-400 font-bold uppercase flex items-center justify-end gap-1">
                     Next Article <ArrowRight className="w-3 h-3" />
@@ -379,7 +379,7 @@ export const SingleBlogPostPage: React.FC<SingleBlogPostPageProps> = ({ handle }
           </main>
 
           {/* Mobile Table of Contents / Sidebar Trigger */}
-          <div className="lg:hidden mb-6 flex items-center justify-between bg-[#071910] border border-emerald-900/60 p-3.5 rounded-2xl">
+          <div className="lg:hidden mb-6 flex items-center justify-between bg-[#1c1c1c] border border-emerald-900/60 p-3.5 rounded-2xl">
             <button
               onClick={() => setIsMobileDrawerOpen(true)}
               className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer"
@@ -396,7 +396,7 @@ export const SingleBlogPostPage: React.FC<SingleBlogPostPageProps> = ({ handle }
           <aside className="hidden lg:block lg:col-span-4 space-y-6 lg:sticky lg:top-24">
             {/* Table of Contents */}
             {tocItems.length > 0 && (
-              <div className="bg-[#071910] border border-emerald-900/50 rounded-3xl p-6 shadow-xl space-y-3">
+              <div className="bg-[#1c1c1c] border border-emerald-900/50 rounded-3xl p-6 shadow-xl space-y-3">
                 <div className="flex items-center gap-2 text-xs font-mono font-bold text-emerald-400 uppercase tracking-widest border-b border-emerald-900/60 pb-2">
                   <List className="w-4 h-4 text-emerald-400" />
                   Table of Contents
@@ -430,7 +430,7 @@ export const SingleBlogPostPage: React.FC<SingleBlogPostPageProps> = ({ handle }
             title="Article Navigation & Search"
           >
             {tocItems.length > 0 && (
-              <div className="bg-[#071910] border border-emerald-900/50 rounded-3xl p-5 shadow-xl space-y-3">
+              <div className="bg-[#1c1c1c] border border-emerald-900/50 rounded-3xl p-5 shadow-xl space-y-3">
                 <div className="flex items-center gap-2 text-xs font-mono font-bold text-emerald-400 uppercase tracking-widest border-b border-emerald-900/60 pb-2">
                   <List className="w-4 h-4 text-emerald-400" />
                   Table of Contents
@@ -485,7 +485,7 @@ export const SingleBlogPostPage: React.FC<SingleBlogPostPageProps> = ({ handle }
                 <div
                   key={rel.id}
                   onClick={() => navigateToArticle(rel.handle)}
-                  className="bg-[#071910] border border-emerald-900/50 rounded-2xl overflow-hidden hover:border-emerald-500 transition-all group cursor-pointer shadow-xl flex flex-col"
+                  className="bg-[#1c1c1c] border border-emerald-900/50 rounded-2xl overflow-hidden hover:border-emerald-500 transition-all group cursor-pointer shadow-xl flex flex-col"
                 >
                   <div className="aspect-video bg-slate-900 overflow-hidden relative">
                     {rel.image ? (

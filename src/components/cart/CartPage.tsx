@@ -21,8 +21,8 @@ export const CartPage: React.FC = () => {
 
   if (cartLines.length === 0) {
     return (
-      <div className="w-full bg-[#030e07] text-slate-100 min-h-screen py-16 px-4 flex items-center justify-center">
-        <div className="max-w-md w-full bg-[#05140b] border border-emerald-900/40 rounded-3xl p-10 text-center space-y-6 shadow-2xl">
+      <div className="w-full bg-[#161616] text-slate-100 min-h-screen py-16 px-4 flex items-center justify-center">
+        <div className="max-w-md w-full bg-[#1c1c1c] border border-emerald-900/40 rounded-3xl p-10 text-center space-y-6 shadow-2xl">
           <div className="w-20 h-20 bg-emerald-950/80 rounded-full border border-emerald-800/60 flex items-center justify-center mx-auto text-emerald-400">
             <ShoppingBag className="w-10 h-10" />
           </div>
@@ -44,7 +44,7 @@ export const CartPage: React.FC = () => {
   }
 
   return (
-    <div className="w-full bg-[#030e07] text-slate-100 min-h-screen py-10 px-4 sm:px-6 lg:px-8">
+    <div className="w-full bg-[#161616] text-slate-100 min-h-screen py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto space-y-8">
         
         {/* Breadcrumb */}
@@ -70,7 +70,7 @@ export const CartPage: React.FC = () => {
         </div>
 
         {/* Free Shipping Progress */}
-        <div className="bg-[#05140b] border border-emerald-900/40 rounded-2xl p-5 space-y-2 shadow-xl">
+        <div className="bg-[#1c1c1c] border border-emerald-900/40 rounded-2xl p-5 space-y-2 shadow-xl">
           <div className="flex items-center justify-between text-xs font-semibold">
             <span className="text-slate-200 flex items-center gap-1.5">
               <Truck className="w-4 h-4 text-emerald-400" /> Express Delivery in Pakistan
@@ -81,7 +81,7 @@ export const CartPage: React.FC = () => {
                 : "🎉 You qualify for FREE Express Shipping!"}
             </span>
           </div>
-          <div className="w-full h-2 bg-[#030e07] rounded-full overflow-hidden border border-emerald-900/60">
+          <div className="w-full h-2 bg-[#161616] rounded-full overflow-hidden border border-emerald-900/60">
             <div
               className="h-full bg-emerald-500 transition-all duration-500 rounded-full"
               style={{ width: `${freeShippingPct}%` }}
@@ -100,13 +100,13 @@ export const CartPage: React.FC = () => {
               return (
                 <div
                   key={line.id}
-                  className="bg-[#05140b] border border-emerald-900/40 rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row items-center gap-4 sm:gap-6 shadow-xl"
+                  className="bg-[#1c1c1c] border border-emerald-900/40 rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row items-center gap-4 sm:gap-6 shadow-xl"
                 >
                   <img
                     src={getOptimizedImageUrl(line.merchandise.image?.url, 200)}
                     alt={line.merchandise.product.title}
                     loading="lazy"
-                    className="w-20 h-20 object-contain bg-[#030e07] rounded-xl p-2 border border-emerald-900/60 shrink-0"
+                    className="w-20 h-20 object-contain bg-[#161616] rounded-xl p-2 border border-emerald-900/60 shrink-0"
                   />
 
                   <div className="flex-1 space-y-1 text-center sm:text-left w-full">
@@ -120,7 +120,7 @@ export const CartPage: React.FC = () => {
 
                   {/* Quantity Modifier */}
                   <div className="flex items-center gap-3">
-                    <div className="flex items-center bg-[#030e07] border border-emerald-900/60 rounded-xl p-1">
+                    <div className="flex items-center bg-[#161616] border border-emerald-900/60 rounded-xl p-1">
                       <button
                         onClick={() => updateQuantity(line.id, line.quantity - 1)}
                         className="p-1.5 text-slate-400 hover:text-white transition-colors"
@@ -150,7 +150,7 @@ export const CartPage: React.FC = () => {
           </div>
 
           {/* Summary Column */}
-          <div className="bg-[#05140b] border border-emerald-900/40 rounded-3xl p-6 space-y-6 h-fit shadow-2xl">
+          <div className="bg-[#1c1c1c] border border-emerald-900/40 rounded-3xl p-6 space-y-6 h-fit shadow-2xl">
             <h3 className="font-bold text-white text-lg border-b border-emerald-900/40 pb-4">Order Summary</h3>
 
             {/* Discount Code Input */}
@@ -162,7 +162,7 @@ export const CartPage: React.FC = () => {
                   placeholder="Enter REVIVE10"
                   defaultValue={discountCode}
                   onChange={(e) => applyDiscountCode(e.target.value)}
-                  className="flex-1 bg-[#030e07] border border-emerald-900/60 rounded-xl px-3 py-2 text-xs text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 uppercase font-mono"
+                  className="flex-1 bg-[#161616] border border-emerald-900/60 rounded-xl px-3 py-2 text-xs text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 uppercase font-mono"
                 />
                 <button 
                   onClick={() => applyDiscountCode(discountCode || "REVIVE10")}
@@ -193,14 +193,14 @@ export const CartPage: React.FC = () => {
               )}
 
               <div className="flex justify-between text-slate-300">
-                <span>Estimated Shipping</span>
+                <span>Shipping</span>
                 <span className="font-mono text-emerald-400">
-                  {remainingForFreeShipping === 0 ? "FREE" : "Rs. 250"}
+                  {remainingForFreeShipping === 0 ? "FREE" : "Calculated at checkout"}
                 </span>
               </div>
 
               <div className="flex justify-between text-slate-100 font-bold text-base pt-3 border-t border-emerald-900/40">
-                <span>Total</span>
+                <span>Estimated Subtotal</span>
                 <span className="font-mono text-emerald-400 text-xl">{formatMoney(finalTotal)}</span>
               </div>
             </div>
@@ -208,9 +208,20 @@ export const CartPage: React.FC = () => {
             {/* Checkout Button */}
             <button
               onClick={handleCheckout}
-              className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-4 rounded-2xl text-xs uppercase tracking-wider transition-colors flex items-center justify-center gap-2 shadow-xl cursor-pointer"
+              disabled={isCheckingOut}
+              className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-75 disabled:cursor-not-allowed text-slate-950 font-bold py-4 rounded-2xl text-xs uppercase tracking-wider transition-colors flex items-center justify-center gap-2 shadow-xl cursor-pointer"
             >
-              <Lock className="w-4 h-4" /> Proceed to Checkout (COD)
+              {isCheckingOut ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin text-slate-950" />
+                  <span>Redirecting to Shopify...</span>
+                </>
+              ) : (
+                <>
+                  <Lock className="w-4 h-4" />
+                  <span>Proceed to Official Checkout</span>
+                </>
+              )}
             </button>
 
             {/* Trust Badges */}

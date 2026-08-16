@@ -49,7 +49,7 @@ export const CompareDrawer: React.FC = () => {
           animate={{ y: 0 }}
           exit={{ y: "100%" }}
           transition={{ type: "spring", damping: 25, stiffness: 220 }}
-          className="relative w-full max-w-5xl bg-[#071910] border border-emerald-800/60 rounded-2xl p-5 shadow-2xl text-slate-100 z-50 overflow-hidden"
+          className="relative w-full max-w-5xl bg-[#1c1c1c] border border-emerald-800/60 rounded-2xl p-5 shadow-2xl text-slate-100 z-50 overflow-hidden"
         >
           <div className="flex items-center justify-between pb-3 border-b border-emerald-900/40 mb-4">
             <div className="flex items-center gap-2">

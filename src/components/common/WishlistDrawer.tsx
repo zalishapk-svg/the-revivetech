@@ -62,7 +62,7 @@ export const WishlistDrawer: React.FC = () => {
           animate={{ x: 0 }}
           exit={{ x: "100%" }}
           transition={{ type: "spring", damping: 25, stiffness: 220 }}
-          className="fixed top-0 right-0 bottom-0 z-50 w-full sm:w-[420px] max-w-full bg-[#05140b] border-l border-emerald-900/40 text-slate-100 flex flex-col justify-between shadow-2xl h-[100dvh] max-h-[100dvh] overflow-hidden"
+          className="fixed top-0 right-0 bottom-0 z-50 w-full sm:w-[420px] max-w-full bg-[#1c1c1c] border-l border-emerald-900/40 text-slate-100 flex flex-col justify-between shadow-2xl h-[100dvh] max-h-[100dvh] overflow-hidden"
         >
           {/* Header (Fixed top, shrink-0) */}
           <div className="p-4 sm:p-5 border-b border-emerald-900/40 bg-emerald-950/40 flex items-center justify-between shrink-0">

@@ -21,10 +21,10 @@ export const PromotionalMarquee: React.FC<PromotionalMarqueeProps> = ({
   return (
     <div className={`my-6 relative overflow-hidden py-2 ${className}`}>
       {/* Background Glow Field */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.12)_0%,transparent_75%)] pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(192,254,45,0.12)_0%,transparent_75%)] pointer-events-none" />
 
       {/* SINGLE MARQUEE HEADLINE */}
-      <div className="w-[104%] -ml-[2%] bg-gradient-to-r from-[#02180c] via-[#064e29] to-[#011409] border-y border-emerald-400/50 shadow-[0_4px_20px_rgba(16,185,129,0.25)] py-3 relative z-10 overflow-hidden">
+      <div className="w-[104%] -ml-[2%] bg-gradient-to-r from-[#161616] via-[#24330e] to-[#161616] border-y border-[#C0FE2D]/40 shadow-[0_4px_20px_rgba(192,254,45,0.2)] py-3 relative z-10 overflow-hidden">
         <div className="flex whitespace-nowrap animate-marquee-left items-center gap-8">
           {[...Array(4)].map((_, loopIdx) => (
             <div key={`marquee-${loopIdx}`} className="flex items-center gap-8 shrink-0">
@@ -32,7 +32,7 @@ export const PromotionalMarquee: React.FC<PromotionalMarqueeProps> = ({
                 const Icon = item.icon;
                 return (
                   <div key={itemIdx} className="flex items-center gap-2.5 text-slate-950 font-black font-mono text-xs sm:text-sm tracking-widest uppercase">
-                    <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-slate-950 flex items-center justify-center text-emerald-400 border border-emerald-500/40 shadow">
+                    <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-[#161616] flex items-center justify-center text-emerald-400 border border-emerald-500/40 shadow">
                       <Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                     </div>
                     <span className="text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">

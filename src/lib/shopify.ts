@@ -1,4 +1,4 @@
-import { Product, Collection, BlogArticle, Cart, Customer } from "../types";
+import { Product, Collection, BlogArticle, Cart, CartLineItem, Customer } from "../types";
 
 // GraphQL Query Strings for live Shopify Storefront API execution
 export const STOREFRONT_QUERIES = {
@@ -1208,5 +1208,238 @@ export async function getBlogArticleByHandleFromShopify(handle: string): Promise
       };
     }
   }
+  return null;
+}
+
+// -----------------------------------------------------------------------------
+// SHOPIFY STOREFRONT CART API (Standard Modern Headless Checkout Architecture)
+// -----------------------------------------------------------------------------
+
+/**
+ * Ensures variant ID is formatted as a valid Shopify GraphQL GID:
+ * gid://shopify/ProductVariant/<id>
+ */
+export function ensureVariantGid(id: string | number): string {
+  const str = String(id || "").trim();
+  if (str.startsWith("gid://shopify/ProductVariant/")) {
+    return str;
+  }
+  const digits = str.replace(/\D/g, "");
+  if (digits) {
+    return `gid://shopify/ProductVariant/${digits}`;
+  }
+  return str;
+}
+
+/**
+ * Transforms Shopify Storefront GraphQL cart response into the application Cart interface.
+ */
+export function transformShopifyCart(cartData: any): Cart | null {
+  if (!cartData || !cartData.id) return null;
+
+  const lines: CartLineItem[] =
+    cartData.lines?.edges?.map((edge: any) => {
+      const node = edge.node;
+      const merch = node.merchandise || {};
+      const prod = merch.product || {};
+      return {
+        id: node.id,
+        quantity: node.quantity || 1,
+        merchandise: {
+          id: merch.id || "",
+          title: merch.title || "Standard",
+          price: merch.price || { amount: "0.00", currencyCode: "PKR" },
+          image: merch.image || prod.featuredImage || null,
+          selectedOptions: merch.selectedOptions || [],
+          product: {
+            id: prod.id || "",
+            handle: prod.handle || "",
+            title: prod.title || "Product",
+            featuredImage: prod.featuredImage || null,
+            vendor: prod.vendor || "TheReviveTech",
+          },
+        },
+      };
+    }) || [];
+
+  return {
+    id: cartData.id,
+    checkoutUrl: cartData.checkoutUrl || "",
+    totalQuantity: cartData.totalQuantity || lines.reduce((sum, l) => sum + l.quantity, 0),
+    cost: {
+      subtotalAmount: cartData.cost?.subtotalAmount || { amount: "0.00", currencyCode: "PKR" },
+      totalAmount: cartData.cost?.totalAmount || { amount: "0.00", currencyCode: "PKR" },
+      totalTaxAmount: cartData.cost?.totalTaxAmount,
+    },
+    lines,
+  };
+}
+
+/**
+ * Creates a new Shopify Cart with optional initial line items.
+ */
+export async function createShopifyCart(
+  lines?: Array<{ merchandiseId: string; quantity: number }>
+): Promise<Cart | null> {
+  try {
+    const formattedLines = (lines || []).map((l) => ({
+      merchandiseId: ensureVariantGid(l.merchandiseId),
+      quantity: Math.max(1, l.quantity || 1),
+    }));
+
+    const result = await fetchShopifyGraphQL(STOREFRONT_QUERIES.CART_CREATE, {
+      input: {
+        lines: formattedLines,
+      },
+    });
+
+    if (result?.data?.cartCreate?.cart) {
+      return transformShopifyCart(result.data.cartCreate.cart);
+    }
+    if (result?.data?.cartCreate?.userErrors?.length) {
+      console.warn("Shopify cartCreate userErrors:", result.data.cartCreate.userErrors);
+    }
+  } catch (error) {
+    console.error("Failed to create Shopify cart:", error);
+  }
+  return null;
+}
+
+/**
+ * Retrieves an active cart from Shopify Storefront API by ID.
+ */
+export async function getShopifyCart(cartId: string): Promise<Cart | null> {
+  if (!cartId) return null;
+  try {
+    const result = await fetchShopifyGraphQL(STOREFRONT_QUERIES.GET_CART, { cartId });
+    if (result?.data?.cart) {
+      return transformShopifyCart(result.data.cart);
+    }
+  } catch (error) {
+    console.error("Failed to fetch Shopify cart:", error);
+  }
+  return null;
+}
+
+/**
+ * Adds line items to an existing Shopify Cart.
+ */
+export async function addLinesToShopifyCart(
+  cartId: string,
+  lines: Array<{ merchandiseId: string; quantity: number }>
+): Promise<Cart | null> {
+  if (!cartId) return null;
+  try {
+    const formattedLines = lines.map((l) => ({
+      merchandiseId: ensureVariantGid(l.merchandiseId),
+      quantity: Math.max(1, l.quantity || 1),
+    }));
+
+    const result = await fetchShopifyGraphQL(STOREFRONT_QUERIES.CART_LINES_ADD, {
+      cartId,
+      lines: formattedLines,
+    });
+
+    if (result?.data?.cartLinesAdd?.cart) {
+      return transformShopifyCart(result.data.cartLinesAdd.cart);
+    }
+    if (result?.data?.cartLinesAdd?.userErrors?.length) {
+      console.warn("Shopify cartLinesAdd userErrors:", result.data.cartLinesAdd.userErrors);
+    }
+  } catch (error) {
+    console.error("Failed adding lines to Shopify cart:", error);
+  }
+  return null;
+}
+
+/**
+ * Updates line item quantities in an existing Shopify Cart.
+ */
+export async function updateLinesInShopifyCart(
+  cartId: string,
+  lines: Array<{ id: string; quantity: number }>
+): Promise<Cart | null> {
+  if (!cartId) return null;
+  try {
+    const result = await fetchShopifyGraphQL(STOREFRONT_QUERIES.CART_LINES_UPDATE, {
+      cartId,
+      lines: lines.map((l) => ({ id: l.id, quantity: Math.max(0, l.quantity) })),
+    });
+
+    if (result?.data?.cartLinesUpdate?.cart) {
+      return transformShopifyCart(result.data.cartLinesUpdate.cart);
+    }
+  } catch (error) {
+    console.error("Failed updating lines in Shopify cart:", error);
+  }
+  return null;
+}
+
+/**
+ * Removes line items from an existing Shopify Cart.
+ */
+export async function removeLinesFromShopifyCart(
+  cartId: string,
+  lineIds: string[]
+): Promise<Cart | null> {
+  if (!cartId || !lineIds.length) return null;
+  try {
+    const result = await fetchShopifyGraphQL(STOREFRONT_QUERIES.CART_LINES_REMOVE, {
+      cartId,
+      lineIds,
+    });
+
+    if (result?.data?.cartLinesRemove?.cart) {
+      return transformShopifyCart(result.data.cartLinesRemove.cart);
+    }
+  } catch (error) {
+    console.error("Failed removing lines from Shopify cart:", error);
+  }
+  return null;
+}
+
+/**
+ * Primary checkout helper: Gets or creates the real Shopify Cart and returns its official checkoutUrl.
+ * No custom order creation, no OAuth, no Admin API dependency.
+ */
+export async function getOrCreateShopifyCartCheckoutUrl(
+  cartLines: CartLineItem[],
+  existingCartId?: string
+): Promise<{ checkoutUrl: string; cartId: string } | null> {
+  if (!cartLines || cartLines.length === 0) return null;
+
+  // Format line items with real Shopify variant IDs
+  const lines = cartLines.map((line) => ({
+    merchandiseId: ensureVariantGid(line.merchandise.id),
+    quantity: Math.max(1, line.quantity || 1),
+  }));
+
+  // If existing cart ID is present, verify if valid and has checkoutUrl
+  if (existingCartId) {
+    try {
+      const existingCart = await getShopifyCart(existingCartId);
+      if (existingCart && existingCart.checkoutUrl) {
+        return {
+          checkoutUrl: existingCart.checkoutUrl,
+          cartId: existingCart.id,
+        };
+      }
+    } catch (e) {
+      console.warn("Existing cart lookup failed, creating fresh cart:", e);
+    }
+  }
+
+  // Create fresh Shopify cart with current line items
+  const createdCart = await createShopifyCart(lines);
+  if (createdCart && createdCart.checkoutUrl) {
+    try {
+      localStorage.setItem("shopify_cart_id", createdCart.id);
+    } catch {}
+    return {
+      checkoutUrl: createdCart.checkoutUrl,
+      cartId: createdCart.id,
+    };
+  }
+
   return null;
 }

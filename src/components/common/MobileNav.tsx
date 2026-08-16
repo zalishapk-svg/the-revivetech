@@ -53,7 +53,7 @@ export const MobileNav: React.FC = () => {
       {/* BACKDROP */}
       <div
         onClick={onClose}
-        className={`fixed inset-0 z-[90] bg-slate-950/80 backdrop-blur-sm lg:hidden transition-opacity duration-300 ease-in-out ${
+        className={`fixed inset-0 z-[90] bg-[#161616]/80 backdrop-blur-sm lg:hidden transition-opacity duration-300 ease-in-out ${
           isMobileNavOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         }`}
         aria-hidden="true"
@@ -61,7 +61,7 @@ export const MobileNav: React.FC = () => {
 
       {/* OFF-CANVAS DRAWER */}
       <div
-        className={`fixed top-0 right-0 bottom-0 z-[100] lg:hidden w-[85vw] max-w-[380px] sm:w-[380px] bg-[#04120a] border-l border-emerald-900/50 text-slate-100 p-5 sm:p-6 flex flex-col justify-between overflow-y-auto shadow-2xl transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 right-0 bottom-0 z-[100] lg:hidden w-[85vw] max-w-[380px] sm:w-[380px] bg-[#1c1c1c] border-l border-emerald-900/50 text-slate-100 p-5 sm:p-6 flex flex-col justify-between overflow-y-auto shadow-2xl transition-transform duration-300 ease-in-out ${
           isMobileNavOpen ? "translate-x-0" : "translate-x-full"
         }`}
         style={{

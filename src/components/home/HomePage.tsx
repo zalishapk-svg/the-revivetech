@@ -16,7 +16,7 @@ import { FAQSection } from "./FAQSection";
 
 export const HomePage: React.FC = () => {
   return (
-    <div className="w-full bg-[#030705] text-slate-100">
+    <div className="w-full bg-[#161616] text-slate-100">
       {/* 1. HERO SLIDER */}
       <HeroSlider />
 

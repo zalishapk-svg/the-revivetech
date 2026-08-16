@@ -15,7 +15,7 @@ const BRANDS = [
 
 export const BrandMarquee: React.FC = () => {
   return (
-    <section className="py-8 bg-[#030a05] border-b border-emerald-900/40 text-slate-400 overflow-hidden select-none">
+    <section className="py-8 bg-[#161616] border-b border-emerald-900/40 text-slate-400 overflow-hidden select-none">
       <div className="flex w-full overflow-hidden">
         <div className="flex gap-12 animate-marquee whitespace-nowrap py-2">
           {BRANDS.concat(BRANDS).concat(BRANDS).map((brand, idx) => (

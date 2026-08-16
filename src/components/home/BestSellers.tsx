@@ -20,7 +20,7 @@ export const BestSellers: React.FC = () => {
   const displayProducts = bestSellerProducts.length > 0 ? bestSellerProducts : products.slice(0, 8);
 
   return (
-    <section className="py-16 bg-[#030e07] border-b border-emerald-900/40 text-slate-100">
+    <section className="py-16 bg-[#161616] border-b border-emerald-900/40 text-slate-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}

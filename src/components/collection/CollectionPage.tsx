@@ -283,7 +283,7 @@ export const CollectionPage: React.FC<CollectionPageProps> = ({ handle }) => {
   );
 
   return (
-    <div className="bg-[#030e07] text-slate-100 min-h-screen py-8 sm:py-10">
+    <div className="bg-[#161616] text-slate-100 min-h-screen py-8 sm:py-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         
         {/* Banner Header */}
@@ -297,7 +297,7 @@ export const CollectionPage: React.FC<CollectionPageProps> = ({ handle }) => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
           {/* Desktop Sticky Sidebar */}
-          <aside className="hidden lg:block lg:col-span-3 bg-[#071910] border border-emerald-800/40 p-6 rounded-3xl h-fit shadow-xl lg:sticky lg:top-24">
+          <aside className="hidden lg:block lg:col-span-3 bg-[#1c1c1c] border border-emerald-800/40 p-6 rounded-3xl h-fit shadow-xl lg:sticky lg:top-24">
             {renderCollectionSidebar()}
           </aside>
 
@@ -314,7 +314,7 @@ export const CollectionPage: React.FC<CollectionPageProps> = ({ handle }) => {
           <main className="lg:col-span-9 space-y-6 w-full">
             
             {/* Top Toolbar */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#071910] border border-emerald-800/40 p-4 rounded-2xl text-xs font-mono shadow-md">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#1c1c1c] border border-emerald-800/40 p-4 rounded-2xl text-xs font-mono shadow-md">
               <div className="flex items-center justify-between w-full sm:w-auto gap-4">
                 {/* Mobile/Tablet Filter Trigger Button */}
                 <button
@@ -352,7 +352,7 @@ export const CollectionPage: React.FC<CollectionPageProps> = ({ handle }) => {
             {isLoadingCollection && baseProducts.length === 0 ? (
               <div className="grid grid-cols-2 gap-3 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {[...Array(6)].map((_, i) => (
-                  <div key={i} className="bg-[#071910] border border-emerald-900/40 rounded-2xl p-4 space-y-3 animate-pulse">
+                  <div key={i} className="bg-[#1c1c1c] border border-emerald-900/40 rounded-2xl p-4 space-y-3 animate-pulse">
                     <div className="aspect-square bg-emerald-950/60 rounded-xl" />
                     <div className="h-4 w-2/3 bg-emerald-950/50 rounded" />
                     <div className="h-3 w-full bg-emerald-950/30 rounded" />
@@ -360,7 +360,7 @@ export const CollectionPage: React.FC<CollectionPageProps> = ({ handle }) => {
                 ))}
               </div>
             ) : filteredProducts.length === 0 ? (
-              <div className="bg-[#071910] border border-emerald-800/40 rounded-3xl p-12 text-center space-y-3">
+              <div className="bg-[#1c1c1c] border border-emerald-800/40 rounded-3xl p-12 text-center space-y-3">
                 <Search className="w-10 h-10 text-emerald-500 mx-auto" />
                 <h3 className="text-lg font-bold text-white">No Products Found</h3>
                 <p className="text-xs text-slate-400">No hardware matching your active filter criteria was found in this collection.</p>
@@ -385,7 +385,7 @@ export const CollectionPage: React.FC<CollectionPageProps> = ({ handle }) => {
                 <button
                   disabled={currentPage === 1}
                   onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
-                  className="px-4 py-2 rounded-xl bg-[#071910] border border-emerald-900/60 text-xs font-mono font-bold text-slate-300 hover:bg-emerald-500 hover:text-slate-950 disabled:opacity-30 transition-all cursor-pointer disabled:cursor-not-allowed"
+                  className="px-4 py-2 rounded-xl bg-[#1c1c1c] border border-emerald-900/60 text-xs font-mono font-bold text-slate-300 hover:bg-emerald-500 hover:text-slate-950 disabled:opacity-30 transition-all cursor-pointer disabled:cursor-not-allowed"
                 >
                   ← Prev
                 </button>
@@ -397,7 +397,7 @@ export const CollectionPage: React.FC<CollectionPageProps> = ({ handle }) => {
                     className={`w-10 h-10 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer ${
                       currentPage === page
                         ? "bg-emerald-500 text-slate-950 font-black shadow-lg shadow-emerald-500/20"
-                        : "bg-[#071910] border border-emerald-900/60 text-slate-300 hover:bg-slate-800"
+                        : "bg-[#1c1c1c] border border-emerald-900/60 text-slate-300 hover:bg-slate-800"
                     }`}
                   >
                     {page}
@@ -407,7 +407,7 @@ export const CollectionPage: React.FC<CollectionPageProps> = ({ handle }) => {
                 <button
                   disabled={currentPage === totalPages}
                   onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
-                  className="px-4 py-2 rounded-xl bg-[#071910] border border-emerald-900/60 text-xs font-mono font-bold text-slate-300 hover:bg-emerald-500 hover:text-slate-950 disabled:opacity-30 transition-all cursor-pointer disabled:cursor-not-allowed"
+                  className="px-4 py-2 rounded-xl bg-[#1c1c1c] border border-emerald-900/60 text-xs font-mono font-bold text-slate-300 hover:bg-emerald-500 hover:text-slate-950 disabled:opacity-30 transition-all cursor-pointer disabled:cursor-not-allowed"
                 >
                   Next →
                 </button>

@@ -119,7 +119,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ handle }) => {
   const content = getLegalContent();
 
   return (
-    <div className="w-full bg-[#030e07] text-slate-100 min-h-screen py-10 px-4 sm:px-6 lg:px-8">
+    <div className="w-full bg-[#161616] text-slate-100 min-h-screen py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto space-y-8">
         
         {/* Breadcrumb */}
@@ -132,7 +132,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ handle }) => {
         </nav>
 
         {/* Header */}
-        <div className="bg-[#05140b] border border-emerald-900/40 rounded-3xl p-8 md:p-10 shadow-2xl flex items-center gap-6">
+        <div className="bg-[#1c1c1c] border border-emerald-900/40 rounded-3xl p-8 md:p-10 shadow-2xl flex items-center gap-6">
           <div className="w-14 h-14 rounded-2xl bg-emerald-950 border border-emerald-800/60 flex items-center justify-center shrink-0">
             {content.icon}
           </div>
@@ -143,7 +143,7 @@ export const LegalPage: React.FC<LegalPageProps> = ({ handle }) => {
         </div>
 
         {/* Content Body */}
-        <div className="bg-[#05140b] border border-emerald-900/40 rounded-3xl p-8 md:p-12 space-y-8 shadow-2xl">
+        <div className="bg-[#1c1c1c] border border-emerald-900/40 rounded-3xl p-8 md:p-12 space-y-8 shadow-2xl">
           {content.sections.map((sec, idx) => (
             <div key={idx} className="space-y-2 border-b border-emerald-900/30 pb-6 last:border-b-0 last:pb-0">
               <h3 className="text-base sm:text-lg font-bold text-emerald-400">{sec.heading}</h3>

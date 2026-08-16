@@ -88,7 +88,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className = "
       onClick={() => navigateToProduct(product.handle)}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className={`group/productcard relative bg-gradient-to-b from-[#082015] via-[#04140c] to-[#020b06] rounded-2xl overflow-hidden border border-emerald-900/50 transition-all duration-300 hover:border-emerald-500 hover:shadow-[0_12px_30px_rgba(16,185,129,0.15)] flex flex-col justify-between cursor-pointer h-full select-none ${className}`}
+      className={`group/productcard relative bg-gradient-to-b from-[#222222] via-[#1c1c1c] to-[#161616] rounded-2xl overflow-hidden border border-emerald-900/50 transition-all duration-300 hover:border-emerald-500 hover:shadow-[0_12px_30px_rgba(192,254,45,0.2)] flex flex-col justify-between cursor-pointer h-full select-none ${className}`}
     >
       {/* Badges */}
       <div className="absolute top-3 left-3 z-20 flex flex-col gap-1.5 pointer-events-none">
@@ -105,7 +105,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className = "
       </div>
 
       {/* Image Container with Hover Second Image Crossfade */}
-      <div className="relative aspect-square w-full overflow-hidden bg-[#020b05]/90">
+      <div className="relative aspect-square w-full overflow-hidden bg-[#1c1c1c]/90">
         {primaryImage ? (
           <>
             {/* Primary Image */}
@@ -152,7 +152,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className = "
             className={`p-1.5 sm:p-2.5 rounded-full shadow-xl border backdrop-blur-md transition-all duration-300 ease-out transform opacity-100 translate-y-0 scale-100 sm:opacity-0 sm:translate-y-4 sm:scale-90 sm:group-hover/productcard:opacity-100 sm:group-hover/productcard:translate-y-0 sm:group-hover/productcard:scale-100 delay-0 hover:scale-110 active:scale-95 focus:outline-none cursor-pointer ${
               isWishlisted
                 ? "bg-rose-500 text-white border-rose-400"
-                : "bg-slate-950/90 text-slate-200 hover:bg-emerald-500 hover:text-slate-950 border-emerald-500/40"
+                : "bg-[#1c1c1c]/90 text-slate-200 hover:bg-emerald-500 hover:text-slate-950 border-emerald-500/40"
             }`}
           >
             <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isWishlisted ? "fill-white" : ""}`} />
@@ -166,7 +166,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className = "
             className={`p-1.5 sm:p-2.5 rounded-full shadow-xl border backdrop-blur-md transition-all duration-300 ease-out transform opacity-100 translate-y-0 scale-100 sm:opacity-0 sm:translate-y-4 sm:scale-90 sm:group-hover/productcard:opacity-100 sm:group-hover/productcard:translate-y-0 sm:group-hover/productcard:scale-100 delay-75 hover:scale-110 active:scale-95 focus:outline-none cursor-pointer ${
               isCompared
                 ? "bg-amber-500 text-slate-950 border-amber-400 font-bold"
-                : "bg-slate-950/90 text-slate-200 hover:bg-emerald-500 hover:text-slate-950 border-emerald-500/40"
+                : "bg-[#1c1c1c]/90 text-slate-200 hover:bg-emerald-500 hover:text-slate-950 border-emerald-500/40"
             }`}
           >
             <Layers className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -177,7 +177,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className = "
             onClick={handleQuickView}
             aria-label="Quick View"
             title="Quick View"
-            className="p-1.5 sm:p-2.5 rounded-full bg-slate-950/90 text-slate-200 hover:bg-emerald-500 hover:text-slate-950 border border-emerald-500/40 backdrop-blur-md shadow-xl transition-all duration-300 ease-out transform opacity-100 translate-y-0 scale-100 sm:opacity-0 sm:translate-y-4 sm:scale-90 sm:group-hover/productcard:opacity-100 sm:group-hover/productcard:translate-y-0 sm:group-hover/productcard:scale-100 delay-100 hover:scale-110 active:scale-95 focus:outline-none cursor-pointer"
+            className="p-1.5 sm:p-2.5 rounded-full bg-[#1c1c1c]/90 text-slate-200 hover:bg-emerald-500 hover:text-slate-950 border border-emerald-500/40 backdrop-blur-md shadow-xl transition-all duration-300 ease-out transform opacity-100 translate-y-0 scale-100 sm:opacity-0 sm:translate-y-4 sm:scale-90 sm:group-hover/productcard:opacity-100 sm:group-hover/productcard:translate-y-0 sm:group-hover/productcard:scale-100 delay-100 hover:scale-110 active:scale-95 focus:outline-none cursor-pointer"
           >
             <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
@@ -190,10 +190,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, className = "
             title={product.availableForSale ? "Add to Cart" : "Out of Stock"}
             className={`p-1.5 sm:p-2.5 rounded-full shadow-xl border backdrop-blur-md transition-all duration-300 ease-out transform opacity-100 translate-y-0 scale-100 sm:opacity-0 sm:translate-y-4 sm:scale-90 sm:group-hover/productcard:opacity-100 sm:group-hover/productcard:translate-y-0 sm:group-hover/productcard:scale-100 delay-150 focus:outline-none ${
               !product.availableForSale
-                ? "bg-slate-950/90 text-slate-500 border-slate-800 cursor-not-allowed opacity-60"
+                ? "bg-[#1c1c1c]/90 text-slate-500 border-slate-800 cursor-not-allowed opacity-60"
                 : isAdded
                 ? "bg-emerald-500 text-slate-950 border-emerald-400 cursor-pointer hover:scale-110 active:scale-95"
-                : "bg-slate-950/90 text-slate-200 hover:bg-emerald-500 hover:text-slate-950 border-emerald-500/40 cursor-pointer hover:scale-110 active:scale-95"
+                : "bg-[#1c1c1c]/90 text-slate-200 hover:bg-emerald-500 hover:text-slate-950 border-emerald-500/40 cursor-pointer hover:scale-110 active:scale-95"
             }`}
           >
             {isAdded ? (

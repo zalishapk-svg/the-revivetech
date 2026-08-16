@@ -12,7 +12,7 @@ export const AnnouncementBar: React.FC = () => {
   const remainingForFreeShipping = Math.max(0, freeShippingThreshold - cartSubtotal);
 
   return (
-    <div className="bg-[#05140b] text-emerald-100 text-xs py-1.5 px-3 sm:px-4 border-b border-emerald-950/60 relative z-40">
+    <div className="bg-[#1c1c1c] text-emerald-100 text-xs py-1.5 px-3 sm:px-4 border-b border-emerald-950/60 relative z-40">
       
       {/* DESKTOP TOP BAR (Unchanged for lg screens) */}
       <div className="hidden lg:flex max-w-7xl mx-auto items-center justify-between gap-4">
@@ -61,7 +61,7 @@ export const AnnouncementBar: React.FC = () => {
       {/* MOBILE / TABLET SINGLE-LINE MARQUEE TOP BAR (< lg screens) */}
       <div className="lg:hidden flex items-center justify-between overflow-hidden h-6 text-xs select-none">
         {/* STATIC PROMO LABEL ON LEFT */}
-        <div className="flex items-center shrink-0 bg-[#05140b] pr-2 z-10 border-r border-emerald-900/40">
+        <div className="flex items-center shrink-0 bg-[#1c1c1c] pr-2 z-10 border-r border-emerald-900/40">
           <span className="bg-emerald-500/20 text-emerald-400 font-bold px-1.5 py-0.5 rounded text-[10px] tracking-wider uppercase border border-emerald-500/30">
             PROMO
           </span>
@@ -121,7 +121,7 @@ export const AnnouncementBar: React.FC = () => {
         {/* CLOSE BUTTON FIXED ON RIGHT */}
         <button
           onClick={() => setIsVisible(false)}
-          className="shrink-0 bg-[#05140b] pl-1.5 z-10 text-emerald-400/60 hover:text-emerald-300 p-0.5"
+          className="shrink-0 bg-[#1c1c1c] pl-1.5 z-10 text-emerald-400/60 hover:text-emerald-300 p-0.5"
           aria-label="Close Announcement"
         >
           <X className="w-3.5 h-3.5" />

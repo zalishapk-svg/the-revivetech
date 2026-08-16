@@ -52,7 +52,7 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
 
   if (!product) {
     return (
-      <div className="bg-[#030e07] text-slate-100 min-h-screen py-20 flex flex-col items-center justify-center space-y-4">
+      <div className="bg-[#161616] text-slate-100 min-h-screen py-20 flex flex-col items-center justify-center space-y-4">
         <div className="animate-spin w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full" />
         <p className="text-sm font-mono text-emerald-400">Loading product hardware details...</p>
       </div>
@@ -80,7 +80,7 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
   const relatedProducts = products.filter((p) => p.handle !== product.handle).slice(0, 4);
 
   return (
-    <div className="bg-[#030e07] text-slate-100 min-h-screen py-10">
+    <div className="bg-[#161616] text-slate-100 min-h-screen py-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         
         {/* Breadcrumb */}
@@ -132,7 +132,7 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
           </div>
 
           {/* Details Column */}
-          <div className="lg:col-span-5 space-y-6 bg-[#071910] border border-emerald-800/50 p-6 sm:p-8 rounded-3xl shadow-xl">
+          <div className="lg:col-span-5 space-y-6 bg-[#1c1c1c] border border-emerald-800/50 p-6 sm:p-8 rounded-3xl shadow-xl">
             <div>
               <span className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-widest bg-emerald-950 px-2.5 py-1 rounded border border-emerald-800/40">
                 {product.vendor}
@@ -265,7 +265,7 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
         </div>
 
         {/* Product Specs & Tabs */}
-        <div className="bg-[#071910] border border-emerald-800/50 rounded-3xl p-6 sm:p-8 space-y-6">
+        <div className="bg-[#1c1c1c] border border-emerald-800/50 rounded-3xl p-6 sm:p-8 space-y-6">
           <div className="flex border-b border-emerald-900/40 gap-6 text-sm font-bold font-mono">
             <button
               onClick={() => setActiveTab("overview")}

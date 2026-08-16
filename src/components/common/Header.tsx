@@ -40,7 +40,7 @@ export const Header: React.FC = () => {
   const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 bg-[#030705]/95 backdrop-blur-md border-b border-emerald-900/40 text-slate-100 transition-all">
+    <header className="sticky top-0 z-50 bg-[#161616]/95 backdrop-blur-md border-b border-emerald-900/40 text-slate-100 transition-all">
       <div className="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20 gap-2">
           

@@ -18,7 +18,7 @@ export const LatestBlog: React.FC = () => {
 
   return (
     <section
-      className="py-14 bg-slate-950 border-b border-emerald-900/30 text-slate-100 overflow-hidden"
+      className="py-14 bg-[#161616] border-b border-emerald-900/30 text-slate-100 overflow-hidden"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
@@ -51,14 +51,14 @@ export const LatestBlog: React.FC = () => {
               <button
                 onClick={() => scroll("left")}
                 aria-label="Previous articles"
-                className="p-2 rounded-lg bg-slate-900 hover:bg-emerald-500 hover:text-slate-950 text-slate-300 border border-emerald-900/40 transition-colors focus:outline-none"
+                className="p-2 rounded-lg bg-[#1c1c1c] hover:bg-emerald-500 hover:text-slate-950 text-slate-300 border border-emerald-900/40 transition-colors focus:outline-none"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <button
                 onClick={() => scroll("right")}
                 aria-label="Next articles"
-                className="p-2 rounded-lg bg-slate-900 hover:bg-emerald-500 hover:text-slate-950 text-slate-300 border border-emerald-900/40 transition-colors focus:outline-none"
+                className="p-2 rounded-lg bg-[#1c1c1c] hover:bg-emerald-500 hover:text-slate-950 text-slate-300 border border-emerald-900/40 transition-colors focus:outline-none"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -76,9 +76,9 @@ export const LatestBlog: React.FC = () => {
             <div
               key={art.id}
               onClick={() => navigateToArticle(art.handle)}
-              className="min-w-[280px] sm:min-w-[340px] max-w-[360px] bg-slate-900 border border-emerald-900/40 rounded-2xl overflow-hidden cursor-pointer group/blogcard hover:border-emerald-500/60 transition-all flex flex-col justify-between"
+              className="min-w-[280px] sm:min-w-[340px] max-w-[360px] bg-[#1c1c1c] border border-emerald-900/40 rounded-2xl overflow-hidden cursor-pointer group/blogcard hover:border-emerald-500/60 transition-all flex flex-col justify-between"
             >
-              <div className="aspect-video bg-slate-950 overflow-hidden relative">
+              <div className="aspect-video bg-[#161616] overflow-hidden relative">
                 {art.image ? (
                   <img
                     src={art.image.url}

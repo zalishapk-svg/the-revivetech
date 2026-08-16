@@ -15,11 +15,11 @@ export const NewsletterSection: React.FC = () => {
   };
 
   return (
-    <section className="py-20 bg-gradient-to-b from-[#030e07] to-[#010804] text-slate-100 relative overflow-hidden">
+    <section className="py-20 bg-[#161616] text-slate-100 relative overflow-hidden">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
         
-        <div className="bg-[#071910] border border-emerald-800/60 rounded-3xl p-8 sm:p-12 shadow-2xl space-y-6">
-          <div className="w-12 h-12 bg-emerald-950 rounded-2xl flex items-center justify-center text-emerald-400 mx-auto border border-emerald-800/40">
+        <div className="bg-[#1c1c1c] border border-emerald-800/60 rounded-3xl p-8 sm:p-12 shadow-2xl space-y-6">
+          <div className="w-12 h-12 bg-[#161616] rounded-2xl flex items-center justify-center text-emerald-400 mx-auto border border-emerald-800/40">
             <Zap className="w-6 h-6 fill-emerald-400" />
           </div>
 
@@ -38,7 +38,7 @@ export const NewsletterSection: React.FC = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your gamer email"
-              className="flex-1 px-4 py-3 bg-slate-950 border border-emerald-800/40 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+              className="flex-1 px-4 py-3 bg-[#161616] border border-emerald-800/40 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
             />
             <button
               type="submit"
