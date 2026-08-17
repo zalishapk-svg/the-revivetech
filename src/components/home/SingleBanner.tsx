@@ -1,25 +1,30 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { useShopify } from "../../context/ShopifyContext";
 
 export const SingleBanner: React.FC = () => {
+  const { navigateToCollection } = useShopify();
   const imageUrl = "https://cdn.shopify.com/s/files/1/0610/4642/3631/files/govee.jpg?v=1786431339";
+  const collectionHandle = "neanoleaf-products-in-pakistan";
 
   return (
     <section className="w-full bg-[#161616] overflow-hidden my-2 border-t border-b border-emerald-900/30">
       <motion.a
-        href={imageUrl}
-        target="_blank"
-        rel="noopener noreferrer"
+        href={`/collections/${collectionHandle}`}
+        onClick={(e) => {
+          e.preventDefault();
+          navigateToCollection(collectionHandle);
+        }}
         initial={{ opacity: 0, y: 15 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="block w-full cursor-pointer relative group overflow-hidden"
-        title="View Govee Collection"
+        title="View Ambient Lighting Collection"
       >
         <img
           src={imageUrl}
-          alt="Govee Ambient Lighting Banner"
+          alt="Ambient Lighting Banner"
           referrerPolicy="no-referrer"
           className="w-full h-auto object-cover sm:object-contain object-center transition-transform duration-700 group-hover:scale-[1.015]"
         />

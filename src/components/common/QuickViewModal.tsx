@@ -131,27 +131,35 @@ export const QuickViewModal: React.FC = () => {
                 {product.description}
               </p>
 
-              {/* Variant Selector */}
-              {product.options && product.options.length > 0 && (
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-300">{product.options[0].name}:</label>
-                  <div className="flex flex-wrap gap-2">
-                    {product.options[0].values.map((val, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setSelectedVariantId(product.variants[idx]?.id)}
-                        className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all ${
-                          selectedVariantId === product.variants[idx]?.id || idx === 0
-                            ? "bg-emerald-500 text-slate-950 border-emerald-400 font-bold"
-                            : "bg-emerald-950/40 text-slate-300 border-emerald-800/40 hover:border-emerald-500/40"
-                        }`}
-                      >
-                        {val}
-                      </button>
-                    ))}
+              {/* Variant Selector - Only show if real variants exist */}
+              {(() => {
+                const opt = product.options?.[0];
+                if (!opt) return null;
+                const isDefaultTitle = opt.name.toLowerCase() === "title" && opt.values.every(v => v.toLowerCase() === "default title" || v.toLowerCase() === "default");
+                const isSingleDefault = opt.values.length === 1 && (opt.values[0].toLowerCase() === "default title" || opt.values[0].toLowerCase() === "default");
+                if (isDefaultTitle || isSingleDefault) return null;
+
+                return (
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-300">{opt.name}:</label>
+                    <div className="flex flex-wrap gap-2">
+                      {opt.values.map((val, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setSelectedVariantId(product.variants[idx]?.id)}
+                          className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
+                            selectedVariantId === product.variants[idx]?.id || idx === 0
+                              ? "bg-emerald-500 text-slate-950 border-emerald-400 font-bold"
+                              : "bg-emerald-950/40 text-slate-300 border-emerald-800/40 hover:border-emerald-500/40"
+                          }`}
+                        >
+                          {val}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               {/* Actions */}
               <div className="flex items-center gap-3 pt-2">

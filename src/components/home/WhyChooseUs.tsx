@@ -16,8 +16,8 @@ export const WhyChooseUs: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="bg-[#1c1c1c] border border-emerald-900/40 p-6 rounded-2xl text-center space-y-3">
             <Truck className="w-8 h-8 text-emerald-400 mx-auto" />
-            <h3 className="font-bold text-sm text-white uppercase">Free Express Shipping</h3>
-            <p className="text-xs text-slate-400">Complimentary 2-day air shipping on all orders over $200.</p>
+            <h3 className="font-bold text-sm text-white uppercase">Express Delivery</h3>
+            <p className="text-xs text-slate-400">Fast & tracked nationwide shipping across Pakistan.</p>
           </div>
 
           <div className="bg-[#1c1c1c] border border-emerald-900/40 p-6 rounded-2xl text-center space-y-3">

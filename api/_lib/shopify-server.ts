@@ -516,6 +516,13 @@ export function getConfig() {
         process.env.VITE_SHOPIFY_STORE_DOMAIN ||
         "dbbys1-nd.myshopify.com"
     ),
+    checkoutDomain: shopifyStorage.cleanDomain(
+      process.env.SHOPIFY_CHECKOUT_DOMAIN ||
+        process.env.VITE_SHOPIFY_CHECKOUT_DOMAIN ||
+        process.env.SHOPIFY_SHOP ||
+        process.env.SHOPIFY_STORE_DOMAIN ||
+        "dbbys1-nd.myshopify.com"
+    ),
     storefrontToken: (
       process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN ||
       process.env.SHOPIFY_STOREFRONT_TOKEN ||

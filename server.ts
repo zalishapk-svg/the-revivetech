@@ -756,6 +756,15 @@ app.get(["/api/shopify/order/:reference", "/api/order/:reference"], async (req, 
   }
 });
 
+// Direct Shopify Native Checkout Route Handler (Prevents SPA Interception)
+app.get(["/cart/c/*", "/checkouts/*", "/cart/:cartId/checkouts/*"], (req, res) => {
+  const config = getConfig();
+  const targetHost = config.checkoutDomain || config.storeDomain || "dbbys1-nd.myshopify.com";
+  const targetUrl = `https://${targetHost}${req.originalUrl}`;
+  console.log(`[Express Shopify Checkout] 302 Redirecting browser to Shopify Checkout: ${targetUrl}`);
+  res.redirect(302, targetUrl);
+});
+
 async function startServer() {
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({

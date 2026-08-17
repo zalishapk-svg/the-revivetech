@@ -15,6 +15,8 @@ import {
   Sparkles,
   Share2,
   Eye,
+  Cpu,
+  FileText,
 } from "lucide-react";
 import { ProductCarousel } from "../common/ProductCarousel";
 import { useShopify } from "../../context/ShopifyContext";
@@ -79,6 +81,16 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
 
   const relatedProducts = products.filter((p) => p.handle !== product.handle).slice(0, 4);
 
+  // Filter out default dummy options (e.g. name "Title" with value "Default Title")
+  const validOptions = useMemo(() => {
+    if (!product.options) return [];
+    return product.options.filter((opt) => {
+      const isTitleDefault = opt.name.toLowerCase() === "title" && opt.values.every((v) => v.toLowerCase() === "default title" || v.toLowerCase() === "default");
+      const isSingleDefaultValue = opt.values.length === 1 && (opt.values[0].toLowerCase() === "default title" || opt.values[0].toLowerCase() === "default");
+      return !isTitleDefault && !isSingleDefaultValue;
+    });
+  }, [product.options]);
+
   return (
     <div className="bg-[#161616] text-slate-100 min-h-screen py-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
@@ -115,12 +127,12 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
 
             {/* Thumbnail Row */}
             {images.length > 1 && (
-              <div className="flex gap-3 overflow-x-auto pb-2">
+              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none" style={{ scrollbarWidth: "none" }}>
                 {images.map((img, idx) => (
                   <button
                     key={idx}
                     onClick={() => setSelectedImageIdx(idx)}
-                    className={`w-20 h-20 rounded-xl overflow-hidden border-2 bg-[#1c1c1c] shrink-0 transition-all ${
+                    className={`w-20 h-20 rounded-xl overflow-hidden border-2 bg-[#1c1c1c] shrink-0 transition-all cursor-pointer ${
                       selectedImageIdx === idx ? "border-emerald-400 scale-105" : "border-emerald-900/40 hover:border-emerald-700"
                     }`}
                   >
@@ -168,35 +180,35 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
                   {formatMoney(compareAtAmount)}
                 </span>
               )}
-              {isAvailable ? (
-                <span className="ml-auto text-[11px] text-emerald-400 font-mono font-bold bg-emerald-950 px-2 py-0.5 rounded border border-emerald-800">
-                  In Stock & Ready to Dispatch
-                </span>
-              ) : (
+              {!isAvailable && (
                 <span className="ml-auto text-[11px] text-rose-400 font-mono font-bold bg-rose-950/80 px-2 py-0.5 rounded border border-rose-800">
                   Out of Stock
                 </span>
               )}
             </div>
 
-            {/* Variant Selector */}
-            {product.options && product.options.map((opt, oIdx) => (
+            {/* Variant Selector - Only shown if real variants exist */}
+            {validOptions.length > 0 && validOptions.map((opt, oIdx) => (
               <div key={oIdx} className="space-y-2">
                 <label className="text-xs font-bold text-slate-300 uppercase font-mono">{opt.name}:</label>
                 <div className="flex flex-wrap gap-2">
-                  {opt.values.map((val, vIdx) => (
-                    <button
-                      key={vIdx}
-                      onClick={() => setSelectedVariantId(product.variants[vIdx]?.id)}
-                      className={`px-3.5 py-2 text-xs font-bold rounded-xl border transition-all ${
-                        selectedVariantId === product.variants[vIdx]?.id || vIdx === 0
-                          ? "bg-emerald-500 text-slate-950 border-emerald-400 shadow-md"
-                          : "bg-[#161616] text-slate-300 border-emerald-900/40 hover:border-emerald-700"
-                      }`}
-                    >
-                      {val}
-                    </button>
-                  ))}
+                  {opt.values.map((val, vIdx) => {
+                    const variantForOpt = product.variants?.[vIdx] || product.variants?.[0];
+                    const isSelected = selectedVariantId === variantForOpt?.id || (vIdx === 0 && !selectedVariantId);
+                    return (
+                      <button
+                        key={vIdx}
+                        onClick={() => setSelectedVariantId(variantForOpt?.id)}
+                        className={`px-3.5 py-2 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
+                          isSelected
+                            ? "bg-emerald-500 text-slate-950 border-emerald-400 shadow-md"
+                            : "bg-[#161616] text-slate-300 border-emerald-900/40 hover:border-emerald-700"
+                        }`}
+                      >
+                        {val}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             ))}
@@ -205,9 +217,9 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
             <div className="space-y-3 pt-2">
               <div className="flex items-center gap-3">
                 <div className="flex items-center border border-emerald-800/60 rounded-xl bg-[#161616] overflow-hidden px-2 py-1">
-                  <button onClick={() => setQuantity((q) => Math.max(1, q - 1))} className="px-2 text-slate-300 font-bold hover:text-white">-</button>
+                  <button onClick={() => setQuantity((q) => Math.max(1, q - 1))} className="px-2 text-slate-300 font-bold hover:text-white cursor-pointer">-</button>
                   <span className="px-3 font-mono font-bold text-xs text-white">{quantity}</span>
-                  <button onClick={() => setQuantity((q) => q + 1)} className="px-2 text-slate-300 font-bold hover:text-white">+</button>
+                  <button onClick={() => setQuantity((q) => q + 1)} className="px-2 text-slate-300 font-bold hover:text-white cursor-pointer">+</button>
                 </div>
 
                 <button
@@ -226,7 +238,7 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => toggleWishlist(product.handle)}
-                  className={`flex-1 py-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-colors ${
+                  className={`flex-1 py-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer ${
                     isWishlisted ? "bg-rose-950/60 border-rose-500 text-rose-400" : "bg-[#161616] border-emerald-900/40 text-slate-300 hover:text-white"
                   }`}
                 >
@@ -235,7 +247,7 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
 
                 <button
                   onClick={() => toggleCompare(product.handle)}
-                  className={`flex-1 py-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-colors ${
+                  className={`flex-1 py-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer ${
                     isCompared ? "bg-amber-950/60 border-amber-500 text-amber-400" : "bg-[#161616] border-emerald-900/40 text-slate-300 hover:text-white"
                   }`}
                 >
@@ -264,32 +276,41 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
 
         </div>
 
-        {/* Product Specs & Tabs */}
-        <div className="bg-[#1c1c1c] border border-emerald-800/50 rounded-3xl p-6 sm:p-8 space-y-6">
-          <div className="flex border-b border-emerald-900/40 gap-6 text-sm font-bold font-mono">
+        {/* Product Specs & Tabs - Fully Responsive with Icons */}
+        <div className="bg-[#1c1c1c] border border-emerald-800/50 rounded-3xl p-4 sm:p-8 space-y-6">
+          <div className="flex border-b border-emerald-900/40 gap-2 sm:gap-6 text-xs sm:text-sm font-bold font-mono overflow-x-auto scrollbar-none" style={{ scrollbarWidth: "none" }}>
             <button
               onClick={() => setActiveTab("overview")}
-              className={`pb-3 border-b-2 transition-colors ${
+              className={`pb-3 border-b-2 transition-colors flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-0 shrink-0 cursor-pointer ${
                 activeTab === "overview" ? "border-emerald-400 text-emerald-400" : "border-transparent text-slate-400 hover:text-white"
               }`}
+              title="Overview & Architecture"
             >
-              Overview & Architecture
+              <Layers className="w-4 h-4 shrink-0" />
+              <span className="hidden sm:inline">Overview & Architecture</span>
+              <span className="sm:hidden">Overview</span>
             </button>
             <button
               onClick={() => setActiveTab("specs")}
-              className={`pb-3 border-b-2 transition-colors ${
+              className={`pb-3 border-b-2 transition-colors flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-0 shrink-0 cursor-pointer ${
                 activeTab === "specs" ? "border-emerald-400 text-emerald-400" : "border-transparent text-slate-400 hover:text-white"
               }`}
+              title="Full Specifications"
             >
-              Full Specifications
+              <Cpu className="w-4 h-4 shrink-0" />
+              <span className="hidden sm:inline">Full Specifications</span>
+              <span className="sm:hidden">Specs</span>
             </button>
             <button
               onClick={() => setActiveTab("reviews")}
-              className={`pb-3 border-b-2 transition-colors ${
+              className={`pb-3 border-b-2 transition-colors flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-0 shrink-0 cursor-pointer ${
                 activeTab === "reviews" ? "border-emerald-400 text-emerald-400" : "border-transparent text-slate-400 hover:text-white"
               }`}
+              title="Customer Reviews"
             >
-              Customer Reviews ({reviewSummary.totalReviews})
+              <Star className="w-4 h-4 shrink-0" />
+              <span className="hidden sm:inline">Customer Reviews ({reviewSummary.totalReviews})</span>
+              <span className="sm:hidden">Reviews ({reviewSummary.totalReviews})</span>
             </button>
           </div>
 

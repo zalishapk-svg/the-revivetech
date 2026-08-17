@@ -30,7 +30,7 @@ export const STOREFRONT_QUERIES = {
               maxVariantPrice { amount currencyCode }
             }
             featuredImage { id url altText width height }
-            images(first: 2) {
+            images(first: 20) {
               edges { node { id url altText width height } }
             }
             options { id name values }
@@ -75,7 +75,7 @@ export const STOREFRONT_QUERIES = {
           maxVariantPrice { amount currencyCode }
         }
         featuredImage { id url altText width height }
-        images(first: 10) {
+        images(first: 30) {
           edges { node { id url altText width height } }
         }
         options { id name values }
@@ -131,7 +131,7 @@ export const STOREFRONT_QUERIES = {
                     maxVariantPrice { amount currencyCode }
                   }
                   featuredImage { id url altText width height }
-                  images(first: 2) {
+                  images(first: 20) {
                     edges { node { id url altText width height } }
                   }
                   options { id name values }
@@ -189,7 +189,7 @@ export const STOREFRONT_QUERIES = {
                 maxVariantPrice { amount currencyCode }
               }
               featuredImage { id url altText width height }
-              images(first: 2) {
+              images(first: 20) {
                 edges { node { id url altText width height } }
               }
               options { id name values }
@@ -1401,6 +1401,7 @@ export async function removeLinesFromShopifyCart(
 /**
  * Primary checkout helper: Gets or creates the real Shopify Cart and returns its official checkoutUrl.
  * No custom order creation, no OAuth, no Admin API dependency.
+ * Returns the exact Storefront API Cart checkoutUrl untouched.
  */
 export async function getOrCreateShopifyCartCheckoutUrl(
   cartLines: CartLineItem[],

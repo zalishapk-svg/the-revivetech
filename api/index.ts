@@ -57,6 +57,56 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const rawUrl = req.url || "";
   const config = getConfig();
 
+  // -------------------------------------------------------------------------
+  // 0. SHOPIFY NATIVE CHECKOUT REDIRECT ROUTER
+  // -------------------------------------------------------------------------
+  // Intercepts /cart/c/*, /checkouts/*, and shopify-checkout-redirect requests on Vercel
+  // and redirects them directly to the Shopify checkout host without hitting the SPA.
+  if (
+    path === "shopify-checkout-redirect" ||
+    path.startsWith("cart/c/") ||
+    path.startsWith("checkouts/") ||
+    path.startsWith("cart/") ||
+    path === "checkout" ||
+    rawUrl.includes("/cart/c/") ||
+    rawUrl.includes("/checkouts/")
+  ) {
+    const targetHost = config.checkoutDomain || config.storeDomain || "dbbys1-nd.myshopify.com";
+    const originalUrl = (req.headers["x-forwarded-uri"] as string) || (req.headers["x-matched-path"] as string) || rawUrl;
+    
+    // Match the original checkout path
+    const pathMatch = originalUrl.match(/(\/cart\/c\/[^?#]+|\/checkouts\/[^?#]+|\/cart\/[^?#]+\/checkouts\/[^?#]+)/);
+    let targetPath = pathMatch ? pathMatch[0] : "";
+    if (!targetPath) {
+      if (typeof req.query.checkout_path === "string") {
+        targetPath = `/${req.query.checkout_path.replace(/^\/+/, "")}`;
+      } else if (path.startsWith("cart/c/") || path.startsWith("checkouts/") || path.startsWith("cart/")) {
+        targetPath = `/${path}`;
+      } else {
+        targetPath = "/cart";
+      }
+    }
+
+    // Build URL preserving all query params (key, _s, _y, etc.) intact
+    const dummyBase = `https://${targetHost}`;
+    let searchParamsStr = "";
+    try {
+      const parsedUrl = new URL(originalUrl, dummyBase);
+      parsedUrl.searchParams.delete("path");
+      parsedUrl.searchParams.delete("checkout_path");
+      searchParamsStr = parsedUrl.search;
+    } catch {
+      const queryIdx = originalUrl.indexOf("?");
+      if (queryIdx !== -1) {
+        searchParamsStr = originalUrl.substring(queryIdx);
+      }
+    }
+
+    const finalCheckoutUrl = `https://${targetHost}${targetPath}${searchParamsStr}`;
+    console.log(`[Shopify Checkout Redirect] Redirecting browser to native Shopify Checkout: ${finalCheckoutUrl}`);
+    return res.redirect(302, finalCheckoutUrl);
+  }
+
   try {
     // -------------------------------------------------------------------------
     // 1. HEALTH & DIAGNOSTIC ENDPOINTS

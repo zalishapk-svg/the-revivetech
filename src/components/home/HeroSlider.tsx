@@ -1,11 +1,13 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useShopify } from "../../context/ShopifyContext";
 
 interface Slide {
   id: number;
   image: string;
   url: string;
+  handle: string;
   alt: string;
 }
 
@@ -13,24 +15,28 @@ const HERO_SLIDES: Slide[] = [
   {
     id: 1,
     image: "https://cdn.shopify.com/s/files/1/0610/4642/3631/files/iems.png?v=1786431342",
-    url: "https://cdn.shopify.com/s/files/1/0610/4642/3631/files/iems.png?v=1786431342",
+    url: "/collections/iems-1",
+    handle: "iems-1",
     alt: "IEMs Collection Banner",
   },
   {
     id: 2,
     image: "https://cdn.shopify.com/s/files/1/0610/4642/3631/files/nanoleaf.jpg?v=1786431339",
-    url: "https://cdn.shopify.com/s/files/1/0610/4642/3631/files/nanoleaf.jpg?v=1786431339",
+    url: "/collections/neanoleaf-products-in-pakistan",
+    handle: "neanoleaf-products-in-pakistan",
     alt: "Nanoleaf Lighting Banner",
   },
   {
     id: 3,
     image: "https://cdn.shopify.com/s/files/1/0610/4642/3631/files/edifier_banner.jpg?v=1786431339",
-    url: "https://cdn.shopify.com/s/files/1/0610/4642/3631/files/edifier_banner.jpg?v=1786431339",
-    alt: "Edifier Audio Banner",
+    url: "/collections/headsets",
+    handle: "headsets",
+    alt: "Headsets Audio Banner",
   },
 ];
 
 export const HeroSlider: React.FC = () => {
+  const { navigateToCollection } = useShopify();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const touchStartX = useRef<number | null>(null);
@@ -90,8 +96,10 @@ export const HeroSlider: React.FC = () => {
           >
             <a
               href={activeSlide.url}
-              target="_blank"
-              rel="noopener noreferrer"
+              onClick={(e) => {
+                e.preventDefault();
+                navigateToCollection(activeSlide.handle);
+              }}
               className="block w-full h-full relative cursor-pointer"
               title={`View ${activeSlide.alt}`}
             >
@@ -112,7 +120,7 @@ export const HeroSlider: React.FC = () => {
             prevSlide();
           }}
           aria-label="Previous Slide"
-          className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-20 p-2.5 sm:p-3.5 rounded-full bg-[#1c1c1c]/80 hover:bg-emerald-500 text-white hover:text-slate-950 border border-emerald-500/30 backdrop-blur-md transition-all duration-300 opacity-80 group-hover:opacity-100 shadow-xl focus:outline-none"
+          className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-20 p-2.5 sm:p-3.5 rounded-full bg-[#1c1c1c]/80 hover:bg-emerald-500 text-white hover:text-slate-950 border border-emerald-500/30 backdrop-blur-md transition-all duration-300 opacity-80 group-hover:opacity-100 shadow-xl focus:outline-none cursor-pointer"
         >
           <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
         </button>
@@ -123,7 +131,7 @@ export const HeroSlider: React.FC = () => {
             nextSlide();
           }}
           aria-label="Next Slide"
-          className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-20 p-2.5 sm:p-3.5 rounded-full bg-[#1c1c1c]/80 hover:bg-emerald-500 text-white hover:text-slate-950 border border-emerald-500/30 backdrop-blur-md transition-all duration-300 opacity-80 group-hover:opacity-100 shadow-xl focus:outline-none"
+          className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-20 p-2.5 sm:p-3.5 rounded-full bg-[#1c1c1c]/80 hover:bg-emerald-500 text-white hover:text-slate-950 border border-emerald-500/30 backdrop-blur-md transition-all duration-300 opacity-80 group-hover:opacity-100 shadow-xl focus:outline-none cursor-pointer"
         >
           <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
         </button>
@@ -138,7 +146,7 @@ export const HeroSlider: React.FC = () => {
                 setCurrentSlide(idx);
               }}
               aria-label={`Go to slide ${idx + 1}`}
-              className={`h-2 rounded-full transition-all duration-300 focus:outline-none ${
+              className={`h-2 rounded-full transition-all duration-300 focus:outline-none cursor-pointer ${
                 idx === currentSlide
                   ? "w-8 sm:w-10 bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.8)]"
                   : "w-2 sm:w-2.5 bg-slate-400/40 hover:bg-slate-200"

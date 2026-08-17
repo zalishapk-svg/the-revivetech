@@ -12,6 +12,18 @@
       "destination": "/api/index?path=robots"
     },
     {
+      "source": "/cart/c/:path*",
+      "destination": "/api/index?path=shopify-checkout-redirect"
+    },
+    {
+      "source": "/checkouts/:path*",
+      "destination": "/api/index?path=shopify-checkout-redirect"
+    },
+    {
+      "source": "/cart/:cartId/checkouts/:path*",
+      "destination": "/api/index?path=shopify-checkout-redirect"
+    },
+    {
       "source": "/api/shopify/auth/callback",
       "destination": "/api/index?path=shopify/auth/callback"
     },

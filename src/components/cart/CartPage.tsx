@@ -63,30 +63,10 @@ export const CartPage: React.FC = () => {
           </h1>
           <button
             onClick={clearCart}
-            className="text-xs text-rose-400 hover:text-rose-300 font-mono flex items-center gap-1"
+            className="text-xs text-rose-400 hover:text-rose-300 font-mono flex items-center gap-1 cursor-pointer"
           >
             <Trash2 className="w-3.5 h-3.5" /> Clear Cart
           </button>
-        </div>
-
-        {/* Free Shipping Progress */}
-        <div className="bg-[#1c1c1c] border border-emerald-900/40 rounded-2xl p-5 space-y-2 shadow-xl">
-          <div className="flex items-center justify-between text-xs font-semibold">
-            <span className="text-slate-200 flex items-center gap-1.5">
-              <Truck className="w-4 h-4 text-emerald-400" /> Express Delivery in Pakistan
-            </span>
-            <span className="text-emerald-400 font-mono">
-              {remainingForFreeShipping > 0
-                ? `Add ${formatMoney(remainingForFreeShipping)} for FREE Shipping`
-                : "🎉 You qualify for FREE Express Shipping!"}
-            </span>
-          </div>
-          <div className="w-full h-2 bg-[#161616] rounded-full overflow-hidden border border-emerald-900/60">
-            <div
-              className="h-full bg-emerald-500 transition-all duration-500 rounded-full"
-              style={{ width: `${freeShippingPct}%` }}
-            />
-          </div>
         </div>
 
         {/* Cart Main Grid */}
@@ -96,6 +76,7 @@ export const CartPage: React.FC = () => {
           <div className="lg:col-span-2 space-y-4">
             {cartLines.map((line) => {
               const price = parseFloat(line.merchandise.price.amount);
+              const isDefaultTitle = !line.merchandise.title || line.merchandise.title.toLowerCase() === "default title" || line.merchandise.title.toLowerCase() === "default";
 
               return (
                 <div
@@ -112,7 +93,9 @@ export const CartPage: React.FC = () => {
                   <div className="flex-1 space-y-1 text-center sm:text-left w-full">
                     <span className="text-[10px] text-emerald-400 font-mono uppercase">{line.merchandise.product.vendor}</span>
                     <h4 className="font-bold text-white text-sm sm:text-base line-clamp-1">{line.merchandise.product.title}</h4>
-                    <p className="text-xs text-slate-400 font-mono">{line.merchandise.title}</p>
+                    {!isDefaultTitle && (
+                      <p className="text-xs text-slate-400 font-mono">{line.merchandise.title}</p>
+                    )}
                     <div className="font-mono font-bold text-emerald-400 text-sm sm:text-base pt-1">
                       {formatMoney(price)}
                     </div>
@@ -123,14 +106,14 @@ export const CartPage: React.FC = () => {
                     <div className="flex items-center bg-[#161616] border border-emerald-900/60 rounded-xl p-1">
                       <button
                         onClick={() => updateQuantity(line.id, line.quantity - 1)}
-                        className="p-1.5 text-slate-400 hover:text-white transition-colors"
+                        className="p-1.5 text-slate-400 hover:text-white transition-colors cursor-pointer"
                       >
                         <Minus className="w-3.5 h-3.5" />
                       </button>
                       <span className="w-8 text-center text-xs font-mono font-bold text-white">{line.quantity}</span>
                       <button
                         onClick={() => updateQuantity(line.id, line.quantity + 1)}
-                        className="p-1.5 text-slate-400 hover:text-white transition-colors"
+                        className="p-1.5 text-slate-400 hover:text-white transition-colors cursor-pointer"
                       >
                         <Plus className="w-3.5 h-3.5" />
                       </button>
@@ -138,7 +121,7 @@ export const CartPage: React.FC = () => {
 
                     <button
                       onClick={() => removeFromCart(line.id)}
-                      className="p-2 text-slate-500 hover:text-rose-400 transition-colors"
+                      className="p-2 text-slate-500 hover:text-rose-400 transition-colors cursor-pointer"
                       title="Remove Item"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -166,7 +149,7 @@ export const CartPage: React.FC = () => {
                 />
                 <button 
                   onClick={() => applyDiscountCode(discountCode || "REVIVE10")}
-                  className="bg-emerald-950 border border-emerald-800 text-emerald-400 px-4 py-2 rounded-xl text-xs font-bold hover:bg-emerald-900 transition-colors"
+                  className="bg-emerald-950 border border-emerald-800 text-emerald-400 px-4 py-2 rounded-xl text-xs font-bold hover:bg-emerald-900 transition-colors cursor-pointer"
                 >
                   Apply
                 </button>
@@ -195,7 +178,7 @@ export const CartPage: React.FC = () => {
               <div className="flex justify-between text-slate-300">
                 <span>Shipping</span>
                 <span className="font-mono text-emerald-400">
-                  {remainingForFreeShipping === 0 ? "FREE" : "Calculated at checkout"}
+                  Calculated on checkout
                 </span>
               </div>
 

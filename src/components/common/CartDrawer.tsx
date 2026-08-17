@@ -117,23 +117,13 @@ export const CartDrawer: React.FC = () => {
               </button>
             </div>
 
-            {/* Free Shipping Progress Bar */}
-            <div className="mt-3.5 bg-slate-900 p-3 rounded-xl border border-emerald-900/30">
-              <div className="flex items-center justify-between text-xs mb-1.5 font-medium gap-2">
-                <span className="flex items-center gap-1.5 text-slate-300 truncate">
-                  <Truck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                  <span className="truncate">
-                    {remainingForFreeShipping === 0 ? "Free Express Shipping Unlocked!" : `Add ${formatMoney(remainingForFreeShipping)} for Free Express Shipping`}
-                  </span>
-                </span>
-                <span className="font-mono text-emerald-400 font-bold shrink-0">{Math.round(freeShippingProgressPercent)}%</span>
-              </div>
-              <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
-                <div
-                  className="bg-gradient-to-r from-emerald-500 to-teal-400 h-full rounded-full transition-all duration-300"
-                  style={{ width: `${freeShippingProgressPercent}%` }}
-                />
-              </div>
+            {/* Delivery Info Banner */}
+            <div className="mt-3.5 bg-slate-900 p-3 rounded-xl border border-emerald-900/30 flex items-center justify-between text-xs">
+              <span className="flex items-center gap-1.5 text-slate-300">
+                <Truck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span>Express Tracked Delivery Across Pakistan</span>
+              </span>
+              <span className="text-emerald-400 font-mono font-medium text-[11px]">Nationwide</span>
             </div>
           </div>
 
@@ -185,9 +175,11 @@ export const CartDrawer: React.FC = () => {
                     <h4 className="text-xs font-bold text-white truncate">
                       {line.merchandise.product.title}
                     </h4>
-                    <p className="text-[11px] text-slate-400 mt-0.5">
-                      Variant: <span className="text-emerald-300 font-medium">{line.merchandise.title}</span>
-                    </p>
+                    {line.merchandise.title && line.merchandise.title.toLowerCase() !== "default title" && line.merchandise.title.toLowerCase() !== "default" && (
+                      <p className="text-[11px] text-slate-400 mt-0.5">
+                        Variant: <span className="text-emerald-300 font-medium">{line.merchandise.title}</span>
+                      </p>
+                    )}
                     <div className="flex items-center justify-between mt-2">
                       <span className="font-mono text-xs font-bold text-emerald-400">
                         {formatMoney(line.merchandise.price.amount)}
@@ -304,7 +296,7 @@ export const CartDrawer: React.FC = () => {
                 <div className="flex justify-between text-slate-400">
                   <span>Shipping</span>
                   <span className="text-emerald-400 font-medium">
-                    {remainingForFreeShipping === 0 ? "FREE" : "Calculated at checkout"}
+                    Calculated on checkout
                   </span>
                 </div>
                 <div className="flex justify-between text-sm font-bold text-white pt-2 border-t border-emerald-900/40">

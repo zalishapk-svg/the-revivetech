@@ -145,7 +145,14 @@ export function parseUrlToViewState(path: string, search: string): ViewState {
     if (handle) return { type: "product", handle };
   }
   if (cleanPath === "/cart") return { type: "cart" };
-  if (cleanPath === "/checkout") return { type: "checkout" };
+  if (
+    cleanPath === "/checkout" ||
+    cleanPath.startsWith("/cart/c/") ||
+    cleanPath.startsWith("/checkouts/") ||
+    (cleanPath.startsWith("/cart/") && cleanPath.includes("/checkouts"))
+  ) {
+    return { type: "checkout" };
+  }
   if (cleanPath.startsWith("/order-confirmation/")) {
     const orderReference = cleanPath.replace("/order-confirmation/", "");
     if (orderReference) return { type: "order_confirmation", orderReference };
@@ -238,6 +245,26 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    const path = window.location.pathname;
+    // If the browser loaded a Shopify checkout path directly, forward to Shopify Checkout host
+    if (
+      path.startsWith("/cart/c/") ||
+      path.startsWith("/checkouts/") ||
+      (path.startsWith("/cart/") && path.includes("/checkouts"))
+    ) {
+      const metaEnv = (import.meta as any)?.env || {};
+      const targetHost = (
+        metaEnv.VITE_SHOPIFY_CHECKOUT_DOMAIN ||
+        metaEnv.VITE_SHOPIFY_STORE_DOMAIN ||
+        storeDomain ||
+        "dbbys1-nd.myshopify.com"
+      ).trim().replace(/^https?:\/\//, "").replace(/\/$/, "");
+      const targetUrl = `https://${targetHost}${window.location.pathname}${window.location.search}${window.location.hash}`;
+      console.log("[Shopify SPA Router] Incoming checkout URL detected, forwarding directly to native Shopify Checkout:", targetUrl);
+      window.location.replace(targetUrl);
+      return;
+    }
+
     const handlePopState = () => {
       const newView = parseUrlToViewState(window.location.pathname, window.location.search);
       setViewStateInternal(newView);
@@ -756,14 +783,15 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
     try {
       const result = await getOrCreateShopifyCartCheckoutUrl(cartLines, shopifyCartId);
       if (result && result.checkoutUrl) {
+        const finalUrl = result.checkoutUrl;
         setShopifyCartId(result.cartId);
-        setCartCheckoutUrl(result.checkoutUrl);
+        setCartCheckoutUrl(finalUrl);
         try {
           localStorage.setItem("shopify_cart_id", result.cartId);
         } catch {}
 
-        // Immediate direct redirect to official Shopify Web Checkout
-        window.location.href = result.checkoutUrl;
+        // Immediate direct navigation to official Shopify Web Checkout
+        window.location.href = finalUrl;
         return;
       }
       showToast("Could not initiate Shopify checkout. Please try again.");
