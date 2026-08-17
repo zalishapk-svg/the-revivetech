@@ -9,7 +9,8 @@ export const TrendingCategories: React.FC = () => {
 
   const scroll = (direction: "left" | "right") => {
     if (scrollContainerRef.current) {
-      const scrollAmount = direction === "left" ? -280 : 280;
+      const containerWidth = scrollContainerRef.current.clientWidth;
+      const scrollAmount = direction === "left" ? -containerWidth * 0.75 : containerWidth * 0.75;
       scrollContainerRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
     }
   };
@@ -129,20 +130,20 @@ export const TrendingCategories: React.FC = () => {
           </div>
         </div>
 
-        {/* Circular Categories Track - 6 visible on desktop (lg) */}
+        {/* Circular Categories Track - 6 on desktop (lg), 4 on tablet (sm/md), 3 on mobile */}
         <div
           ref={scrollContainerRef}
-          className="flex gap-6 overflow-x-auto pb-4 scrollbar-none select-none snap-x"
+          className="flex gap-3 sm:gap-4 md:gap-5 lg:gap-6 overflow-x-auto pb-4 scrollbar-none select-none snap-x"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {orderedCollections.map((col) => (
             <div
               key={col.id}
               onClick={() => navigateToCollection(col.handle)}
-              className="min-w-[130px] sm:min-w-[150px] md:min-w-[160px] lg:w-[calc((100%-120px)/6)] shrink-0 group flex flex-col items-center text-center cursor-pointer snap-start"
+              className="w-[calc((100%-24px)/3)] sm:w-[calc((100%-48px)/4)] md:w-[calc((100%-60px)/4)] lg:w-[calc((100%-120px)/6)] shrink-0 group flex flex-col items-center text-center cursor-pointer snap-start"
             >
               {/* Circular Avatar Container */}
-              <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-30 md:h-30 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-full overflow-hidden border-2 border-emerald-900/50 group-hover:border-emerald-400 bg-[#1c1c1c] relative transition-all duration-300 shadow-md group-hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] p-1">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-30 lg:h-30 xl:w-36 xl:h-36 rounded-full overflow-hidden border-2 border-emerald-900/50 group-hover:border-emerald-400 bg-[#1c1c1c] relative transition-all duration-300 shadow-md group-hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] p-1">
                 <div className="w-full h-full rounded-full overflow-hidden bg-[#161616] relative">
                   {col.image ? (
                     <img
@@ -161,7 +162,7 @@ export const TrendingCategories: React.FC = () => {
               </div>
 
               {/* Category Title */}
-              <h3 className="mt-3 text-xs sm:text-sm font-bold text-slate-200 group-hover:text-emerald-400 transition-colors line-clamp-2 max-w-[140px]">
+              <h3 className="mt-2 sm:mt-3 text-[11px] sm:text-xs md:text-sm font-bold text-slate-200 group-hover:text-emerald-400 transition-colors line-clamp-2 w-full px-1">
                 {col.title}
               </h3>
             </div>
