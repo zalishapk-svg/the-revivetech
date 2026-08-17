@@ -868,6 +868,15 @@ export const MOCK_TECH_COLLECTIONS: Collection[] = [
     productsCount: 26,
     products: [MOCK_TECH_PRODUCTS[7]],
   },
+  {
+    id: "gid://shopify/Collection/2009",
+    handle: "features",
+    title: "Features",
+    description: "Featured gaming hardware, precision peripherals, and authentic accessories.",
+    image: { id: "col9", url: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1200&q=80", altText: "Features Collection" },
+    productsCount: MOCK_TECH_PRODUCTS.length,
+    products: MOCK_TECH_PRODUCTS,
+  },
 ];
 
 export const MOCK_BLOG_ARTICLES: BlogArticle[] = [
@@ -1147,6 +1156,13 @@ export async function getCollectionByHandleFromShopify(handle: string, options?:
     };
 
     return { collection: collectionObj, pageInfo };
+  }
+
+  const fallbackCol = MOCK_TECH_COLLECTIONS.find(
+    (c) => c.handle.toLowerCase() === handle.toLowerCase()
+  );
+  if (fallbackCol) {
+    return { collection: fallbackCol, pageInfo: { hasNextPage: false, endCursor: null } };
   }
 
   return { collection: null, pageInfo: { hasNextPage: false, endCursor: null } };

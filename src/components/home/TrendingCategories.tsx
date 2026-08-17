@@ -1,6 +1,7 @@
-import React, { useRef } from "react";
+import React, { useRef, useMemo } from "react";
 import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { useShopify } from "../../context/ShopifyContext";
+import { Collection } from "../../types";
 
 export const TrendingCategories: React.FC = () => {
   const { collections, navigateToCollection } = useShopify();
@@ -13,7 +14,86 @@ export const TrendingCategories: React.FC = () => {
     }
   };
 
-  if (!collections || collections.length === 0) return null;
+  // Priority ordering definition:
+  // 1. Headsets, 2. Keyboards, 3. Mice, 4. Microphones, 5. Gaming Chairs, 6. Speakers, 7. Buds, 8. Accessories
+  // Followed by all remaining existing collections in their current available order.
+  const orderedCollections = useMemo(() => {
+    if (!collections || collections.length === 0) return [];
+
+    const priorityMatchers: ((col: Collection) => boolean)[] = [
+      // 1. Headsets
+      (c) => {
+        const t = c.title.toLowerCase();
+        const h = c.handle.toLowerCase();
+        return t.includes("headset") || h.includes("headset");
+      },
+      // 2. Keyboards
+      (c) => {
+        const t = c.title.toLowerCase();
+        const h = c.handle.toLowerCase();
+        return t.includes("keyboard") || h.includes("keyboard");
+      },
+      // 3. Mice
+      (c) => {
+        const t = c.title.toLowerCase();
+        const h = c.handle.toLowerCase();
+        return t.includes("mice") || t.includes("mouse") || h.includes("mice") || h.includes("mouse");
+      },
+      // 4. Microphones
+      (c) => {
+        const t = c.title.toLowerCase();
+        const h = c.handle.toLowerCase();
+        return t.includes("microphone") || t.includes("mic") || h.includes("microphone") || h.includes("mic");
+      },
+      // 5. Gaming Chairs
+      (c) => {
+        const t = c.title.toLowerCase();
+        const h = c.handle.toLowerCase();
+        return t.includes("chair") || h.includes("chair");
+      },
+      // 6. Speakers
+      (c) => {
+        const t = c.title.toLowerCase();
+        const h = c.handle.toLowerCase();
+        return t.includes("speaker") || h.includes("speaker");
+      },
+      // 7. Buds
+      (c) => {
+        const t = c.title.toLowerCase();
+        const h = c.handle.toLowerCase();
+        return t.includes("bud") || h.includes("bud") || t.includes("iem") || h.includes("iem");
+      },
+      // 8. Accessories
+      (c) => {
+        const t = c.title.toLowerCase();
+        const h = c.handle.toLowerCase();
+        return t.includes("accessor") || h.includes("accessor");
+      },
+    ];
+
+    const matchedSet = new Set<string>();
+    const prioritized: Collection[] = [];
+
+    // Find and order priority categories 1 to 8
+    priorityMatchers.forEach((matcher) => {
+      const match = collections.find(
+        (col) => !matchedSet.has(col.id || col.handle) && matcher(col)
+      );
+      if (match) {
+        prioritized.push(match);
+        matchedSet.add(match.id || match.handle);
+      }
+    });
+
+    // Append all remaining existing collections in their current available order
+    const remaining = collections.filter(
+      (col) => !matchedSet.has(col.id || col.handle)
+    );
+
+    return [...prioritized, ...remaining];
+  }, [collections]);
+
+  if (!orderedCollections || orderedCollections.length === 0) return null;
 
   return (
     <section className="py-12 bg-[#161616] border-b border-emerald-900/30 text-slate-100 overflow-hidden">
@@ -55,7 +135,7 @@ export const TrendingCategories: React.FC = () => {
           className="flex gap-6 overflow-x-auto pb-4 scrollbar-none select-none snap-x"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
-          {collections.map((col) => (
+          {orderedCollections.map((col) => (
             <div
               key={col.id}
               onClick={() => navigateToCollection(col.handle)}
@@ -92,4 +172,5 @@ export const TrendingCategories: React.FC = () => {
     </section>
   );
 };
+
 

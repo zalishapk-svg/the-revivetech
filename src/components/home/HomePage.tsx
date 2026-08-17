@@ -4,7 +4,6 @@ import { FeaturedProducts } from "./FeaturedProducts";
 import { TrendingCategories } from "./TrendingCategories";
 import { SecondSlider } from "./SecondSlider";
 import { DynamicCollectionSections } from "./DynamicCollectionSections";
-import { NewArrivals } from "./NewArrivals";
 import { FlashDeals } from "./FlashDeals";
 import { SingleBanner } from "./SingleBanner";
 import { PromotionalMarquee } from "./PromotionalMarquee";
@@ -35,10 +34,7 @@ export const HomePage: React.FC = () => {
       {/* 5. PROMOTIONAL SLIDER (Second Slider: EasySMX & Andaseat) */}
       <SecondSlider />
 
-      {/* 6. JUST LANDED HARDWARE */}
-      <NewArrivals />
-
-      {/* 7. FLASH SALE HARDWARE */}
+      {/* 6. FLASH SALE HARDWARE */}
       <FlashDeals />
 
       {/* 8. SOLO IMAGE SLIDER (Moved immediately below Flash Sale Hardware) */}
