@@ -13,6 +13,7 @@ import {
   createShopifyAdminOrder,
   getOrderConfirmationRecord,
   fetchShopifyShippingRates,
+  trackShopifyOrder,
 } from "./_lib/shopify-server.js";
 
 /**
@@ -697,6 +698,52 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
+    // 5d. Secure Server-Side Order Tracking (Order Number + Email Verification)
+    if (
+      path === "orders/track" ||
+      path === "order/track" ||
+      path === "shopify/orders/track" ||
+      path === "shopify/order/track"
+    ) {
+      const body = req.method === "POST" ? req.body : req.query;
+      const orderNumber =
+        (body?.orderNumber as string) ||
+        (req.query?.orderNumber as string) ||
+        (body?.order as string) ||
+        "";
+      const email = (body?.email as string) || (req.query?.email as string) || "";
+
+      if (!orderNumber || typeof orderNumber !== "string" || !orderNumber.trim()) {
+        return res.status(400).json({
+          success: false,
+          error: "Please enter your order number (e.g. #1048).",
+        });
+      }
+
+      if (!email || typeof email !== "string" || !email.trim() || !email.includes("@")) {
+        return res.status(400).json({
+          success: false,
+          error: "Please enter the email address used during checkout.",
+        });
+      }
+
+      const result = await trackShopifyOrder(orderNumber.trim(), email.trim(), config.storeDomain);
+
+      if (!result.success) {
+        return res.status(404).json({
+          success: false,
+          error:
+            result.error ||
+            "We couldn't find an order matching those details. Please check your order number and email address and try again.",
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        order: result.order,
+      });
+    }
+
     // -------------------------------------------------------------------------
     // 6. SHOPIFY WEBHOOKS
     // -------------------------------------------------------------------------
@@ -877,6 +924,7 @@ Sitemap: ${baseUrl}/sitemap.xml
         "/api/shopify/shipping-rates",
         "/api/shopify/order/create",
         "/api/shopify/order/:reference",
+        "/api/orders/track",
         "/api/shopify/webhooks",
         "/robots.txt",
         "/sitemap.xml",

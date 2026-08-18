@@ -82,7 +82,7 @@ export const TrackOrderPage: React.FC<TrackOrderPageProps> = ({
       if (!res.ok || !data.success) {
         setErrorMessage(
           data?.error ||
-            "No order was found matching this order number and email address combination. Please check your details."
+            "We couldn't find an order matching those details. Please check your order number and email address and try again."
         );
         setTrackingData(null);
       } else {
@@ -92,7 +92,7 @@ export const TrackOrderPage: React.FC<TrackOrderPageProps> = ({
     } catch (err: any) {
       console.error("[Track Order Request Error]", err);
       setErrorMessage(
-        "Unable to connect to the order tracking service. Please check your internet connection or try again shortly."
+        "Something went wrong while checking your order. Please try again in a moment."
       );
     } finally {
       setIsLoading(false);

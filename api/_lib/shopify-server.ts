@@ -1573,8 +1573,8 @@ export async function trackShopifyOrder(
         }
       `;
 
-      // Query by name
-      const searchTerms = `name:${formattedWithHash} OR name:${cleanNumber} OR name:${rawNumber}`;
+      // Query Shopify Admin GraphQL by order name, number, or customer email
+      const searchTerms = `name:${cleanNumber} OR name:${formattedWithHash} OR email:${rawEmail} OR ${cleanNumber}`;
       const endpoint = `https://${domain}/admin/api/${STABLE_ADMIN_API_VERSION}/graphql.json`;
 
       let res = await fetch(endpoint, {
@@ -1615,10 +1615,13 @@ export async function trackShopifyOrder(
           const node = edge.node;
           const nodeName = (node.name || "").trim().toLowerCase();
           const nodeClean = nodeName.replace(/^#+/, "");
+          const nodeId = String(node.id || "");
           const matchNumber =
             nodeName === rawNumber.toLowerCase() ||
             nodeName === formattedWithHash.toLowerCase() ||
-            nodeClean === cleanNumber.toLowerCase();
+            nodeClean === cleanNumber.toLowerCase() ||
+            nodeId.endsWith(`/${cleanNumber}`) ||
+            nodeName.endsWith(cleanNumber.toLowerCase());
 
           if (matchNumber) {
             // Verify email match
@@ -1651,6 +1654,9 @@ export async function trackShopifyOrder(
           `https://${domain}/admin/api/${STABLE_ADMIN_API_VERSION}/orders.json?query=email:${encodeURIComponent(
             rawEmail
           )}&status=any`,
+          `https://${domain}/admin/api/${STABLE_ADMIN_API_VERSION}/orders.json?query=${encodeURIComponent(
+            cleanNumber
+          )}&status=any`,
         ];
 
         for (const url of restUrls) {
@@ -1672,7 +1678,8 @@ export async function trackShopifyOrder(
                 ordName === rawNumber.toLowerCase() ||
                 ordName === formattedWithHash.toLowerCase() ||
                 ordClean === cleanNumber.toLowerCase() ||
-                ordNumber === cleanNumber;
+                ordNumber === cleanNumber ||
+                ordName.endsWith(cleanNumber.toLowerCase());
 
               if (matchNumber) {
                 const orderEmail = (ord.email || ord.contact_email || "").trim().toLowerCase();
@@ -1727,7 +1734,8 @@ export async function trackShopifyOrder(
               ordNum === formattedWithHash.toLowerCase() ||
               ordClean === cleanNumber.toLowerCase() ||
               ordRef === rawNumber.toLowerCase() ||
-              ordNum === rawNumber.toLowerCase()
+              ordNum === rawNumber.toLowerCase() ||
+              ordNum.endsWith(cleanNumber.toLowerCase())
             ) {
               foundOrderNode = { source: "firestore", data };
             }
@@ -1758,7 +1766,7 @@ export async function trackShopifyOrder(
     return {
       success: false,
       error:
-        "No order found matching this order number and email address combination. Please verify your order number (e.g. #1048) and the email address used when placing your order.",
+        "We couldn't find an order matching those details. Please check your order number and email address and try again.",
     };
   }
 
@@ -1773,7 +1781,7 @@ export async function trackShopifyOrder(
     console.error("[Order Tracking] Formatting error:", formatErr);
     return {
       success: false,
-      error: "Failed to process order details. Please contact support if this issue persists.",
+      error: "Something went wrong while checking your order. Please try again in a moment.",
     };
   }
 }

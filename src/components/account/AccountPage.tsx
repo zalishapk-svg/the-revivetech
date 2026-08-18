@@ -69,13 +69,23 @@ export const AccountPage: React.FC = () => {
             </button>
           </form>
 
-          <div className="pt-2 text-center">
+          <div className="pt-2 text-center space-y-2">
             <button
               onClick={() => setIsRegistering(!isRegistering)}
               className="text-xs text-emerald-400 font-bold hover:underline font-mono"
             >
               {isRegistering ? "Already have an account? Sign In" : "Need an account? Register Now"}
             </button>
+            <div className="pt-2">
+              <a
+                href="https://shopify.com/61046423631/account/profile"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs text-slate-300 hover:text-white font-medium underline"
+              >
+                <span>Or open Shopify Customer Account Portal</span>
+              </a>
+            </div>
           </div>
 
           <div className="p-3 bg-[#161616] rounded-xl border border-emerald-900/30 text-[11px] text-slate-400 flex items-center gap-2">

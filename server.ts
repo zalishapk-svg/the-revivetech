@@ -758,9 +758,10 @@ app.get(["/api/shopify/order/:reference", "/api/order/:reference"], async (req, 
 });
 
 // Secure Server-Side Order Tracking Endpoint (Order Number + Email Verification)
-app.post(["/api/orders/track", "/api/order/track", "/api/shopify/order/track"], async (req, res) => {
+app.all(["/api/orders/track", "/api/order/track", "/api/shopify/order/track", "/api/shopify/orders/track"], async (req, res) => {
   try {
-    const { orderNumber, email } = req.body || {};
+    const data = req.method === "POST" ? req.body : req.query;
+    const { orderNumber, email } = data || {};
 
     if (!orderNumber || typeof orderNumber !== "string" || !orderNumber.trim()) {
       return res.status(400).json({
@@ -782,7 +783,9 @@ app.post(["/api/orders/track", "/api/order/track", "/api/shopify/order/track"], 
     if (!result.success) {
       return res.status(404).json({
         success: false,
-        error: result.error || "No order found matching this order number and email address.",
+        error:
+          result.error ||
+          "We couldn't find an order matching those details. Please check your order number and email address and try again.",
       });
     }
 
@@ -794,7 +797,7 @@ app.post(["/api/orders/track", "/api/order/track", "/api/shopify/order/track"], 
     console.error("[Order Tracking Route Exception]", err);
     return res.status(500).json({
       success: false,
-      error: "An unexpected error occurred while looking up your order. Please try again or contact support.",
+      error: "Something went wrong while checking your order. Please try again in a moment.",
     });
   }
 });
