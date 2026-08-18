@@ -200,16 +200,19 @@ export const Header: React.FC = () => {
               )}
             </button>
 
-            {/* ACCOUNT ICON */}
-            <button
-              onClick={navigateToAccount}
+            {/* ACCOUNT ICON (Shopify Customer Account Profile) */}
+            <a
+              href="https://shopify.com/61046423631/account/profile"
+              target="_blank"
+              rel="noopener noreferrer"
               className={`p-1.5 transition-colors ${
                 customer ? "text-emerald-400" : "text-slate-300 hover:text-white"
               }`}
               title={customer ? `Account: ${customer.firstName}` : "Sign In"}
+              aria-label="Shopify Customer Account"
             >
               <User className="w-5 h-5" />
-            </button>
+            </a>
 
             {/* CART BUTTON */}
             <button

@@ -9,7 +9,6 @@ import {
   HelpCircle,
   PhoneCall,
   Info,
-  Truck,
 } from "lucide-react";
 import { useShopify } from "../../context/ShopifyContext";
 
@@ -23,11 +22,9 @@ export const MobileNav: React.FC = () => {
     navigateToCollection,
     navigateToCollectionsList,
     navigateToBlog,
-    navigateToAccount,
     navigateToAbout,
     navigateToContact,
     navigateToFAQ,
-    navigateToTrackOrder,
     setIsSearchOpen,
     setIsCartOpen,
     cartCount,
@@ -184,17 +181,6 @@ export const MobileNav: React.FC = () => {
 
             <button
               onClick={() => {
-                navigateToTrackOrder();
-                onClose();
-              }}
-              className="w-full text-left py-2 font-bold text-base border-b border-emerald-950/80 hover:text-emerald-400 transition-colors flex items-center justify-between text-[#C0FE2D]"
-            >
-              <span>Track Your Order</span>
-              <Truck className="w-4 h-4 text-[#C0FE2D]" />
-            </button>
-
-            <button
-              onClick={() => {
                 navigateToAbout();
                 onClose();
               }}
@@ -236,15 +222,15 @@ export const MobileNav: React.FC = () => {
               Blogs & Tech Articles
             </button>
 
-            <button
-              onClick={() => {
-                navigateToAccount();
-                onClose();
-              }}
+            <a
+              href="https://shopify.com/61046423631/account/profile"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={onClose}
               className="w-full text-left py-2 font-bold text-base border-b border-emerald-950/80 hover:text-emerald-400 transition-colors flex items-center gap-2"
             >
               <User className="w-4 h-4 text-emerald-400" /> Customer Account
-            </button>
+            </a>
           </div>
         </div>
 
