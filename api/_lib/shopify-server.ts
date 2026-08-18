@@ -1309,3 +1309,834 @@ export async function getOrderConfirmationRecord(reference: string): Promise<any
 
   return null;
 }
+
+export interface OrderTrackingLineItem {
+  id: string;
+  title: string;
+  variantTitle?: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+  imageUrl?: string;
+}
+
+export interface OrderTrackingFulfillment {
+  id: string;
+  createdAt: string;
+  updatedAt?: string | null;
+  status: string;
+  displayStatus?: string;
+  company?: string;
+  trackingNumber?: string;
+  trackingUrl?: string;
+  estimatedDeliveryAt?: string | null;
+  lineItems?: Array<{
+    title: string;
+    variantTitle?: string;
+    quantity: number;
+  }>;
+}
+
+export interface OrderTrackingTimelineStep {
+  stage: "placed" | "confirmed" | "processing" | "shipped" | "delivered" | "cancelled";
+  title: string;
+  description: string;
+  timestamp?: string | null;
+  isCompleted: boolean;
+  isCurrent: boolean;
+}
+
+export interface OrderTrackingInfo {
+  orderNumber: string;
+  orderReference?: string;
+  shopifyOrderId: string;
+  createdAt: string;
+  cancelledAt?: string | null;
+  cancelReason?: string | null;
+  financialStatus: string;
+  fulfillmentStatus: string;
+  currency: string;
+  totalAmount: number;
+  subtotalAmount: number;
+  discountAmount: number;
+  shippingAmount: number;
+  taxAmount: number;
+  itemCount: number;
+  customer: {
+    name: string;
+    email: string;
+    phone?: string;
+  };
+  shippingAddress: {
+    name?: string;
+    address1: string;
+    address2?: string;
+    city: string;
+    province: string;
+    country: string;
+    postalCode: string;
+  };
+  shippingMethod?: {
+    title: string;
+    price?: number;
+  };
+  paymentMethod: string;
+  lineItems: OrderTrackingLineItem[];
+  fulfillments: OrderTrackingFulfillment[];
+  timeline: OrderTrackingTimelineStep[];
+}
+
+export interface OrderTrackingResult {
+  success: boolean;
+  order?: OrderTrackingInfo;
+  error?: string;
+}
+
+/**
+ * Robust, secure server-side order lookup by Order Number and Email.
+ * Verifies email ownership and fetches real-time Shopify fulfillment details.
+ */
+export async function trackShopifyOrder(
+  orderNumberInput: string,
+  emailInput: string,
+  storeDomain?: string
+): Promise<OrderTrackingResult> {
+  const rawNumber = (orderNumberInput || "").trim();
+  const rawEmail = (emailInput || "").trim().toLowerCase();
+
+  if (!rawNumber || !rawEmail) {
+    return {
+      success: false,
+      error: "Please provide both an Order Number and the Email Address used at checkout.",
+    };
+  }
+
+  // Basic email pattern check
+  if (!rawEmail.includes("@") || !rawEmail.includes(".")) {
+    return {
+      success: false,
+      error: "Please enter a valid email address.",
+    };
+  }
+
+  const cleanNumber = rawNumber.replace(/^#+/, "").trim();
+  const formattedWithHash = `#${cleanNumber}`;
+  const config = getConfig();
+  const domain = storeDomain || config.storeDomain || "dbbys1-nd.myshopify.com";
+
+  console.log(`[Order Tracking] Looking up order: '${rawNumber}' (clean: '${cleanNumber}') for email: '${rawEmail}'`);
+
+  let foundOrderNode: any = null;
+
+  // 1. Try Shopify Admin GraphQL Query
+  try {
+    let token = await shopifyStorage.getOrFetchAdminToken(domain);
+    if (token) {
+      const graphqlQuery = `
+        query getOrderForTracking($query: String!) {
+          orders(first: 10, query: $query) {
+            edges {
+              node {
+                id
+                name
+                createdAt
+                cancelledAt
+                cancelReason
+                displayFinancialStatus
+                displayFulfillmentStatus
+                currencyCode
+                note
+                email
+                phone
+                currentTotalPriceSet {
+                  shopMoney {
+                    amount
+                    currencyCode
+                  }
+                }
+                currentSubtotalPriceSet {
+                  shopMoney {
+                    amount
+                    currencyCode
+                  }
+                }
+                currentTotalDiscountsSet {
+                  shopMoney {
+                    amount
+                    currencyCode
+                  }
+                }
+                totalShippingPriceSet {
+                  shopMoney {
+                    amount
+                    currencyCode
+                  }
+                }
+                totalTaxSet {
+                  shopMoney {
+                    amount
+                    currencyCode
+                  }
+                }
+                customer {
+                  firstName
+                  lastName
+                  email
+                  phone
+                }
+                shippingAddress {
+                  firstName
+                  lastName
+                  address1
+                  address2
+                  city
+                  province
+                  zip
+                  country
+                }
+                shippingLine {
+                  title
+                  originalPriceSet {
+                    shopMoney {
+                      amount
+                      currencyCode
+                    }
+                  }
+                }
+                lineItems(first: 50) {
+                  edges {
+                    node {
+                      id
+                      title
+                      variantTitle
+                      quantity
+                      originalUnitPriceSet {
+                        shopMoney {
+                          amount
+                          currencyCode
+                        }
+                      }
+                      discountedUnitPriceSet {
+                        shopMoney {
+                          amount
+                          currencyCode
+                        }
+                      }
+                      originalTotalSet {
+                        shopMoney {
+                          amount
+                          currencyCode
+                        }
+                      }
+                      image {
+                        url
+                        altText
+                      }
+                      variant {
+                        id
+                        title
+                        image {
+                          url
+                        }
+                      }
+                    }
+                  }
+                }
+                fulfillments {
+                  id
+                  createdAt
+                  updatedAt
+                  status
+                  displayStatus
+                  estimatedDeliveryAt
+                  trackingInfo {
+                    company
+                    number
+                    url
+                  }
+                  fulfillmentLineItems(first: 50) {
+                    edges {
+                      node {
+                        quantity
+                        lineItem {
+                          id
+                          title
+                          variantTitle
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      `;
+
+      // Query by name
+      const searchTerms = `name:${formattedWithHash} OR name:${cleanNumber} OR name:${rawNumber}`;
+      const endpoint = `https://${domain}/admin/api/${STABLE_ADMIN_API_VERSION}/graphql.json`;
+
+      let res = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "X-Shopify-Access-Token": token,
+        },
+        body: JSON.stringify({
+          query: graphqlQuery,
+          variables: { query: searchTerms },
+        }),
+      });
+
+      if (res.status === 401) {
+        token = await shopifyStorage.getOrFetchAdminToken(domain, true);
+        if (token) {
+          res = await fetch(endpoint, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+              "X-Shopify-Access-Token": token,
+            },
+            body: JSON.stringify({
+              query: graphqlQuery,
+              variables: { query: searchTerms },
+            }),
+          });
+        }
+      }
+
+      if (res.ok) {
+        const json = await res.json();
+        const edges = json?.data?.orders?.edges || [];
+        for (const edge of edges) {
+          const node = edge.node;
+          const nodeName = (node.name || "").trim().toLowerCase();
+          const nodeClean = nodeName.replace(/^#+/, "");
+          const matchNumber =
+            nodeName === rawNumber.toLowerCase() ||
+            nodeName === formattedWithHash.toLowerCase() ||
+            nodeClean === cleanNumber.toLowerCase();
+
+          if (matchNumber) {
+            // Verify email match
+            const orderEmail = (node.email || "").trim().toLowerCase();
+            const customerEmail = (node.customer?.email || "").trim().toLowerCase();
+            if (orderEmail === rawEmail || customerEmail === rawEmail) {
+              foundOrderNode = { source: "graphql", data: node };
+              break;
+            }
+          }
+        }
+      }
+    }
+  } catch (gqlErr) {
+    console.warn("[Order Tracking] Admin GraphQL query exception:", gqlErr);
+  }
+
+  // 2. If not found yet, try REST Admin API
+  if (!foundOrderNode) {
+    try {
+      const token = await shopifyStorage.getOrFetchAdminToken(domain);
+      if (token) {
+        const restUrls = [
+          `https://${domain}/admin/api/${STABLE_ADMIN_API_VERSION}/orders.json?name=${encodeURIComponent(
+            formattedWithHash
+          )}&status=any`,
+          `https://${domain}/admin/api/${STABLE_ADMIN_API_VERSION}/orders.json?name=${encodeURIComponent(
+            cleanNumber
+          )}&status=any`,
+          `https://${domain}/admin/api/${STABLE_ADMIN_API_VERSION}/orders.json?query=email:${encodeURIComponent(
+            rawEmail
+          )}&status=any`,
+        ];
+
+        for (const url of restUrls) {
+          const restRes = await fetch(url, {
+            headers: {
+              "Content-Type": "application/json",
+              "X-Shopify-Access-Token": token,
+            },
+          });
+
+          if (restRes.ok) {
+            const restData = await restRes.json();
+            const orders = restData?.orders || [];
+            for (const ord of orders) {
+              const ordName = (ord.name || "").trim().toLowerCase();
+              const ordClean = ordName.replace(/^#+/, "");
+              const ordNumber = String(ord.order_number || "");
+              const matchNumber =
+                ordName === rawNumber.toLowerCase() ||
+                ordName === formattedWithHash.toLowerCase() ||
+                ordClean === cleanNumber.toLowerCase() ||
+                ordNumber === cleanNumber;
+
+              if (matchNumber) {
+                const orderEmail = (ord.email || ord.contact_email || "").trim().toLowerCase();
+                const customerEmail = (ord.customer?.email || "").trim().toLowerCase();
+                if (orderEmail === rawEmail || customerEmail === rawEmail) {
+                  foundOrderNode = { source: "rest", data: ord };
+                  break;
+                }
+              }
+            }
+          }
+          if (foundOrderNode) break;
+        }
+      }
+    } catch (restErr) {
+      console.warn("[Order Tracking] REST lookup error:", restErr);
+    }
+  }
+
+  // 3. If not found in live Shopify, check Firestore Cached Orders (e.g. from headless checkout)
+  if (!foundOrderNode) {
+    try {
+      const db = getFirestoreDb();
+      if (db) {
+        const refsToTry = [cleanNumber, formattedWithHash, rawNumber];
+        for (const r of refsToTry) {
+          const snap = await db.collection("shopify_orders").doc(r).get();
+          if (snap.exists) {
+            const data = snap.data();
+            const orderEmail = (data?.customer?.email || "").trim().toLowerCase();
+            if (orderEmail === rawEmail) {
+              foundOrderNode = { source: "firestore", data };
+              break;
+            }
+          }
+        }
+
+        if (!foundOrderNode) {
+          // Query by orderNumber field
+          const qSnap = await db
+            .collection("shopify_orders")
+            .where("customer.email", "==", rawEmail)
+            .limit(10)
+            .get();
+
+          qSnap.forEach((doc) => {
+            const data = doc.data();
+            const ordNum = (data?.orderNumber || "").trim().toLowerCase();
+            const ordClean = ordNum.replace(/^#+/, "");
+            const ordRef = (data?.orderReference || "").trim().toLowerCase();
+            if (
+              ordNum === formattedWithHash.toLowerCase() ||
+              ordClean === cleanNumber.toLowerCase() ||
+              ordRef === rawNumber.toLowerCase() ||
+              ordNum === rawNumber.toLowerCase()
+            ) {
+              foundOrderNode = { source: "firestore", data };
+            }
+          });
+        }
+      }
+    } catch (fsErr) {
+      console.warn("[Order Tracking] Firestore lookup error:", fsErr);
+    }
+  }
+
+  // 4. Also check Memory Cache
+  if (!foundOrderNode) {
+    const memoryKeys = [rawNumber, cleanNumber, formattedWithHash];
+    for (const key of memoryKeys) {
+      if (recentOrdersMemoryCache.has(key)) {
+        const cached = recentOrdersMemoryCache.get(key);
+        if (cached?.customer?.email?.trim().toLowerCase() === rawEmail) {
+          foundOrderNode = { source: "firestore", data: cached };
+          break;
+        }
+      }
+    }
+  }
+
+  // If no order matched BOTH the order number and email address:
+  if (!foundOrderNode) {
+    return {
+      success: false,
+      error:
+        "No order found matching this order number and email address combination. Please verify your order number (e.g. #1048) and the email address used when placing your order.",
+    };
+  }
+
+  // Format the matched order based on source
+  try {
+    const info = buildOrderTrackingInfo(foundOrderNode);
+    return {
+      success: true,
+      order: info,
+    };
+  } catch (formatErr: any) {
+    console.error("[Order Tracking] Formatting error:", formatErr);
+    return {
+      success: false,
+      error: "Failed to process order details. Please contact support if this issue persists.",
+    };
+  }
+}
+
+/**
+ * Normalizes disparate Shopify data shapes (GraphQL, REST, Firestore) into a consistent OrderTrackingInfo payload.
+ */
+function buildOrderTrackingInfo(found: { source: string; data: any }): OrderTrackingInfo {
+  const { source, data } = found;
+
+  if (source === "graphql") {
+    const totalAmount = parseFloat(data.currentTotalPriceSet?.shopMoney?.amount || "0");
+    const subtotalAmount = parseFloat(data.currentSubtotalPriceSet?.shopMoney?.amount || "0");
+    const discountAmount = parseFloat(data.currentTotalDiscountsSet?.shopMoney?.amount || "0");
+    const shippingAmount = parseFloat(data.totalShippingPriceSet?.shopMoney?.amount || "0");
+    const taxAmount = parseFloat(data.totalTaxSet?.shopMoney?.amount || "0");
+    const currency = data.currencyCode || data.currentTotalPriceSet?.shopMoney?.currencyCode || "PKR";
+
+    const lineItems: OrderTrackingLineItem[] = (data.lineItems?.edges || []).map((edge: any) => {
+      const item = edge.node;
+      const unitPrice = parseFloat(
+        item.discountedUnitPriceSet?.shopMoney?.amount ||
+          item.originalUnitPriceSet?.shopMoney?.amount ||
+          "0"
+      );
+      const itemTotal = parseFloat(
+        item.originalTotalSet?.shopMoney?.amount || (unitPrice * (item.quantity || 1)).toFixed(2)
+      );
+      const imgUrl = item.image?.url || item.variant?.image?.url || undefined;
+      return {
+        id: item.id || `item-${Math.random()}`,
+        title: item.title,
+        variantTitle: item.variantTitle && item.variantTitle !== "Default Title" ? item.variantTitle : undefined,
+        quantity: item.quantity || 1,
+        unitPrice,
+        totalPrice: itemTotal,
+        imageUrl: imgUrl,
+      };
+    });
+
+    const fulfillments: OrderTrackingFulfillment[] = (data.fulfillments || []).map((f: any) => {
+      const tracking = f.trackingInfo?.[0] || {};
+      const fLineItems = (f.fulfillmentLineItems?.edges || []).map((fl: any) => ({
+        title: fl.node?.lineItem?.title || "Item",
+        variantTitle: fl.node?.lineItem?.variantTitle,
+        quantity: fl.node?.quantity || 1,
+      }));
+
+      return {
+        id: f.id,
+        createdAt: f.createdAt,
+        status: f.status || "SUCCESS",
+        displayStatus: f.displayStatus || undefined,
+        company: tracking.company || undefined,
+        trackingNumber: tracking.number || undefined,
+        trackingUrl: tracking.url || undefined,
+        estimatedDeliveryAt: f.estimatedDeliveryAt || null,
+        lineItems: fLineItems.length > 0 ? fLineItems : undefined,
+      };
+    });
+
+    const finStatus = (data.displayFinancialStatus || "PAID").toUpperCase();
+    const fulStatus = (data.displayFulfillmentStatus || "UNFULFILLED").toUpperCase();
+
+    const timeline = generateOrderTimeline({
+      createdAt: data.createdAt,
+      cancelledAt: data.cancelledAt,
+      cancelReason: data.cancelReason,
+      financialStatus: finStatus,
+      fulfillmentStatus: fulStatus,
+      fulfillments,
+    });
+
+    return {
+      orderNumber: data.name || "#0000",
+      shopifyOrderId: data.id,
+      createdAt: data.createdAt,
+      cancelledAt: data.cancelledAt || null,
+      cancelReason: data.cancelReason || null,
+      financialStatus: finStatus,
+      fulfillmentStatus: fulStatus,
+      currency,
+      totalAmount,
+      subtotalAmount: subtotalAmount > 0 ? subtotalAmount : totalAmount,
+      discountAmount,
+      shippingAmount,
+      taxAmount,
+      itemCount: lineItems.reduce((acc, i) => acc + i.quantity, 0),
+      customer: {
+        name: `${data.customer?.firstName || data.shippingAddress?.firstName || "Valued"} ${
+          data.customer?.lastName || data.shippingAddress?.lastName || "Customer"
+        }`.trim(),
+        email: data.email || data.customer?.email || "",
+        phone: data.phone || data.customer?.phone || data.shippingAddress?.phone || undefined,
+      },
+      shippingAddress: {
+        name: `${data.shippingAddress?.firstName || ""} ${data.shippingAddress?.lastName || ""}`.trim() || undefined,
+        address1: data.shippingAddress?.address1 || "Delivery address on file",
+        address2: data.shippingAddress?.address2 || undefined,
+        city: data.shippingAddress?.city || "Lahore",
+        province: data.shippingAddress?.province || "Punjab",
+        country: data.shippingAddress?.country || "Pakistan",
+        postalCode: data.shippingAddress?.zip || "00000",
+      },
+      shippingMethod: {
+        title: data.shippingLine?.title || "Standard Express Courier PK",
+        price: shippingAmount,
+      },
+      paymentMethod: "Cash on Delivery (COD)",
+      lineItems,
+      fulfillments,
+      timeline,
+    };
+  }
+
+  if (source === "rest") {
+    const totalAmount = parseFloat(data.total_price || "0");
+    const subtotalAmount = parseFloat(data.subtotal_price || "0");
+    const discountAmount = parseFloat(data.total_discounts || "0");
+    const shippingAmount = parseFloat(data.total_shipping_price_set?.shop_money?.amount || data.shipping_lines?.[0]?.price || "0");
+    const taxAmount = parseFloat(data.total_tax || "0");
+    const currency = data.currency || "PKR";
+
+    const lineItems: OrderTrackingLineItem[] = (data.line_items || []).map((item: any) => {
+      const unitPrice = parseFloat(item.price || "0");
+      const quantity = item.quantity || 1;
+      return {
+        id: String(item.id),
+        title: item.title || item.name,
+        variantTitle: item.variant_title && item.variant_title !== "Default Title" ? item.variant_title : undefined,
+        quantity,
+        unitPrice,
+        totalPrice: parseFloat((unitPrice * quantity).toFixed(2)),
+        imageUrl: item.image?.src || undefined,
+      };
+    });
+
+    const fulfillments: OrderTrackingFulfillment[] = (data.fulfillments || []).map((f: any) => ({
+      id: String(f.id),
+      createdAt: f.created_at,
+      status: (f.status || "success").toUpperCase(),
+      displayStatus: f.shipment_status ? f.shipment_status.toUpperCase() : undefined,
+      company: f.tracking_company || undefined,
+      trackingNumber: f.tracking_number || undefined,
+      trackingUrl: f.tracking_url || undefined,
+      estimatedDeliveryAt: f.estimated_delivery_at || null,
+      lineItems: (f.line_items || []).map((fli: any) => ({
+        title: fli.title,
+        variantTitle: fli.variant_title,
+        quantity: fli.quantity,
+      })),
+    }));
+
+    const finStatus = (data.financial_status || "paid").toUpperCase();
+    const fulStatus = (data.fulfillment_status || "unfulfilled").toUpperCase();
+
+    const timeline = generateOrderTimeline({
+      createdAt: data.created_at,
+      cancelledAt: data.cancelled_at,
+      cancelReason: data.cancel_reason,
+      financialStatus: finStatus,
+      fulfillmentStatus: fulStatus,
+      fulfillments,
+    });
+
+    return {
+      orderNumber: data.name || `#${data.order_number}`,
+      shopifyOrderId: String(data.id),
+      createdAt: data.created_at,
+      cancelledAt: data.cancelled_at || null,
+      cancelReason: data.cancel_reason || null,
+      financialStatus: finStatus,
+      fulfillmentStatus: fulStatus,
+      currency,
+      totalAmount,
+      subtotalAmount: subtotalAmount > 0 ? subtotalAmount : totalAmount,
+      discountAmount,
+      shippingAmount,
+      taxAmount,
+      itemCount: lineItems.reduce((acc, i) => acc + i.quantity, 0),
+      customer: {
+        name: `${data.customer?.first_name || data.shipping_address?.first_name || "Valued"} ${
+          data.customer?.last_name || data.shipping_address?.last_name || "Customer"
+        }`.trim(),
+        email: data.email || data.customer?.email || "",
+        phone: data.phone || data.customer?.phone || data.shipping_address?.phone || undefined,
+      },
+      shippingAddress: {
+        name: `${data.shipping_address?.first_name || ""} ${data.shipping_address?.last_name || ""}`.trim() || undefined,
+        address1: data.shipping_address?.address1 || "Delivery address on file",
+        address2: data.shipping_address?.address2 || undefined,
+        city: data.shipping_address?.city || "Lahore",
+        province: data.shipping_address?.province || "Punjab",
+        country: data.shipping_address?.country || "Pakistan",
+        postalCode: data.shipping_address?.zip || "00000",
+      },
+      shippingMethod: {
+        title: data.shipping_lines?.[0]?.title || "Standard Express Courier PK",
+        price: shippingAmount,
+      },
+      paymentMethod: data.gateway ? data.gateway.toUpperCase() : "Cash on Delivery (COD)",
+      lineItems,
+      fulfillments,
+      timeline,
+    };
+  }
+
+  // Default / Firestore source
+  const lineItems: OrderTrackingLineItem[] = (data.items || []).map((item: any) => ({
+    id: item.id || `item-${Math.random()}`,
+    title: item.title,
+    variantTitle: item.variantTitle,
+    quantity: item.quantity || 1,
+    unitPrice: item.price || 0,
+    totalPrice: (item.price || 0) * (item.quantity || 1),
+    imageUrl: item.imageUrl,
+  }));
+
+  const finStatus = (data.financialStatus || "PENDING").toUpperCase();
+  const fulStatus = (data.fulfillmentStatus || "UNFULFILLED").toUpperCase();
+
+  const timeline = generateOrderTimeline({
+    createdAt: data.createdAt,
+    financialStatus: finStatus,
+    fulfillmentStatus: fulStatus,
+    fulfillments: [],
+  });
+
+  return {
+    orderNumber: data.orderNumber || "#0000",
+    orderReference: data.orderReference,
+    shopifyOrderId: String(data.shopifyOrderId || data.orderReference || ""),
+    createdAt: data.createdAt,
+    financialStatus: finStatus,
+    fulfillmentStatus: fulStatus,
+    currency: data.currency || "PKR",
+    totalAmount: data.total || 0,
+    subtotalAmount: data.subtotal || data.total || 0,
+    discountAmount: data.discount || 0,
+    shippingAmount: data.shippingLine?.price || 0,
+    taxAmount: 0,
+    itemCount: lineItems.reduce((acc, i) => acc + i.quantity, 0),
+    customer: {
+      name: `${data.customer?.firstName || "Valued"} ${data.customer?.lastName || "Customer"}`.trim(),
+      email: data.customer?.email || "",
+      phone: data.customer?.phone,
+    },
+    shippingAddress: {
+      address1: data.shippingAddress?.address1 || "Delivery address on file",
+      city: data.shippingAddress?.city || "Lahore",
+      province: data.shippingAddress?.province || "Punjab",
+      country: data.shippingAddress?.country || "Pakistan",
+      postalCode: data.shippingAddress?.postalCode || "00000",
+    },
+    shippingMethod: {
+      title: data.shippingLine?.title || "Standard Delivery PK",
+      price: data.shippingLine?.price || 0,
+    },
+    paymentMethod: data.paymentMethod || "Cash on Delivery (COD)",
+    lineItems,
+    fulfillments: [],
+    timeline,
+  };
+}
+
+/**
+ * Builds chronological real-world timeline stages from Shopify order status & fulfillment events.
+ */
+function generateOrderTimeline(params: {
+  createdAt: string;
+  cancelledAt?: string | null;
+  cancelReason?: string | null;
+  financialStatus: string;
+  fulfillmentStatus: string;
+  fulfillments?: OrderTrackingFulfillment[];
+}): OrderTrackingTimelineStep[] {
+  const { createdAt, cancelledAt, cancelReason, financialStatus, fulfillmentStatus, fulfillments = [] } = params;
+
+  if (cancelledAt) {
+    return [
+      {
+        stage: "placed",
+        title: "Order Placed",
+        description: "Your order was received and recorded in our store system.",
+        timestamp: createdAt,
+        isCompleted: true,
+        isCurrent: false,
+      },
+      {
+        stage: "cancelled",
+        title: "Order Cancelled",
+        description: cancelReason ? `Reason: ${cancelReason}` : "Order was cancelled.",
+        timestamp: cancelledAt,
+        isCompleted: true,
+        isCurrent: true,
+      },
+    ];
+  }
+
+  const hasFulfillments = fulfillments.length > 0;
+  const isFulfilled =
+    fulfillmentStatus === "FULFILLED" ||
+    fulfillmentStatus === "DELIVERED" ||
+    fulfillmentStatus === "IN_TRANSIT" ||
+    fulfillmentStatus === "OUT_FOR_DELIVERY";
+  const isDelivered =
+    fulfillmentStatus === "DELIVERED" ||
+    fulfillments.some((f) => f.status === "DELIVERED" || f.displayStatus === "DELIVERED");
+
+  const latestFulfillment = fulfillments[0];
+
+  const steps: OrderTrackingTimelineStep[] = [
+    {
+      stage: "placed",
+      title: "Order Placed",
+      description: "Order received and queued for verification.",
+      timestamp: createdAt,
+      isCompleted: true,
+      isCurrent: !isFulfilled && !hasFulfillments && financialStatus === "PENDING",
+    },
+    {
+      stage: "confirmed",
+      title: "Order Confirmed",
+      description:
+        financialStatus === "PAID"
+          ? "Payment verified and order accepted."
+          : "Order verified and authorized for warehouse processing.",
+      timestamp: createdAt,
+      isCompleted: true,
+      isCurrent: !isFulfilled && !hasFulfillments && financialStatus !== "PENDING",
+    },
+    {
+      stage: "processing",
+      title: "Processing & Packaging",
+      description: isFulfilled
+        ? "Items were carefully inspected and packaged."
+        : "Our warehouse team is preparing your hardware items for dispatch.",
+      timestamp: null,
+      isCompleted: isFulfilled || hasFulfillments,
+      isCurrent: !isFulfilled && !hasFulfillments,
+    },
+    {
+      stage: "shipped",
+      title: "Dispatched & In Transit",
+      description: latestFulfillment
+        ? `Handed over to courier ${latestFulfillment.company ? `(${latestFulfillment.company})` : ""}.`
+        : "Courier pickup and dispatch in progress.",
+      timestamp: latestFulfillment?.createdAt || null,
+      isCompleted: isFulfilled || hasFulfillments,
+      isCurrent: (isFulfilled || hasFulfillments) && !isDelivered,
+    },
+    {
+      stage: "delivered",
+      title: "Delivered",
+      description: isDelivered
+        ? "Package successfully delivered to recipient."
+        : "Delivery to your shipping address.",
+      timestamp: isDelivered ? latestFulfillment?.updatedAt || null : null,
+      isCompleted: isDelivered,
+      isCurrent: isDelivered,
+    },
+  ];
+
+  return steps;
+}
+

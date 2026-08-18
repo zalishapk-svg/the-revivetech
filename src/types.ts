@@ -244,6 +244,82 @@ export interface OrderConfirmationData {
   notes?: string;
 }
 
+export interface OrderTrackingLineItem {
+  id: string;
+  title: string;
+  variantTitle?: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+  imageUrl?: string;
+}
+
+export interface OrderTrackingFulfillment {
+  id: string;
+  createdAt: string;
+  updatedAt?: string | null;
+  status: string;
+  displayStatus?: string;
+  company?: string;
+  trackingNumber?: string;
+  trackingUrl?: string;
+  estimatedDeliveryAt?: string | null;
+  lineItems?: Array<{
+    title: string;
+    variantTitle?: string;
+    quantity: number;
+  }>;
+}
+
+export interface OrderTrackingTimelineStep {
+  stage: "placed" | "confirmed" | "processing" | "shipped" | "delivered" | "cancelled";
+  title: string;
+  description: string;
+  timestamp?: string | null;
+  isCompleted: boolean;
+  isCurrent: boolean;
+}
+
+export interface OrderTrackingInfo {
+  orderNumber: string;
+  orderReference?: string;
+  shopifyOrderId: string;
+  createdAt: string;
+  cancelledAt?: string | null;
+  cancelReason?: string | null;
+  financialStatus: string;
+  fulfillmentStatus: string;
+  currency: string;
+  totalAmount: number;
+  subtotalAmount: number;
+  discountAmount: number;
+  shippingAmount: number;
+  taxAmount: number;
+  itemCount: number;
+  customer: {
+    name: string;
+    email: string;
+    phone?: string;
+  };
+  shippingAddress: {
+    name?: string;
+    address1: string;
+    address2?: string;
+    city: string;
+    province: string;
+    country: string;
+    postalCode: string;
+  };
+  shippingMethod?: {
+    title: string;
+    price?: number;
+  };
+  paymentMethod: string;
+  lineItems: OrderTrackingLineItem[];
+  fulfillments: OrderTrackingFulfillment[];
+  timeline: OrderTrackingTimelineStep[];
+}
+
 export type ViewState = 
   | { type: 'home' }
   | { type: 'shop' }
@@ -262,4 +338,5 @@ export type ViewState =
   | { type: 'cart' }
   | { type: 'checkout' }
   | { type: 'order_confirmation'; orderReference: string }
+  | { type: 'track_order'; initialOrderNumber?: string; initialEmail?: string }
   | { type: 'page'; handle: string };

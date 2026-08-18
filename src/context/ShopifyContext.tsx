@@ -35,6 +35,7 @@ interface ShopifyContextType {
   navigateToCart: () => void;
   navigateToCheckout: () => void;
   navigateToOrderConfirmation: (orderReference: string) => void;
+  navigateToTrackOrder: (initialOrderNumber?: string, initialEmail?: string) => void;
   navigateToPage: (handle: string) => void;
 
   // Shopify Storefront Data
@@ -170,6 +171,17 @@ export function parseUrlToViewState(path: string, search: string): ViewState {
   }
   if (cleanPath === "/account") return { type: "account" };
   if (cleanPath === "/faq") return { type: "faq" };
+  if (
+    cleanPath === "/track-order" ||
+    cleanPath === "/track-your-order" ||
+    cleanPath === "/order-tracking" ||
+    cleanPath === "/track"
+  ) {
+    const searchParams = new URLSearchParams(search);
+    const initialOrderNumber = searchParams.get("order") || searchParams.get("orderNumber") || undefined;
+    const initialEmail = searchParams.get("email") || undefined;
+    return { type: "track_order", initialOrderNumber, initialEmail };
+  }
   if (cleanPath.startsWith("/page/")) {
     const handle = cleanPath.replace("/page/", "");
     if (handle) return { type: "page", handle };
@@ -199,6 +211,14 @@ export function viewStateToUrl(view: ViewState): string {
       return "/checkout";
     case "order_confirmation":
       return `/order-confirmation/${view.orderReference}`;
+    case "track_order":
+      if (view.initialOrderNumber || view.initialEmail) {
+        const params = new URLSearchParams();
+        if (view.initialOrderNumber) params.set("order", view.initialOrderNumber);
+        if (view.initialEmail) params.set("email", view.initialEmail);
+        return `/track-order?${params.toString()}`;
+      }
+      return "/track-order";
     case "search":
       return view.query ? `/search?q=${encodeURIComponent(view.query)}` : "/search";
     case "about":
@@ -658,6 +678,10 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setIsCartOpen(false);
     setViewState({ type: "order_confirmation", orderReference });
   };
+  const navigateToTrackOrder = (initialOrderNumber?: string, initialEmail?: string) => {
+    setIsCartOpen(false);
+    setViewState({ type: "track_order", initialOrderNumber, initialEmail });
+  };
   const navigateToPage = (handle: string) => setViewState({ type: "page", handle });
 
   // ---------------------------------------------------------------------------
@@ -907,6 +931,7 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
         navigateToCart,
         navigateToCheckout,
         navigateToOrderConfirmation,
+        navigateToTrackOrder,
         navigateToPage,
         products,
         collections,

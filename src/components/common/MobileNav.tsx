@@ -9,6 +9,7 @@ import {
   HelpCircle,
   PhoneCall,
   Info,
+  Truck,
 } from "lucide-react";
 import { useShopify } from "../../context/ShopifyContext";
 
@@ -26,6 +27,7 @@ export const MobileNav: React.FC = () => {
     navigateToAbout,
     navigateToContact,
     navigateToFAQ,
+    navigateToTrackOrder,
     setIsSearchOpen,
     setIsCartOpen,
     cartCount,
@@ -179,6 +181,17 @@ export const MobileNav: React.FC = () => {
                 </div>
               )}
             </div>
+
+            <button
+              onClick={() => {
+                navigateToTrackOrder();
+                onClose();
+              }}
+              className="w-full text-left py-2 font-bold text-base border-b border-emerald-950/80 hover:text-emerald-400 transition-colors flex items-center justify-between text-[#C0FE2D]"
+            >
+              <span>Track Your Order</span>
+              <Truck className="w-4 h-4 text-[#C0FE2D]" />
+            </button>
 
             <button
               onClick={() => {

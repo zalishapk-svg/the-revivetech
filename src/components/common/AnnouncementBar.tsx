@@ -1,7 +1,9 @@
 import React, { useState } from "react";
-import { Mail, ShieldCheck, Globe, X } from "lucide-react";
+import { Mail, ShieldCheck, Globe, X, Truck } from "lucide-react";
+import { useShopify } from "../../context/ShopifyContext";
 
 export const AnnouncementBar: React.FC = () => {
+  const { navigateToTrackOrder } = useShopify();
   const [isVisible, setIsVisible] = useState(true);
 
   if (!isVisible) return null;
@@ -11,8 +13,8 @@ export const AnnouncementBar: React.FC = () => {
       
       {/* DESKTOP TOP BAR */}
       <div className="hidden lg:flex max-w-7xl mx-auto items-center justify-between gap-4">
-        {/* Left: Official Email Contact */}
-        <div className="flex items-center gap-2.5">
+        {/* Left: Official Email Contact & Track Order */}
+        <div className="flex items-center gap-4">
           <a
             href="mailto:therevivetech@gmail.com"
             className="flex items-center gap-1.5 font-medium text-emerald-400 hover:text-emerald-300 transition-colors"
@@ -20,6 +22,14 @@ export const AnnouncementBar: React.FC = () => {
             <Mail className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
             <span className="hover:underline">therevivetech@gmail.com</span>
           </a>
+          <span className="text-zinc-700">|</span>
+          <button
+            onClick={() => navigateToTrackOrder()}
+            className="flex items-center gap-1 text-slate-300 hover:text-[#C0FE2D] transition-colors cursor-pointer"
+          >
+            <Truck className="w-3.5 h-3.5 text-[#C0FE2D]" />
+            <span>Track Your Order</span>
+          </button>
         </div>
 
         {/* Center/Right: Store Status & Close */}

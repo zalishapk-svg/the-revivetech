@@ -13,7 +13,7 @@ export const Footer: React.FC = () => {
   const { 
     navigateToHome, navigateToShop, navigateToAbout, navigateToContact, 
     navigateToFAQ, navigateToPage, navigateToBlog, navigateToAccount, 
-    collections, showToast 
+    navigateToTrackOrder, collections, showToast 
   } = useShopify();
   const [emailInput, setEmailInput] = useState("");
 
@@ -136,6 +136,15 @@ export const Footer: React.FC = () => {
             <h4 className="text-xs font-bold text-white uppercase tracking-wider font-mono">Hardware & Shop</h4>
             <ul className="space-y-2 text-xs">
               <li>
+                <button
+                  onClick={() => navigateToTrackOrder()}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-950/90 border border-emerald-700/60 text-[#C0FE2D] font-bold text-xs hover:bg-emerald-900 transition-all shadow-sm group text-left cursor-pointer"
+                >
+                  <Truck className="w-3.5 h-3.5 text-[#C0FE2D] group-hover:translate-x-0.5 transition-transform shrink-0" />
+                  <span>Track Your Order</span>
+                </button>
+              </li>
+              <li>
                 <button onClick={navigateToShop} className="hover:text-emerald-400 transition-colors">
                   Full Product Catalog
                 </button>
@@ -218,6 +227,10 @@ export const Footer: React.FC = () => {
             <p>© 2026 TheReviveTech. All rights reserved.</p>
           </div>
           <div className="flex items-center gap-4 text-[11px] flex-wrap justify-center sm:justify-end">
+            <button onClick={() => navigateToTrackOrder()} className="text-emerald-400 hover:text-emerald-300 font-semibold flex items-center gap-1">
+              <Truck className="w-3 h-3" />
+              <span>Track Order</span>
+            </button>
             <button onClick={() => navigateToPage("privacy-policy")} className="hover:text-slate-300">
               Privacy Policy
             </button>
