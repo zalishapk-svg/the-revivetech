@@ -6,8 +6,7 @@ import {
   getConfig, shopifyStorage, getAppBaseUrl, 
   STABLE_ADMIN_API_VERSION, STABLE_STOREFRONT_API_VERSION, REQUIRED_ADMIN_SCOPES,
   checkFirebaseAdminHealth, checkShopifyStorefrontHealth,
-  validateShopifyCartItems, createShopifyAdminOrder, getOrderConfirmationRecord, fetchShopifyShippingRates,
-  trackShopifyOrder
+  validateShopifyCartItems, createShopifyAdminOrder, getOrderConfirmationRecord, fetchShopifyShippingRates
 } from "./api/_lib/shopify-server.js";
 
 const app = express();
@@ -754,51 +753,6 @@ app.get(["/api/shopify/order/:reference", "/api/order/:reference"], async (req, 
   } catch (error: any) {
     console.error("[Order Lookup Exception in Express]", error);
     return res.status(500).json({ error: "Failed to retrieve order confirmation." });
-  }
-});
-
-// Secure Server-Side Order Tracking Endpoint (Order Number + Email Verification)
-app.all(["/api/orders/track", "/api/order/track", "/api/shopify/order/track", "/api/shopify/orders/track"], async (req, res) => {
-  try {
-    const data = req.method === "POST" ? req.body : req.query;
-    const { orderNumber, email } = data || {};
-
-    if (!orderNumber || typeof orderNumber !== "string" || !orderNumber.trim()) {
-      return res.status(400).json({
-        success: false,
-        error: "Please provide a valid Order Number (e.g. #1048 or #RT12345).",
-      });
-    }
-
-    if (!email || typeof email !== "string" || !email.trim() || !email.includes("@")) {
-      return res.status(400).json({
-        success: false,
-        error: "Please provide the email address used during order checkout.",
-      });
-    }
-
-    const config = getConfig();
-    const result = await trackShopifyOrder(orderNumber.trim(), email.trim(), config.storeDomain);
-
-    if (!result.success) {
-      return res.status(404).json({
-        success: false,
-        error:
-          result.error ||
-          "We couldn't find an order matching those details. Please check your order number and email address and try again.",
-      });
-    }
-
-    return res.status(200).json({
-      success: true,
-      order: result.order,
-    });
-  } catch (err: any) {
-    console.error("[Order Tracking Route Exception]", err);
-    return res.status(500).json({
-      success: false,
-      error: "Something went wrong while checking your order. Please try again in a moment.",
-    });
   }
 });
 

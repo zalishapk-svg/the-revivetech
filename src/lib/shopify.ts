@@ -30,7 +30,7 @@ export const STOREFRONT_QUERIES = {
               maxVariantPrice { amount currencyCode }
             }
             featuredImage { id url altText width height }
-            images(first: 20) {
+            images(first: 4) {
               edges { node { id url altText width height } }
             }
             options { id name values }
@@ -131,7 +131,7 @@ export const STOREFRONT_QUERIES = {
                     maxVariantPrice { amount currencyCode }
                   }
                   featuredImage { id url altText width height }
-                  images(first: 20) {
+                  images(first: 2) {
                     edges { node { id url altText width height } }
                   }
                   options { id name values }

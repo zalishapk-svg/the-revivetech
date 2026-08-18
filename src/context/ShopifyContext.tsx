@@ -35,7 +35,6 @@ interface ShopifyContextType {
   navigateToCart: () => void;
   navigateToCheckout: () => void;
   navigateToOrderConfirmation: (orderReference: string) => void;
-  navigateToTrackOrder: (initialOrderNumber?: string, initialEmail?: string) => void;
   navigateToPage: (handle: string) => void;
 
   // Shopify Storefront Data
@@ -171,17 +170,6 @@ export function parseUrlToViewState(path: string, search: string): ViewState {
   }
   if (cleanPath === "/account") return { type: "account" };
   if (cleanPath === "/faq") return { type: "faq" };
-  if (
-    cleanPath === "/track-order" ||
-    cleanPath === "/track-your-order" ||
-    cleanPath === "/order-tracking" ||
-    cleanPath === "/track"
-  ) {
-    const searchParams = new URLSearchParams(search);
-    const initialOrderNumber = searchParams.get("order") || searchParams.get("orderNumber") || undefined;
-    const initialEmail = searchParams.get("email") || undefined;
-    return { type: "track_order", initialOrderNumber, initialEmail };
-  }
   if (cleanPath.startsWith("/page/")) {
     const handle = cleanPath.replace("/page/", "");
     if (handle) return { type: "page", handle };
@@ -211,14 +199,6 @@ export function viewStateToUrl(view: ViewState): string {
       return "/checkout";
     case "order_confirmation":
       return `/order-confirmation/${view.orderReference}`;
-    case "track_order":
-      if (view.initialOrderNumber || view.initialEmail) {
-        const params = new URLSearchParams();
-        if (view.initialOrderNumber) params.set("order", view.initialOrderNumber);
-        if (view.initialEmail) params.set("email", view.initialEmail);
-        return `/track-order?${params.toString()}`;
-      }
-      return "/track-order";
     case "search":
       return view.query ? `/search?q=${encodeURIComponent(view.query)}` : "/search";
     case "about":
@@ -419,35 +399,67 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [hasMoreCollections, setHasMoreCollections] = useState<boolean>(false);
   const [isFetchingMoreCollections, setIsFetchingMoreCollections] = useState<boolean>(false);
 
-  // Load Initial Shopify Data (Fast critical rendering batch)
+  // Load Initial Shopify Data (Optimized fast critical-path rendering)
   const loadShopifyData = async () => {
     setIsLoadingData(true);
     try {
-      const [pRes, cRes, aRes] = await Promise.all([
-        getProductsFromShopify({ first: 15 }),
-        getCollectionsFromShopify({ first: 6 }),
-        getBlogArticlesFromShopify({ first: 6 }),
-      ]);
+      // 1. Critical Path: Products fetch resolves & paints immediately
+      const productsPromise = getProductsFromShopify({ first: 20 })
+        .then((pRes) => {
+          if (pRes?.products?.length > 0) {
+            setProducts(pRes.products);
+            setProductCursor(pRes.pageInfo.endCursor);
+            setHasMoreProducts(pRes.pageInfo.hasNextPage);
+          }
+          // Unblock loading state immediately once products arrive
+          setIsLoadingData(false);
+          return pRes;
+        })
+        .catch((err) => {
+          console.warn("Product loading error:", err);
+          setIsLoadingData(false);
+        });
 
-      setProducts(pRes.products);
-      setProductCursor(pRes.pageInfo.endCursor);
-      setHasMoreProducts(pRes.pageInfo.hasNextPage);
+      // 2. Collections fetch runs concurrently
+      const collectionsPromise = getCollectionsFromShopify({ first: 8 })
+        .then((cRes) => {
+          if (cRes?.collections?.length > 0) {
+            setCollections(cRes.collections);
+            setCollectionCursor(cRes.pageInfo.endCursor);
+            setHasMoreCollections(cRes.pageInfo.hasNextPage);
+          }
+          return cRes;
+        })
+        .catch((err) => {
+          console.warn("Collections loading error:", err);
+        });
 
-      setCollections(cRes.collections);
-      setCollectionCursor(cRes.pageInfo.endCursor);
-      setHasMoreCollections(cRes.pageInfo.hasNextPage);
+      // 3. Blog articles fetch runs concurrently
+      const articlesPromise = getBlogArticlesFromShopify({ first: 6 })
+        .then((aRes) => {
+          if (aRes?.articles?.length > 0) {
+            setArticles(aRes.articles);
+            setArticleCursor(aRes.pageInfo.endCursor);
+            setHasMoreArticles(aRes.pageInfo.hasNextPage);
+          }
+          return aRes;
+        })
+        .catch((err) => {
+          console.warn("Articles loading error:", err);
+        });
 
-      setArticles(aRes.articles);
-      setArticleCursor(aRes.pageInfo.endCursor);
-      setHasMoreArticles(aRes.pageInfo.hasNextPage);
+      // 4. Background backend config check (non-blocking)
+      fetch("/api/shopify/config")
+        .then((res) => res.json())
+        .then((configData) => {
+          if (configData?.config) {
+            setStoreDomain(configData.config.storeDomain);
+            setIsMockShop(configData.config.isMockShop);
+          }
+        })
+        .catch(() => {});
 
-      // Check current backend config
-      const res = await fetch("/api/shopify/config");
-      const configData = await res.json();
-      if (configData.config) {
-        setStoreDomain(configData.config.storeDomain);
-        setIsMockShop(configData.config.isMockShop);
-      }
+      await Promise.allSettled([productsPromise, collectionsPromise, articlesPromise]);
     } catch (e) {
       console.error("Error loading Shopify data:", e);
     } finally {
@@ -677,10 +689,6 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const navigateToOrderConfirmation = (orderReference: string) => {
     setIsCartOpen(false);
     setViewState({ type: "order_confirmation", orderReference });
-  };
-  const navigateToTrackOrder = (initialOrderNumber?: string, initialEmail?: string) => {
-    setIsCartOpen(false);
-    setViewState({ type: "track_order", initialOrderNumber, initialEmail });
   };
   const navigateToPage = (handle: string) => setViewState({ type: "page", handle });
 
@@ -931,7 +939,6 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
         navigateToCart,
         navigateToCheckout,
         navigateToOrderConfirmation,
-        navigateToTrackOrder,
         navigateToPage,
         products,
         collections,

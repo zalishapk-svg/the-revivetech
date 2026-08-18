@@ -8,7 +8,6 @@ import { FlashDeals } from "./FlashDeals";
 import { SingleBanner } from "./SingleBanner";
 import { PromotionalMarquee } from "./PromotionalMarquee";
 import { CustomerReviews } from "./CustomerReviews";
-import { CommunityStories } from "./CommunityStories";
 import { LatestBlog } from "./LatestBlog";
 import { WhyChooseUs } from "./WhyChooseUs";
 import { FAQSection } from "./FAQSection";
@@ -49,10 +48,7 @@ export const HomePage: React.FC = () => {
       {/* 11. CUSTOMER REVIEWS */}
       <CustomerReviews />
 
-      {/* 12. COMMUNITY SETUP GALLERY */}
-      <CommunityStories />
-
-      {/* 13. BLOGS */}
+      {/* 12. BLOGS */}
       <LatestBlog />
 
       {/* FAQ Accordion */}
