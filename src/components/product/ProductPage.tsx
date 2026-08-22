@@ -89,6 +89,16 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
     return product ? getProductReviews(product) : { reviews: [], averageRating: 4.9, totalReviews: 0, ratingBreakdown: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 } };
   }, [product?.handle, product?.id]);
 
+  // Filter out default dummy options (e.g. name "Title" with value "Default Title")
+  const validOptions = useMemo(() => {
+    if (!product?.options) return [];
+    return product.options.filter((opt) => {
+      const isTitleDefault = opt.name.toLowerCase() === "title" && opt.values.every((v) => v.toLowerCase() === "default title" || v.toLowerCase() === "default");
+      const isSingleDefaultValue = opt.values.length === 1 && (opt.values[0].toLowerCase() === "default title" || opt.values[0].toLowerCase() === "default");
+      return !isTitleDefault && !isSingleDefaultValue;
+    });
+  }, [product?.options]);
+
   const [selectedImageIdx, setSelectedImageIdx] = useState(0);
   const [selectedVariantId, setSelectedVariantId] = useState<string | undefined>(
     product?.variants?.[0]?.id
@@ -151,16 +161,6 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
   const isAvailable = selectedVariant ? selectedVariant.availableForSale : product.availableForSale;
 
   const relatedProducts = products.filter((p) => p.handle !== product.handle).slice(0, 4);
-
-  // Filter out default dummy options (e.g. name "Title" with value "Default Title")
-  const validOptions = useMemo(() => {
-    if (!product.options) return [];
-    return product.options.filter((opt) => {
-      const isTitleDefault = opt.name.toLowerCase() === "title" && opt.values.every((v) => v.toLowerCase() === "default title" || v.toLowerCase() === "default");
-      const isSingleDefaultValue = opt.values.length === 1 && (opt.values[0].toLowerCase() === "default title" || opt.values[0].toLowerCase() === "default");
-      return !isTitleDefault && !isSingleDefaultValue;
-    });
-  }, [product.options]);
 
   return (
     <div className="bg-[#161616] text-slate-100 min-h-screen py-10">
