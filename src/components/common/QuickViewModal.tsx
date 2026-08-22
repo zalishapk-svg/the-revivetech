@@ -4,11 +4,48 @@ import { X, ShoppingBag, Heart, Star, Check, ShieldCheck, Truck, ArrowRight } fr
 import { useShopify } from "../../context/ShopifyContext";
 import { formatMoney, calculateDiscount, hasCompareAtDiscount } from "../../lib/utils";
 import { getProductReviews } from "../../lib/reviews";
+import { Product } from "../../types";
 
 export const QuickViewModal: React.FC = () => {
-  const { quickViewHandle, setQuickViewHandle, products, addToCart, toggleWishlist, isInWishlist, navigateToProduct } = useShopify();
+  const { quickViewHandle, setQuickViewHandle, products, addToCart, toggleWishlist, isInWishlist, navigateToProduct, fetchProductByHandle } = useShopify();
   const [selectedVariantId, setSelectedVariantId] = useState<string | undefined>(undefined);
   const [quantity, setQuantity] = useState(1);
+  const [fetchedProduct, setFetchedProduct] = useState<Product | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const productFromList = products.find((p) => p.handle === quickViewHandle);
+  const product = productFromList || fetchedProduct;
+
+  useEffect(() => {
+    if (!quickViewHandle) {
+      setFetchedProduct(null);
+      setIsLoading(false);
+      return;
+    }
+
+    if (productFromList) {
+      setFetchedProduct(productFromList);
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    fetchProductByHandle(quickViewHandle)
+      .then((p) => {
+        if (p) setFetchedProduct(p);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, [quickViewHandle, productFromList, fetchProductByHandle]);
+
+  useEffect(() => {
+    if (product?.variants?.[0]?.id) {
+      setSelectedVariantId(product.variants[0].id);
+    } else {
+      setSelectedVariantId(undefined);
+    }
+  }, [product?.id, product?.handle]);
 
   // Lock body scroll when QuickView is active
   useEffect(() => {
@@ -34,9 +71,25 @@ export const QuickViewModal: React.FC = () => {
 
   if (!quickViewHandle) return null;
 
-  const product = products.find((p) => p.handle === quickViewHandle) || products[0];
-
-  if (!product) return null;
+  if (isLoading || !product) {
+    return (
+      <AnimatePresence>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setQuickViewHandle(null)}
+            className="fixed inset-0 bg-[#161616]/80 backdrop-blur-md"
+          />
+          <div className="relative z-50 bg-[#1c1c1c] border border-emerald-800/40 rounded-3xl p-8 shadow-2xl flex flex-col items-center justify-center space-y-3">
+            <div className="animate-spin w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full" />
+            <p className="text-xs font-mono text-emerald-400">Loading product...</p>
+          </div>
+        </div>
+      </AnimatePresence>
+    );
+  }
 
   const isWishlisted = isInWishlist(product.handle);
 

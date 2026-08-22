@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Heart,
@@ -22,6 +22,7 @@ import { ProductCarousel } from "../common/ProductCarousel";
 import { useShopify } from "../../context/ShopifyContext";
 import { formatMoney, calculateDiscount, hasCompareAtDiscount } from "../../lib/utils";
 import { getProductReviews } from "../../lib/reviews";
+import { Product } from "../../types";
 
 interface ProductPageProps {
   handle: string;
@@ -36,10 +37,53 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
     toggleCompare,
     isInCompare,
     navigateToProduct,
+    navigateToShop,
     showToast,
+    fetchProductByHandle,
   } = useShopify();
 
-  const product = products.find((p) => p.handle === handle) || products[0];
+  const productFromList = useMemo(() => products.find((p) => p.handle === handle), [products, handle]);
+  const [directProduct, setDirectProduct] = useState<Product | null>(productFromList || null);
+  const [isLoading, setIsLoading] = useState<boolean>(!productFromList);
+  const [isNotFound, setIsNotFound] = useState<boolean>(false);
+
+  const product = productFromList || directProduct;
+
+  useEffect(() => {
+    let isMounted = true;
+    if (productFromList) {
+      setDirectProduct(productFromList);
+      setIsLoading(false);
+      setIsNotFound(false);
+      return;
+    }
+
+    setIsLoading(true);
+    setIsNotFound(false);
+
+    fetchProductByHandle(handle)
+      .then((p) => {
+        if (!isMounted) return;
+        if (p) {
+          setDirectProduct(p);
+          setIsNotFound(false);
+        } else {
+          setIsNotFound(true);
+        }
+      })
+      .catch((err) => {
+        console.error("Error loading product:", err);
+        if (!isMounted) return;
+        setIsNotFound(true);
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [handle, productFromList, fetchProductByHandle]);
 
   const reviewSummary = useMemo(() => {
     return product ? getProductReviews(product) : { reviews: [], averageRating: 4.9, totalReviews: 0, ratingBreakdown: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 } };
@@ -52,11 +96,38 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState<"overview" | "specs" | "reviews" | "shipping">("overview");
 
-  if (!product) {
+  useEffect(() => {
+    if (product?.variants?.[0]?.id) {
+      setSelectedVariantId(product.variants[0].id);
+    } else {
+      setSelectedVariantId(undefined);
+    }
+    setSelectedImageIdx(0);
+    setQuantity(1);
+  }, [product?.id, product?.handle]);
+
+  if (isLoading || (!product && !isNotFound)) {
     return (
       <div className="bg-[#161616] text-slate-100 min-h-screen py-20 flex flex-col items-center justify-center space-y-4">
         <div className="animate-spin w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full" />
         <p className="text-sm font-mono text-emerald-400">Loading product hardware details...</p>
+      </div>
+    );
+  }
+
+  if (isNotFound || !product) {
+    return (
+      <div className="bg-[#161616] text-slate-100 min-h-screen py-20 flex flex-col items-center justify-center space-y-4 px-4 text-center">
+        <h2 className="text-2xl font-black text-white font-mono">Product Not Found</h2>
+        <p className="text-sm text-slate-400 max-w-md">
+          The requested product hardware could not be located or may be temporarily unavailable.
+        </p>
+        <button
+          onClick={() => navigateToShop()}
+          className="mt-4 px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs uppercase tracking-wider rounded-xl transition-colors cursor-pointer"
+        >
+          Browse All Products
+        </button>
       </div>
     );
   }
@@ -317,15 +388,17 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
           <div className="text-xs sm:text-sm text-slate-300 leading-relaxed">
             {activeTab === "overview" && (
               <div className="space-y-4">
-                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                  {product.seo?.description || product.description}
-                </p>
+                {product.seo?.description ? (
+                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                    {product.seo.description}
+                  </p>
+                ) : null}
                 {product.specs && Object.keys(product.specs).length > 0 && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-emerald-900/30">
                     {Object.entries(product.specs).map(([key, val]) => (
                       <div key={key} className="flex justify-between p-3 bg-[#161616] rounded-xl border border-emerald-900/30 font-mono text-xs">
                         <span className="text-slate-400">{key}:</span>
-                        <span className="text-emerald-400 font-bold">{val}</span>
+                        <span className="text-emerald-400 font-bold">{String(val)}</span>
                       </div>
                     ))}
                   </div>
@@ -351,7 +424,7 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
                     {Object.entries(product.specs).map(([key, val]) => (
                       <div key={key} className="flex justify-between p-3 bg-[#161616] rounded-xl border border-emerald-900/30">
                         <span className="text-slate-400">{key}:</span>
-                        <span className="text-emerald-400 font-bold">{val}</span>
+                        <span className="text-emerald-400 font-bold">{String(val)}</span>
                       </div>
                     ))}
                   </div>

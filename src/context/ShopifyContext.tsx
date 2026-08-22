@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { Product, Collection, BlogArticle, CartLineItem, ViewState, Customer } from "../types";
 import { 
   getProductsFromShopify, 
+  getProductByHandleFromShopify,
   getCollectionsFromShopify, 
   getBlogArticlesFromShopify, 
   STOREFRONT_QUERIES,
@@ -43,6 +44,7 @@ interface ShopifyContextType {
   articles: BlogArticle[];
   isLoadingData: boolean;
   refreshData: () => Promise<void>;
+  fetchProductByHandle: (handle: string) => Promise<Product | null>;
 
   // Progressive Pagination & Background Prefetching
   hasMoreProducts: boolean;
@@ -130,18 +132,26 @@ interface ShopifyContextType {
 }
 
 export function parseUrlToViewState(path: string, search: string): ViewState {
-  const cleanPath = path.replace(/\/$/, "");
+  let cleanPath = decodeURIComponent(path || "").replace(/\/+$/, "");
   if (!cleanPath || cleanPath === "") return { type: "home" };
   if (cleanPath === "/shop") return { type: "shop" };
   if (cleanPath === "/explore-all") return { type: "explore_all" };
   if (cleanPath === "/sale") return { type: "sale" };
-  if (cleanPath === "/collections" || cleanPath === "/collections/") return { type: "collections_list" };
+  if (cleanPath === "/collections" || cleanPath === "/collection") return { type: "collections_list" };
   if (cleanPath.startsWith("/collections/")) {
-    const handle = cleanPath.replace("/collections/", "");
+    const handle = cleanPath.replace(/^\/collections\//, "").replace(/^\/+|\/+$/g, "");
+    if (handle) return { type: "collection", handle };
+  }
+  if (cleanPath.startsWith("/collection/")) {
+    const handle = cleanPath.replace(/^\/collection\//, "").replace(/^\/+|\/+$/g, "");
     if (handle) return { type: "collection", handle };
   }
   if (cleanPath.startsWith("/products/")) {
-    const handle = cleanPath.replace("/products/", "");
+    const handle = cleanPath.replace(/^\/products\//, "").replace(/^\/+|\/+$/g, "");
+    if (handle) return { type: "product", handle };
+  }
+  if (cleanPath.startsWith("/product/")) {
+    const handle = cleanPath.replace(/^\/product\//, "").replace(/^\/+|\/+$/g, "");
     if (handle) return { type: "product", handle };
   }
   if (cleanPath === "/cart") return { type: "cart" };
@@ -154,7 +164,7 @@ export function parseUrlToViewState(path: string, search: string): ViewState {
     return { type: "checkout" };
   }
   if (cleanPath.startsWith("/order-confirmation/")) {
-    const orderReference = cleanPath.replace("/order-confirmation/", "");
+    const orderReference = cleanPath.replace(/^\/order-confirmation\//, "").replace(/^\/+|\/+$/g, "");
     if (orderReference) return { type: "order_confirmation", orderReference };
   }
   if (cleanPath === "/search") {
@@ -165,13 +175,17 @@ export function parseUrlToViewState(path: string, search: string): ViewState {
   if (cleanPath === "/contact") return { type: "contact" };
   if (cleanPath === "/blog") return { type: "blog" };
   if (cleanPath.startsWith("/blog/")) {
-    const handle = cleanPath.replace("/blog/", "");
+    const handle = cleanPath.replace(/^\/blog\//, "").replace(/^\/+|\/+$/g, "");
+    if (handle) return { type: "article", handle };
+  }
+  if (cleanPath.startsWith("/article/")) {
+    const handle = cleanPath.replace(/^\/article\//, "").replace(/^\/+|\/+$/g, "");
     if (handle) return { type: "article", handle };
   }
   if (cleanPath === "/account") return { type: "account" };
   if (cleanPath === "/faq") return { type: "faq" };
   if (cleanPath.startsWith("/page/")) {
-    const handle = cleanPath.replace("/page/", "");
+    const handle = cleanPath.replace(/^\/page\//, "").replace(/^\/+|\/+$/g, "");
     if (handle) return { type: "page", handle };
   }
   return { type: "home" };
@@ -403,11 +417,36 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const loadShopifyData = async () => {
     setIsLoadingData(true);
     try {
+      // 0. Direct Product Critical Path: If opened on a product page, prioritize fetching that exact product
+      let directProductPromise: Promise<any> = Promise.resolve(null);
+      if (viewState.type === "product" && "handle" in viewState && viewState.handle) {
+        const directHandle = viewState.handle;
+        directProductPromise = getProductByHandleFromShopify(directHandle)
+          .then((directProd) => {
+            if (directProd) {
+              setProducts((prev) => {
+                if (prev.some((p) => p.handle === directProd.handle || p.id === directProd.id)) {
+                  return prev.map((p) => (p.handle === directProd.handle || p.id === directProd.id ? directProd : p));
+                }
+                return [directProd, ...prev];
+              });
+            }
+            return directProd;
+          })
+          .catch((err) => {
+            console.warn("Direct product preload error:", err);
+          });
+      }
+
       // 1. Critical Path: Products fetch resolves & paints immediately
       const productsPromise = getProductsFromShopify({ first: 20 })
         .then((pRes) => {
           if (pRes?.products?.length > 0) {
-            setProducts(pRes.products);
+            setProducts((prev) => {
+              const existingHandles = new Set(prev.map((p) => p.handle));
+              const additions = pRes.products.filter((p) => !existingHandles.has(p.handle));
+              return [...prev, ...additions];
+            });
             setProductCursor(pRes.pageInfo.endCursor);
             setHasMoreProducts(pRes.pageInfo.hasNextPage);
           }
@@ -459,7 +498,7 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
         })
         .catch(() => {});
 
-      await Promise.allSettled([productsPromise, collectionsPromise, articlesPromise]);
+      await Promise.allSettled([directProductPromise, productsPromise, collectionsPromise, articlesPromise]);
     } catch (e) {
       console.error("Error loading Shopify data:", e);
     } finally {
@@ -470,6 +509,29 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
   useEffect(() => {
     loadShopifyData();
   }, []);
+
+  // Fetch a single product by handle directly from Shopify (with caching)
+  const fetchProductByHandle = async (handle: string): Promise<Product | null> => {
+    if (!handle) return null;
+    const existing = products.find((p) => p.handle === handle);
+    if (existing) return existing;
+
+    try {
+      const fetched = await getProductByHandleFromShopify(handle);
+      if (fetched) {
+        setProducts((prev) => {
+          if (prev.some((p) => p.handle === fetched.handle || p.id === fetched.id)) {
+            return prev.map((p) => (p.handle === fetched.handle || p.id === fetched.id ? fetched : p));
+          }
+          return [fetched, ...prev];
+        });
+        return fetched;
+      }
+    } catch (err) {
+      console.error(`Error fetching product by handle ${handle}:`, err);
+    }
+    return null;
+  };
 
   // Fetch Next Products Batch
   const fetchMoreProducts = async () => {
@@ -945,6 +1007,7 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
         articles,
         isLoadingData,
         refreshData: loadShopifyData,
+        fetchProductByHandle,
         hasMoreProducts,
         isFetchingMoreProducts,
         fetchMoreProducts,
