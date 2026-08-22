@@ -39,7 +39,7 @@ export const PromotionalBanner: React.FC = () => {
               </button>
 
               <span className="flex items-center gap-1.5 text-xs text-emerald-400 font-mono">
-                <ShieldCheck className="w-4 h-4" /> 3-Year Protection Plan Included
+                <ShieldCheck className="w-4 h-4" /> Official Brand Warranty Included
               </span>
             </div>
           </div>

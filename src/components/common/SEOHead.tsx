@@ -268,18 +268,18 @@ export const SEOHead: React.FC = () => {
           },
           {
             "@type": "Question",
-            "name": "Do you offer Cash on Delivery (COD) across Pakistan?",
+            "name": "What payment methods are accepted for orders?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes! Cash on Delivery (COD) is available for all orders across Pakistan up to Rs. 100,000. Express shipping takes 24 to 48 hours to major cities like Karachi, Lahore, Islamabad, Rawalpindi, and Faisalabad."
+              "text": "We accept Visa & Mastercard Credit/Debit Cards, Direct Bank Transfers, and mobile payment wallets (JazzCash & EasyPaisa) with 256-bit encrypted checkout security."
             }
           },
           {
             "@type": "Question",
-            "name": "How does the Official 3-Year Hardware Warranty work?",
+            "name": "What warranty coverage is provided on products?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "All gaming mice, keyboards, audio gear, and monitors purchased from The Revive Tech carry an official local manufacturer warranty. If a hardware defect occurs, send or bring the product to our Lahore hub with your invoice for RMA diagnosis and replacement."
+              "text": "Warranties vary depending on the product type, brand, and manufacturer. Specific warranty terms and coverage periods are listed on each product's details page. All products are 100% genuine and backed by official brand warranty support."
             }
           },
           {

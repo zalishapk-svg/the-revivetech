@@ -12,7 +12,7 @@ const FAQS = [
   },
   {
     q: "What warranty coverage is included with hardware purchases?",
-    a: "All products sold on TheReviveTech come with our official 3-Year Limited Hardware Protection Plan, which includes full replacement coverage for switch double-clicking, sensor degradation, and QD-OLED burn-in.",
+    a: "Warranties vary depending on the product type, brand, and manufacturer. Specific warranty terms, coverage periods, and replacement details are listed directly on each product's page. All items are 100% genuine with official brand support.",
   },
   {
     q: "How fast is express shipping?",

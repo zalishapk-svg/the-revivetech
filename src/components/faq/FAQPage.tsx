@@ -35,20 +35,20 @@ const FAQ_DATA: FAQItem[] = [
   {
     id: "f4",
     category: "Shipping",
-    question: "Do you offer Cash on Delivery (COD)?",
-    answer: "Yes! Cash on Delivery is available for all orders across Pakistan up to Rs. 100,000. For custom liquid-cooled rigs or orders exceeding Rs. 100,000, a partial bank transfer deposit may be requested."
+    question: "How are orders packed and protected during transit?",
+    answer: "Every order is packaged with multi-layered shock-absorbing bubble wrap, reinforced corner protectors, and tamper-evident security tape to ensure fragile electronics, gaming mice, monitors, and custom keyboards arrive in flawless factory condition."
   },
   {
     id: "f5",
     category: "Warranty",
-    question: "How does the Official 3-Year Warranty work?",
-    answer: "All gaming mice, keyboards, audio gear, and monitors purchased from ThereReviveTech carry an official local manufacturer warranty. If a hardware defect arises, bring or mail the product to our Lahore Hafeez Centre hub with your invoice for RMA diagnosis and replacement."
+    question: "What warranty coverage is provided on products?",
+    answer: "Warranties vary depending on the product category, brand, and manufacturer. Specific warranty terms, coverage durations (such as official replacement or brand manufacturer warranties), and claim guidelines are detailed directly on each product's page. All items are guaranteed 100% authentic and brand new."
   },
   {
     id: "f6",
     category: "Warranty",
-    question: "Are physical damage or water spills covered under warranty?",
-    answer: "Standard manufacturer warranty covers electrical and component defects (such as sensor chatter, switch double-clicking, or dead pixels). Accidental liquid spills, physical drops, or unapproved firmware modifications are excluded."
+    question: "How do I claim a warranty or RMA support?",
+    answer: "If you experience any hardware defect within your product's specific warranty period, reach out to our technical support team with your order invoice and product serial number. We will guide you through RMA inspection, troubleshooting, repair, or official manufacturer replacement."
   },
   {
     id: "f7",
@@ -72,7 +72,7 @@ const FAQ_DATA: FAQItem[] = [
     id: "f10",
     category: "Payments",
     question: "What payment methods do you accept?",
-    answer: "We accept Cash on Delivery (COD), Visa & Mastercard Credit/Debit Cards, JazzCash, EasyPaisa, and Direct Bank Transfers (Meezan, HBL, Alfalah)."
+    answer: "We accept Visa & Mastercard Credit/Debit Cards, Direct Bank Transfers, and mobile payment wallets (JazzCash & EasyPaisa). All online checkout transactions are encrypted with bank-grade 256-bit SSL security."
   },
   {
     id: "f11",
@@ -152,7 +152,7 @@ export const FAQPage: React.FC = () => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search questions (e.g. warranty, COD, delivery time)..."
+              placeholder="Search questions (e.g. warranty, shipping, payments, delivery time)..."
               className="w-full bg-[#1c1c1c] border border-emerald-900/60 rounded-2xl pl-11 pr-4 py-3 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 shadow-xl"
             />
           </div>

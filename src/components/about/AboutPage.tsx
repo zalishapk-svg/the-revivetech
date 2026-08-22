@@ -2,7 +2,7 @@ import React from "react";
 import { YellowTape } from "../common/YellowTape";
 import { useShopify } from "../../context/ShopifyContext";
 import { 
-  ShieldCheck, Award, Zap, Users, Cpu, Trophy, Clock, Target, 
+  ShieldCheck, Award, Zap, Cpu, Trophy, Clock, Target, 
   Sparkles, CheckCircle2, ArrowRight, MapPin, Truck, Headphones
 } from "lucide-react";
 
@@ -39,29 +39,8 @@ export const AboutPage: React.FC = () => {
   const stats = [
     { value: "50,000+", label: "Gamers & Creators Served in PK" },
     { value: "100%", label: "Genuine Authorized Hardware" },
-    { value: "3 Years", label: "Official Warranty Coverage" },
+    { value: "Verified", label: "Official Brand Warranties" },
     { value: "4.9 / 5.0", label: "Customer Satisfaction Score" }
-  ];
-
-  const team = [
-    {
-      name: "Zain Ahmed",
-      role: "Founder & Lead Tech Architect",
-      bio: "Over 10 years of experience in custom liquid cooling, mechanical switches tuning, and high-frequency display optimization.",
-      img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80"
-    },
-    {
-      name: "Usman Malik",
-      role: "Head of Hardware Procurement",
-      bio: "Specializes in sourcing rare artisan keycaps, magnetic hall-effect switches, and ultra-lightweight gaming sensors directly from authorized hubs.",
-      img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&auto=format&fit=crop&q=80"
-    },
-    {
-      name: "Ayesha Tariq",
-      role: "Customer Success & Warranty Lead",
-      bio: "Dedicated to providing zero-friction RMA resolution and instant technical assistance for custom PC battlestations.",
-      img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&auto=format&fit=crop&q=80"
-    }
   ];
 
   return (
@@ -191,38 +170,13 @@ export const AboutPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Team Section */}
-        <div className="space-y-8">
-          <div className="text-center max-w-xl mx-auto space-y-2">
-            <h2 className="text-2xl sm:text-3xl font-black text-white">MEET THE LEADERSHIP</h2>
-            <p className="text-xs text-slate-400">The minds powering ThereReviveTech</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {team.map((member, idx) => (
-              <div key={idx} className="bg-[#1c1c1c] border border-emerald-900/40 rounded-3xl p-6 space-y-4 hover:border-emerald-500/50 transition-colors">
-                <img
-                  src={member.img}
-                  alt={member.name}
-                  className="w-full h-48 object-cover rounded-2xl border border-emerald-900/60"
-                />
-                <div>
-                  <h4 className="text-lg font-bold text-white">{member.name}</h4>
-                  <p className="text-xs text-emerald-400 font-mono mb-2">{member.role}</p>
-                  <p className="text-xs text-slate-300 leading-relaxed">{member.bio}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
         {/* Call to Action */}
         <div className="bg-gradient-to-r from-[#1c1c1c] via-[#222222] to-[#161616] border border-emerald-800/60 rounded-3xl p-10 md:p-14 text-center space-y-6 shadow-2xl">
           <h2 className="text-3xl sm:text-4xl font-black text-white">
             READY TO UPGRADE YOUR <YellowTape text="BATTLESTATION?" />
           </h2>
           <p className="text-xs sm:text-sm text-slate-300 max-w-xl mx-auto">
-            Discover our curated lineup of gaming mice, mechanical keyboards, magnetic switches, and high-performance monitors with nationwide cash on delivery.
+            Discover our curated lineup of gaming mice, mechanical keyboards, magnetic switches, and high-performance monitors with fast nationwide delivery.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
             <button

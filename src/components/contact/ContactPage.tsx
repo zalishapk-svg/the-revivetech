@@ -195,7 +195,7 @@ export const ContactPage: React.FC = () => {
                   >
                     <option value="Order Inquiry">Order Inquiry / Shipping Tracking</option>
                     <option value="Product Spec Question">Product Specs & Switch Compatibility</option>
-                    <option value="Warranty Claim">Official 3-Year Warranty Claim (RMA)</option>
+                    <option value="Warranty Claim">Official Brand Warranty Claim (RMA)</option>
                     <option value="Wholesale">Bulk / Esports Partnership</option>
                   </select>
                 </div>
