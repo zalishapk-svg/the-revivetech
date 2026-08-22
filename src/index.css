@@ -182,3 +182,104 @@
   color: #ffffff;
   font-weight: 700;
 }
+
+/* Rich HTML Product Description & Full Specifications Typography */
+.product-description-content p {
+  margin-top: 0.75em;
+  margin-bottom: 0.75em;
+  line-height: 1.7;
+  color: #cbd5e1;
+}
+.product-description-content h1,
+.product-description-content h2,
+.product-description-content h3,
+.product-description-content h4,
+.product-description-content h5,
+.product-description-content h6 {
+  color: #ffffff;
+  font-weight: 800;
+  margin-top: 1.5em;
+  margin-bottom: 0.6em;
+  line-height: 1.3;
+}
+.product-description-content h1 { font-size: 1.75em; }
+.product-description-content h2 { font-size: 1.35em; border-bottom: 1px solid rgba(192, 254, 45, 0.25); padding-bottom: 0.3em; color: #ffffff; }
+.product-description-content h3 { font-size: 1.15em; color: #D4FF66; }
+.product-description-content h4 { font-size: 1.05em; color: #C0FE2D; }
+.product-description-content a {
+  color: #C0FE2D;
+  text-decoration: underline;
+}
+.product-description-content a:hover {
+  color: #D4FF66;
+}
+.product-description-content ul {
+  list-style-type: disc;
+  padding-left: 1.5em;
+  margin-top: 0.75em;
+  margin-bottom: 0.75em;
+  color: #cbd5e1;
+}
+.product-description-content ol {
+  list-style-type: decimal;
+  padding-left: 1.5em;
+  margin-top: 0.75em;
+  margin-bottom: 0.75em;
+  color: #cbd5e1;
+}
+.product-description-content li {
+  margin-top: 0.35em;
+  margin-bottom: 0.35em;
+  line-height: 1.6;
+}
+.product-description-content li::marker {
+  color: #C0FE2D;
+}
+.product-description-content strong,
+.product-description-content b {
+  color: #ffffff;
+  font-weight: 700;
+}
+.product-description-content blockquote {
+  border-left: 4px solid #C0FE2D;
+  background: rgba(127, 181, 0, 0.15);
+  padding: 0.75em 1em;
+  margin-top: 1em;
+  margin-bottom: 1em;
+  border-radius: 0 0.5rem 0.5rem 0;
+  color: #e2e8f0;
+}
+.product-description-content img {
+  border-radius: 0.75rem;
+  margin-top: 1.25em;
+  margin-bottom: 1.25em;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid rgba(192, 254, 45, 0.2);
+}
+.product-description-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1.25em;
+  margin-bottom: 1.25em;
+  background: #161616;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+.product-description-content th,
+.product-description-content td {
+  border: 1px solid rgba(192, 254, 45, 0.2);
+  padding: 0.6em 0.85em;
+  text-align: left;
+  font-size: 0.9em;
+}
+.product-description-content th {
+  background: rgba(127, 181, 0, 0.2);
+  color: #C0FE2D;
+  font-weight: 700;
+  font-family: ui-monospace, monospace;
+}
+.product-description-content td {
+  color: #cbd5e1;
+}
+

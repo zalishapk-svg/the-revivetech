@@ -316,17 +316,46 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
 
           <div className="text-xs sm:text-sm text-slate-300 leading-relaxed">
             {activeTab === "overview" && (
-              <p>{product.description}</p>
+              <div className="space-y-4">
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                  {product.seo?.description || product.description}
+                </p>
+                {product.specs && Object.keys(product.specs).length > 0 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-emerald-900/30">
+                    {Object.entries(product.specs).map(([key, val]) => (
+                      <div key={key} className="flex justify-between p-3 bg-[#161616] rounded-xl border border-emerald-900/30 font-mono text-xs">
+                        <span className="text-slate-400">{key}:</span>
+                        <span className="text-emerald-400 font-bold">{val}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
 
-            {activeTab === "specs" && product.specs && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 font-mono">
-                {Object.entries(product.specs).map(([key, val]) => (
-                  <div key={key} className="flex justify-between p-3 bg-[#161616] rounded-xl border border-emerald-900/30">
-                    <span className="text-slate-400">{key}:</span>
-                    <span className="text-emerald-400 font-bold">{val}</span>
+            {activeTab === "specs" && (
+              <div className="space-y-6">
+                {(product.descriptionHtml || product.description) ? (
+                  <div
+                    className="product-description-content text-slate-300 leading-relaxed font-sans"
+                    dangerouslySetInnerHTML={{
+                      __html: product.descriptionHtml || product.description,
+                    }}
+                  />
+                ) : (
+                  <p className="text-slate-400 italic font-mono text-xs">No detailed specifications provided for this product.</p>
+                )}
+
+                {product.specs && Object.keys(product.specs).length > 0 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4 border-t border-emerald-900/30 font-mono">
+                    {Object.entries(product.specs).map(([key, val]) => (
+                      <div key={key} className="flex justify-between p-3 bg-[#161616] rounded-xl border border-emerald-900/30">
+                        <span className="text-slate-400">{key}:</span>
+                        <span className="text-emerald-400 font-bold">{val}</span>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                )}
               </div>
             )}
 

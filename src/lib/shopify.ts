@@ -16,6 +16,7 @@ export const STOREFRONT_QUERIES = {
             handle
             title
             description
+            descriptionHtml
             seo { title description }
             vendor
             productType
@@ -118,6 +119,8 @@ export const STOREFRONT_QUERIES = {
                   handle
                   title
                   description
+                  descriptionHtml
+                  seo { title description }
                   vendor
                   productType
                   tags
@@ -164,6 +167,7 @@ export const STOREFRONT_QUERIES = {
         handle
         title
         description
+        seo { title description }
         image { id url altText }
         products(first: $first, after: $after) {
           pageInfo {
@@ -176,6 +180,8 @@ export const STOREFRONT_QUERIES = {
               handle
               title
               description
+              descriptionHtml
+              seo { title description }
               vendor
               productType
               tags
@@ -416,7 +422,31 @@ export const MOCK_TECH_PRODUCTS: Product[] = [
     handle: "revive-apex-pro-wireless-mouse",
     title: "Revive Apex Pro Wireless Gaming Mouse",
     description: "Ultra-lightweight 49g wireless gaming mouse with 32,000 DPI Optical Sensor, 8000Hz polling rate, optical micro-switches, and zero latency carbon fiber chassis.",
-    descriptionHtml: "<p>The <strong>Revive Apex Pro</strong> represents the absolute pinnacle of competitive peripheral engineering. Built with aerospace-grade carbon fiber composite weighing a microscopic 49 grams, it houses our proprietary 32K Optical Sensor for pixel-perfect tracking at ultra-high accelerations.</p><ul><li>32,000 DPI Optical Sensor with 750 IPS tracking</li><li>True 8000Hz Wireless Polling Rate via 2.4GHz Dongle</li><li>95 Hours Continuous Battery Life</li><li>PTFE Glides with zero friction resistance</li></ul>",
+    descriptionHtml: `<h3>Engineering Excellence & Pure Performance</h3>
+<p>The <strong>Revive Apex Pro</strong> represents the absolute pinnacle of competitive peripheral engineering. Built with aerospace-grade carbon fiber composite weighing a microscopic 49 grams, it houses our proprietary 32K Optical Sensor for pixel-perfect tracking at ultra-high accelerations.</p>
+<h4>Key Architecture Highlights</h4>
+<ul>
+  <li><strong>32,000 DPI Optical Sensor:</strong> 750 IPS tracking speed with 70G acceleration ceiling.</li>
+  <li><strong>True 8000Hz HyperPolling:</strong> Ultra-responsive 0.125ms wireless report rates via dedicated 2.4GHz transceiver.</li>
+  <li><strong>Gen-3 Optical Microswitches:</strong> Rated for 90 million clicks with zero debounce delay.</li>
+  <li><strong>100% Virgin Grade PTFE Glides:</strong> Ultra-smooth low-friction glide surface.</li>
+</ul>
+<h4>Technical Specifications Matrix</h4>
+<table>
+  <thead>
+    <tr><th>Parameter</th><th>Specification</th><th>Benefit</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Sensor Engine</td><td>Revive Optical V3 (32,000 DPI)</td><td>Sub-millimeter tracking accuracy</td></tr>
+    <tr><td>Weight</td><td>49 Grams (Chassis Only)</td><td>Effortless flick aim without wrist fatigue</td></tr>
+    <tr><td>Polling Rate</td><td>Up to 8,000 Hz Wireless</td><td>8x data throughput over standard mice</td></tr>
+    <tr><td>Battery Endurance</td><td>Up to 95 Hours continuous</td><td>Full tournament weekend without recharging</td></tr>
+  </tbody>
+</table>`,
+    seo: {
+      title: "Revive Apex Pro 49g Wireless Esports Mouse | The Revive Tech",
+      description: "Esports-grade 49g carbon-fiber wireless gaming mouse featuring 32,000 DPI sensor, 8000Hz wireless polling, and zero-debounce optical switches for competitive supremacy.",
+    },
     vendor: "RazerTech",
     productType: "Gaming Mice",
     tags: ["Mice", "Wireless", "8000Hz", "Carbon Fiber", "Esports", "Best Seller", "New Drop"],
@@ -485,7 +515,31 @@ export const MOCK_TECH_PRODUCTS: Product[] = [
     handle: "revive-matrix-65-magnetic-keyboard",
     title: "Revive Matrix 65% Hall-Effect Magnetic Keyboard",
     description: "Rapid Trigger magnetic switch gaming keyboard with 0.1mm adjustable actuation, per-key RGB, gasket mount, CNC aluminum case, and web configurator.",
-    descriptionHtml: "<p>Dominate movement in tactical shooters with the <strong>Revive Matrix 65%</strong>. Powered by Magnetic Hall-Effect switches featuring Rapid Trigger technology, key reset occurs instantaneously upon release.</p><ul><li>Rapid Trigger with 0.1mm - 4.0mm adjustable actuation point</li><li>Solid CNC Anodized Aluminum Enclosure with Brass Weight</li><li>Hot-swappable Magnetic Switches with factory lubrication</li><li>South-facing Per-Key RGB with 1000Hz/8000Hz Mode</li></ul>",
+    descriptionHtml: `<h3>Next-Generation Magnetic Hall-Effect Technology</h3>
+<p>Dominate tactical movement with the <strong>Revive Matrix 65%</strong>. Powered by custom magnetic Hall-Effect switches featuring Rapid Trigger technology, keystrokes reset the precise instant you begin lifting your finger.</p>
+<h4>Architecture & Acoustic Tuning</h4>
+<ul>
+  <li><strong>Adjustable Actuation:</strong> Set trigger points from 0.1mm to 4.0mm in 0.05mm increments.</li>
+  <li><strong>Rapid Trigger Mode:</strong> Instant dynamic reset allows lightning-fast counter-strafing.</li>
+  <li><strong>Multi-Layer Acoustic Dampening:</strong> Poron foam, IXPE switch pad, and silicone base gasket eliminate ping.</li>
+  <li><strong>CNC Anodized 6063 Aluminum:</strong> Precision milled solid aluminum body with weighted brass base plate.</li>
+</ul>
+<h4>Detailed Matrix Specifications</h4>
+<table>
+  <thead>
+    <tr><th>Feature</th><th>Specification</th><th>Configurability</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Layout</td><td>65% Compact (68 Keys)</td><td>Full web browser remapping</td></tr>
+    <tr><td>Actuation Range</td><td>0.1mm – 4.0mm</td><td>Per-key customizable</td></tr>
+    <tr><td>Polling Rate</td><td>8,000Hz Ultrafast</td><td>Hardware & software toggles</td></tr>
+    <tr><td>Keycaps</td><td>Double-Shot PBT Cherry Profile</td><td>Hot-swappable MX stems</td></tr>
+  </tbody>
+</table>`,
+    seo: {
+      title: "Revive Matrix 65% Magnetic Rapid Trigger Keyboard | The Revive Tech",
+      description: "Hall-Effect magnetic switches with 0.1mm rapid trigger, 8000Hz polling, CNC aluminum frame, and multi-layer sound dampening for competitive FPS gaming.",
+    },
     vendor: "CorsairLabs",
     productType: "Gaming Keyboards",
     tags: ["Keyboards", "Rapid Trigger", "Magnetic Switches", "65%", "Aluminum", "New Drop"],
@@ -543,7 +597,30 @@ export const MOCK_TECH_PRODUCTS: Product[] = [
     handle: "revive-quantum-360-qd-oled-monitor",
     title: "Revive Quantum 360Hz QD-OLED 32\" 4K Gaming Monitor",
     description: "32-inch 4K UHD 360Hz QD-OLED display with 0.03ms GTG response time, VESA DisplayHDR True Black 400, HDMI 2.1, DisplayPort 1.4, and custom vapor chamber cooling.",
-    descriptionHtml: "<p>Experience pristine visuals with the <strong>Revive Quantum 360Hz QD-OLED</strong>. Combining 4K UHD resolution with groundbreaking 360Hz refresh rate and near-instantaneous 0.03ms response time, motion clarity is unprecedented.</p><ul><li>32-inch Quantum Dot OLED Panel with 4K 3840x2160 Resolution</li><li>360Hz Refresh Rate & 0.03ms GTG Response Time</li><li>99.3% DCI-P3 Color Gamut & Delta E < 1 Color Accuracy</li><li>Custom Vapor Chamber Cooling system (No Fan Noise)</li><li>3-Year OLED Burn-in Warranty Included</li></ul>",
+    descriptionHtml: `<h3>Ultimate Visual Immersion & Speed</h3>
+<p>Experience pristine visuals with the <strong>Revive Quantum 360Hz QD-OLED</strong>. Combining 4K UHD resolution with groundbreaking 360Hz refresh rate and near-instantaneous 0.03ms response time, motion clarity is unprecedented.</p>
+<h4>Display Highlights & Panel Technology</h4>
+<ul>
+  <li><strong>3rd Generation QD-OLED:</strong> 3840 x 2160 native resolution with sub-pixel text clarity enhancements.</li>
+  <li><strong>360Hz Refresh Rate:</strong> Unmatched smoothness with 0.03ms (GTG) response time eliminating motion blur.</li>
+  <li><strong>Color Grading Fidelity:</strong> 99.3% DCI-P3 gamut coverage and factory pre-calibrated Delta E &lt; 1.</li>
+  <li><strong>Passive Vapor Chamber Thermal Management:</strong> Zero fan noise, preventing panel degradation.</li>
+</ul>
+<h4>Display Specifications Matrix</h4>
+<table>
+  <thead>
+    <tr><th>Specification</th><th>Rating</th><th>Details</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Panel Size & Tech</td><td>31.5\" QD-OLED Gen 3</td><td>True RGB Quantum Dot layer</td></tr>
+    <tr><td>Peak Brightness</td><td>1000 nits (3% APL)</td><td>VESA DisplayHDR True Black 400</td></tr>
+    <tr><td>Connectivity</td><td>2x HDMI 2.1, 1x DP 1.4, USB-C 90W PD</td><td>Full 48Gbps bandwidth support</td></tr>
+  </tbody>
+</table>`,
+    seo: {
+      title: "Revive Quantum 32\" 4K 360Hz QD-OLED Gaming Monitor | The Revive Tech",
+      description: "32-inch 4K 360Hz QD-OLED gaming monitor with 0.03ms response time, 99.3% DCI-P3 color gamut, HDMI 2.1, and silent vapor chamber cooling.",
+    },
     vendor: "AsusROG",
     productType: "Monitors",
     tags: ["Monitors", "QD-OLED", "360Hz", "4K UHD", "DisplayHDR", "Flash Deal", "Editor's Pick"],
@@ -599,7 +676,31 @@ export const MOCK_TECH_PRODUCTS: Product[] = [
     handle: "revive-strikeforce-rtx-5090-laptop",
     title: "Revive Strikeforce 18 RTX 5090 Liquid-Cooled Gaming Laptop",
     description: "Flagship 18-inch Mini-LED 240Hz gaming laptop equipped with Intel Core i9 14th Gen, NVIDIA GeForce RTX 5090 24GB, 64GB DDR5 RAM, and detachable external liquid cooling loop.",
-    descriptionHtml: "<p>Unleash desktop-grade performance everywhere with the <strong>Revive Strikeforce 18</strong>. Featuring NVIDIA's latest flagship RTX 5090 graphics card with 24GB GDDR7 memory and an optional magnetic external liquid cooling dock.</p><ul><li>Intel Core i9-14900HX (24 Cores, 32 Threads, up to 5.8GHz)</li><li>NVIDIA GeForce RTX 5090 24GB VRAM (175W TGP Max)</li><li>18-inch QHD+ 240Hz 3ms Mini-LED Display (1200 nits)</li><li>64GB Dual-Channel DDR5 5600MHz RAM & 4TB PCIe Gen5 SSD</li><li>Includes Revive CryoDock Liquid Cooling Accessory</li></ul>",
+    descriptionHtml: `<h3>Desktop-Tier Dominance in a Portable Form Factor</h3>
+<p>Unleash uncompromising computing power everywhere with the <strong>Revive Strikeforce 18</strong>. Featuring NVIDIA's revolutionary flagship RTX 5090 GPU and an optional magnetic external liquid cooling dock, thermal throttling is officially a relic of the past.</p>
+<h4>System Architecture & Thermal Design</h4>
+<ul>
+  <li><strong>Intel Core i9-14900HX:</strong> 24 Cores (8P + 16E), 32 Threads, max turbo frequencies up to 5.8GHz.</li>
+  <li><strong>NVIDIA GeForce RTX 5090 24GB:</strong> Full 175W maximum TGP with next-gen DLSS 4 and Blackwell architecture.</li>
+  <li><strong>18-inch QHD+ 240Hz Mini-LED:</strong> 1000+ localized dimming zones, 1200 nits peak HDR brightness.</li>
+  <li><strong>Detachable Revive CryoDock:</strong> Magnetic quick-connect liquid cooling loop reduces operating temperatures by up to 22°C.</li>
+</ul>
+<h4>Hardware Architecture Specifications</h4>
+<table>
+  <thead>
+    <tr><th>Component</th><th>Configuration</th><th>Interface</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Processor</td><td>Intel Core i9-14900HX (24C / 32T)</td><td>Direct Die Liquid Metal</td></tr>
+    <tr><td>Graphics</td><td>NVIDIA RTX 5090 24GB GDDR7</td><td>PCIe 5.0 x16</td></tr>
+    <tr><td>Memory</td><td>64GB Dual-Channel DDR5 5600MHz</td><td>2x SO-DIMM (Upgradable)</td></tr>
+    <tr><td>Storage</td><td>4TB NVMe SSD RAID 0</td><td>2x PCIe Gen5 M.2 NVMe</td></tr>
+  </tbody>
+</table>`,
+    seo: {
+      title: "Revive Strikeforce 18 RTX 5090 Liquid-Cooled Laptop | The Revive Tech",
+      description: "18-inch 240Hz Mini-LED laptop with Intel i9-14900HX, RTX 5090 24GB VRAM, 64GB DDR5 RAM, and detachable external liquid cooling loop.",
+    },
     vendor: "RazerTech",
     productType: "Laptops",
     tags: ["Laptops", "RTX 5090", "Intel i9", "Mini-LED", "Liquid Cooled", "Best Seller"],
@@ -655,7 +756,30 @@ export const MOCK_TECH_PRODUCTS: Product[] = [
     handle: "revive-planar-planar-planar-headset",
     title: "Revive Acoustic Planar Magnetic Wireless Gaming Headset",
     description: "Audiophile-grade 90mm Planar Magnetic drivers, ultra-low latency 2.4GHz wireless + Bluetooth 5.3 multi-point, broadcast boom mic, and 80-hour battery life.",
-    descriptionHtml: "<p>Immerse yourself in pinpoint 3D positional audio with the <strong>Revive Acoustic Planar Headset</strong>. Utilizing oversized 90mm neodymium planar magnetic drivers engineered in Switzerland, audio reproduction is distortion-free across the entire spectrum.</p><ul><li>90mm Neodymium Planar Magnetic Drivers (10Hz - 50,000Hz response)</li><li>Spatial 3D Audio support with DTS Headphone:X 2.0</li><li>Dual Wireless: Simultaneous 2.4GHz High-Res + Bluetooth 5.3</li><li>Detachable 9.7mm Broadcast-Grade Condenser Microphone</li><li>80 Hours Battery Life with Fast Charge (15 mins = 8 hrs)</li></ul>",
+    descriptionHtml: `<h3>Studio-Caliber Spatial Soundstage</h3>
+<p>Immerse yourself in pinpoint 3D positional audio with the <strong>Revive Acoustic Planar Headset</strong>. Utilizing oversized 90mm planar magnetic transducers engineered in Switzerland, harmonic distortion is reduced below 0.05% across the acoustic spectrum.</p>
+<h4>Acoustic Engineering Highlights</h4>
+<ul>
+  <li><strong>90mm Neodymium Planar Drivers:</strong> Ultrawide 10Hz to 50,000Hz frequency response.</li>
+  <li><strong>Dual Wireless Connectivity:</strong> Simultaneous lossless 2.4GHz audio and Bluetooth 5.3 multi-point streaming.</li>
+  <li><strong>Broadcast-Grade Boom Mic:</strong> 9.7mm cardioid capsule with AI background noise cancellation.</li>
+  <li><strong>80-Hour Battery Reserve:</strong> Fast charge functionality delivers 8 hours playback from a 15-minute top-up.</li>
+</ul>
+<h4>Acoustic Profile Matrix</h4>
+<table>
+  <thead>
+    <tr><th>Acoustic Attribute</th><th>Value</th><th>Application</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Transducer Type</td><td>90mm Neodymium Planar</td><td>Lossless studio-grade reproduction</td></tr>
+    <tr><td>Frequency Band</td><td>10 Hz – 50,000 Hz</td><td>Sub-bass to extended air frequencies</td></tr>
+    <tr><td>Wireless Latency</td><td>&lt; 15ms Ultra-low</td><td>Flawless FPS competitive timing</td></tr>
+  </tbody>
+</table>`,
+    seo: {
+      title: "Revive Acoustic 90mm Planar Magnetic Headset | The Revive Tech",
+      description: "Audiophile 90mm planar magnetic wireless headset with dual 2.4GHz + BT 5.3, broadcast mic, and 80-hour battery life.",
+    },
     vendor: "SteelSeriesTech",
     productType: "Gaming Headsets",
     tags: ["Headsets", "Planar Magnetic", "Audiophile", "Wireless", "Multi-point", "New Drop"],
@@ -711,7 +835,31 @@ export const MOCK_TECH_PRODUCTS: Product[] = [
     handle: "revive-ryzen-9950x-cpu",
     title: "AMD Ryzen 9 9950X 16-Core 32-Thread Processor",
     description: "Zen 5 architecture high-performance CPU with 5.7GHz max boost clock, 80MB L2+L3 cache, PCIe 5.0 support, and integrated Radeon graphics.",
-    descriptionHtml: "<p>Power extreme gaming and heavy rendering workloads with the <strong>AMD Ryzen 9 9950X</strong> built on TSMC 4nm Zen 5 architecture.</p>",
+    descriptionHtml: `<h3>Zen 5 Architectural Mastery</h3>
+<p>Power extreme gaming rigs and heavy compute rendering workloads with the <strong>AMD Ryzen 9 9950X</strong>, built on TSMC's bleeding-edge 4nm Zen 5 process architecture.</p>
+<h4>Processor Architecture Highlights</h4>
+<ul>
+  <li><strong>16 High-Performance Cores & 32 Threads:</strong> Base clock 4.3GHz with max boost clock up to 5.7GHz.</li>
+  <li><strong>80MB Total On-Die Cache:</strong> Massive L2 + L3 cache buffer eliminates memory bottlenecks.</li>
+  <li><strong>Next-Gen IPC Uplift:</strong> Up to 16% instruction-per-clock uplift over Zen 4 generation.</li>
+  <li><strong>PCIe 5.0 & DDR5 Support:</strong> Native support for DDR5-6000 EXPO memory profiles.</li>
+</ul>
+<h4>Processor Spec Details</h4>
+<table>
+  <thead>
+    <tr><th>Metric</th><th>Specification</th><th>Platform</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Core Configuration</td><td>16 Cores / 32 Threads</td><td>AM5 Socket</td></tr>
+    <tr><td>Max Boost Frequency</td><td>Up to 5.7 GHz</td><td>Precision Boost Overdrive</td></tr>
+    <tr><td>Total Cache</td><td>80 MB (L2 + L3)</td><td>Direct Die Architecture</td></tr>
+    <tr><td>TDP</td><td>170 Watts</td><td>PCIe 5.0 Ready</td></tr>
+  </tbody>
+</table>`,
+    seo: {
+      title: "AMD Ryzen 9 9950X 16-Core Zen 5 Desktop CPU | The Revive Tech",
+      description: "AMD Ryzen 9 9950X 16 cores, 32 threads, 5.7GHz max boost, 80MB cache, AM5 socket on 4nm Zen 5 architecture.",
+    },
     vendor: "AMD",
     productType: "PC Components",
     tags: ["PC Components", "CPU", "AMD", "Zen 5", "16 Cores"],
@@ -739,7 +887,31 @@ export const MOCK_TECH_PRODUCTS: Product[] = [
     handle: "revive-titan-pro-gaming-chair",
     title: "Revive Titan Pro Ergonomic Gaming Chair",
     description: "Magnetic memory foam head pillow, 4D armrests, cold-cured foam seat, 165-degree recline, and breathable SoftFlex fabric upholstery.",
-    descriptionHtml: "<p>Engineered for all-day endurance sessions, the <strong>Revive Titan Pro</strong> provides active lumbar support and high-density cold-cured cushioning.</p>",
+    descriptionHtml: `<h3>Ergonomic Comfort for Marathon Sessions</h3>
+<p>Engineered for all-day focus and endurance sessions, the <strong>Revive Titan Pro</strong> provides 4-way active lumbar support and high-density patent-pending cold-cured cushioning.</p>
+<h4>Ergonomic Features</h4>
+<ul>
+  <li><strong>Adaptive 4-Way L-ADAPT Lumbar:</strong> Flexes naturally with your posture changes.</li>
+  <li><strong>Magnetic Memory Foam Head Pillow:</strong> Snap-on positioning with embedded cooling gel layer.</li>
+  <li><strong>CloudSwap 4D Armrests:</strong> Full-metal internal mechanism with magnetic swappable tops.</li>
+  <li><strong>165° Full Ergonomic Recline:</strong> Multi-tilt mechanism with tilt angle locking.</li>
+</ul>
+<h4>Chair Specifications Matrix</h4>
+<table>
+  <thead>
+    <tr><th>Element</th><th>Specification</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Upholstery</td><td>SoftFlex Plus Breathable Fabric (3.5x more durable)</td></tr>
+    <tr><td>Base & Frame</td><td>ADC12 Reinforced Aluminum Base + Steel Core</td></tr>
+    <tr><td>Hydraulics</td><td>Class 4 Heavy Duty Gas Piston</td></tr>
+    <tr><td>Max Load</td><td>Up to 180 kg (395 lbs)</td></tr>
+  </tbody>
+</table>`,
+    seo: {
+      title: "Revive Titan Pro Ergonomic Gaming Chair | The Revive Tech",
+      description: "Ergonomic gaming chair with 4-way active lumbar support, magnetic cooling memory foam pillow, and 165-degree recline.",
+    },
     vendor: "SecretlabStyle",
     productType: "Gaming Chairs",
     tags: ["Gaming Chairs", "Ergonomic", "Memory Foam", "4D Armrests"],
@@ -770,7 +942,30 @@ export const MOCK_TECH_PRODUCTS: Product[] = [
     handle: "revive-stream-arm-pro-mic-mount",
     title: "Revive StreamArm Pro Low-Profile Microphone Boom Arm",
     description: "Heavy-duty aluminum construction with concealed cable channels, 360-degree rotation, and magnetic desk clamp.",
-    descriptionHtml: "<p>Keep your stream clean with the <strong>Revive StreamArm Pro</strong> low-profile mic boom arm featuring hidden magnetic cable routing.</p>",
+    descriptionHtml: `<h3>Clean Desk Ergonomics & Solid Articulation</h3>
+<p>Keep your stream camera framing unobstructed with the <strong>Revive StreamArm Pro</strong> low-profile microphone boom arm, engineered with hidden magnetic cable routing channels and precision tension joints.</p>
+<h4>Mounting & Arm Highlights</h4>
+<ul>
+  <li><strong>Low-Profile Design:</strong> Stays beneath camera sightlines and below monitor frames.</li>
+  <li><strong>Magnetic Concealed Cable Channels:</strong> Cleanly tuck away XLR and USB cables.</li>
+  <li><strong>360-Degree Fluid Rotation:</strong> Smooth horizontal articulation with zero squeaking.</li>
+  <li><strong>Padded Heavy-Duty Desk Clamp:</strong> Compatible with desktops up to 60mm thick.</li>
+</ul>
+<h4>Mount Specifications</h4>
+<table>
+  <thead>
+    <tr><th>Parameter</th><th>Value</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Horizontal Reach</td><td>740 mm (29.1 inches)</td></tr>
+    <tr><td>Max Payload</td><td>2.5 kg (5.5 lbs)</td></tr>
+    <tr><td>Thread Standard</td><td>1/4\", 3/8\", and 5/8\" Adapters Included</td></tr>
+  </tbody>
+</table>`,
+    seo: {
+      title: "Revive StreamArm Pro Low-Profile Mic Boom Arm | The Revive Tech",
+      description: "Heavy-duty low-profile broadcast microphone arm with concealed magnetic cable channels and 360-degree rotation.",
+    },
     vendor: "ElgatoStyle",
     productType: "Accessories",
     tags: ["Accessories", "Boom Arm", "Microphone", "Streaming", "Desk Setup"],
@@ -963,6 +1158,7 @@ export async function getProductsFromShopify(options?: { first?: number; after?:
         title: node.title,
         description: node.description || "",
         descriptionHtml: node.descriptionHtml || node.description || "",
+        seo: node.seo ? { title: node.seo.title, description: node.seo.description } : undefined,
         vendor: node.vendor || "TheReviveTech",
         productType: node.productType || "Hardware",
         tags: node.tags || [],
@@ -1005,6 +1201,7 @@ export async function getProductByHandleFromShopify(handle: string): Promise<Pro
       title: node.title,
       description: node.description || "",
       descriptionHtml: node.descriptionHtml || node.description || "",
+      seo: node.seo ? { title: node.seo.title, description: node.seo.description } : undefined,
       vendor: node.vendor || "TheReviveTech",
       productType: node.productType || "Hardware",
       tags: node.tags || [],
@@ -1056,6 +1253,7 @@ export async function getCollectionsFromShopify(options?: { first?: number; afte
           title: pNode.title,
           description: pNode.description || "",
           descriptionHtml: pNode.descriptionHtml || pNode.description || "",
+          seo: pNode.seo ? { title: pNode.seo.title, description: pNode.seo.description } : undefined,
           vendor: pNode.vendor || "TheReviveTech",
           productType: pNode.productType || "Hardware",
           tags: pNode.tags || [],
@@ -1087,6 +1285,7 @@ export async function getCollectionsFromShopify(options?: { first?: number; afte
         handle: node.handle,
         title: node.title,
         description: node.description || "",
+        seo: node.seo ? { title: node.seo.title, description: node.seo.description } : undefined,
         image: node.image,
         productsCount: prods.length,
         products: prods,
@@ -1119,6 +1318,7 @@ export async function getCollectionByHandleFromShopify(handle: string, options?:
         title: pNode.title,
         description: pNode.description || "",
         descriptionHtml: pNode.descriptionHtml || pNode.description || "",
+        seo: pNode.seo ? { title: pNode.seo.title, description: pNode.seo.description } : undefined,
         vendor: pNode.vendor || "TheReviveTech",
         productType: pNode.productType || "Hardware",
         tags: pNode.tags || [],
@@ -1150,6 +1350,7 @@ export async function getCollectionByHandleFromShopify(handle: string, options?:
       handle: node.handle,
       title: node.title,
       description: node.description || "",
+      seo: node.seo ? { title: node.seo.title, description: node.seo.description } : undefined,
       image: node.image,
       productsCount: prods.length,
       products: prods,
