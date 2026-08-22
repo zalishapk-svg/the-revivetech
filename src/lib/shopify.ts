@@ -17,7 +17,6 @@ export const STOREFRONT_QUERIES = {
             title
             description
             descriptionHtml
-            seo { title description }
             vendor
             productType
             tags
@@ -62,7 +61,6 @@ export const STOREFRONT_QUERIES = {
         title
         description
         descriptionHtml
-        seo { title description }
         vendor
         productType
         tags
@@ -120,7 +118,6 @@ export const STOREFRONT_QUERIES = {
                   title
                   description
                   descriptionHtml
-                  seo { title description }
                   vendor
                   productType
                   tags
@@ -181,7 +178,6 @@ export const STOREFRONT_QUERIES = {
               title
               description
               descriptionHtml
-              seo { title description }
               vendor
               productType
               tags
@@ -1158,7 +1154,6 @@ export async function getProductsFromShopify(options?: { first?: number; after?:
         title: node.title,
         description: node.description || "",
         descriptionHtml: node.descriptionHtml || node.description || "",
-        seo: node.seo ? { title: node.seo.title, description: node.seo.description } : undefined,
         vendor: node.vendor || "TheReviveTech",
         productType: node.productType || "Hardware",
         tags: node.tags || [],
@@ -1201,7 +1196,6 @@ export async function getProductByHandleFromShopify(handle: string): Promise<Pro
       title: node.title,
       description: node.description || "",
       descriptionHtml: node.descriptionHtml || node.description || "",
-      seo: node.seo ? { title: node.seo.title, description: node.seo.description } : undefined,
       vendor: node.vendor || "TheReviveTech",
       productType: node.productType || "Hardware",
       tags: node.tags || [],
@@ -1253,7 +1247,6 @@ export async function getCollectionsFromShopify(options?: { first?: number; afte
           title: pNode.title,
           description: pNode.description || "",
           descriptionHtml: pNode.descriptionHtml || pNode.description || "",
-          seo: pNode.seo ? { title: pNode.seo.title, description: pNode.seo.description } : undefined,
           vendor: pNode.vendor || "TheReviveTech",
           productType: pNode.productType || "Hardware",
           tags: pNode.tags || [],
@@ -1318,7 +1311,6 @@ export async function getCollectionByHandleFromShopify(handle: string, options?:
         title: pNode.title,
         description: pNode.description || "",
         descriptionHtml: pNode.descriptionHtml || pNode.description || "",
-        seo: pNode.seo ? { title: pNode.seo.title, description: pNode.seo.description } : undefined,
         vendor: pNode.vendor || "TheReviveTech",
         productType: pNode.productType || "Hardware",
         tags: pNode.tags || [],

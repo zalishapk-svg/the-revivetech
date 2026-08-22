@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import {
   Heart,
@@ -17,6 +17,7 @@ import {
   Eye,
   Cpu,
   FileText,
+  ChevronDown,
 } from "lucide-react";
 import { ProductCarousel } from "../common/ProductCarousel";
 import { useShopify } from "../../context/ShopifyContext";
@@ -104,7 +105,46 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
     product?.variants?.[0]?.id
   );
   const [quantity, setQuantity] = useState(1);
-  const [activeTab, setActiveTab] = useState<"overview" | "specs" | "reviews" | "shipping">("overview");
+  const [activeTab, setActiveTab] = useState<"specs" | "reviews">("specs");
+
+  // Collapsible state and measurement for Full Specifications
+  const [isSpecsExpanded, setIsSpecsExpanded] = useState(false);
+  const [canExpandSpecs, setCanExpandSpecs] = useState(false);
+  const specsContentRef = useRef<HTMLDivElement>(null);
+
+  // Reset expanded state on product change
+  useEffect(() => {
+    setIsSpecsExpanded(false);
+  }, [product?.handle, product?.id]);
+
+  // Measure content height and determine if it exceeds 300px
+  useEffect(() => {
+    const el = specsContentRef.current;
+    if (!el) {
+      setCanExpandSpecs(false);
+      return;
+    }
+
+    const checkHeight = () => {
+      if (el) {
+        setCanExpandSpecs(el.scrollHeight > 300);
+      }
+    };
+
+    checkHeight();
+
+    const observer = new ResizeObserver(() => {
+      checkHeight();
+    });
+    observer.observe(el);
+
+    const timer = setTimeout(checkHeight, 350);
+
+    return () => {
+      observer.disconnect();
+      clearTimeout(timer);
+    };
+  }, [product?.descriptionHtml, product?.description, product?.specs, activeTab]);
 
   useEffect(() => {
     if (product?.variants?.[0]?.id) {
@@ -351,17 +391,6 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
         <div className="bg-[#1c1c1c] border border-emerald-800/50 rounded-3xl p-4 sm:p-8 space-y-6">
           <div className="flex border-b border-emerald-900/40 gap-2 sm:gap-6 text-xs sm:text-sm font-bold font-mono overflow-x-auto scrollbar-none" style={{ scrollbarWidth: "none" }}>
             <button
-              onClick={() => setActiveTab("overview")}
-              className={`pb-3 border-b-2 transition-colors flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-0 shrink-0 cursor-pointer ${
-                activeTab === "overview" ? "border-emerald-400 text-emerald-400" : "border-transparent text-slate-400 hover:text-white"
-              }`}
-              title="Overview & Architecture"
-            >
-              <Layers className="w-4 h-4 shrink-0" />
-              <span className="hidden sm:inline">Overview & Architecture</span>
-              <span className="sm:hidden">Overview</span>
-            </button>
-            <button
               onClick={() => setActiveTab("specs")}
               className={`pb-3 border-b-2 transition-colors flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-0 shrink-0 cursor-pointer ${
                 activeTab === "specs" ? "border-emerald-400 text-emerald-400" : "border-transparent text-slate-400 hover:text-white"
@@ -370,7 +399,7 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
             >
               <Cpu className="w-4 h-4 shrink-0" />
               <span className="hidden sm:inline">Full Specifications</span>
-              <span className="sm:hidden">Specs</span>
+              <span className="sm:hidden">Full Specs</span>
             </button>
             <button
               onClick={() => setActiveTab("reviews")}
@@ -386,47 +415,62 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
           </div>
 
           <div className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-            {activeTab === "overview" && (
-              <div className="space-y-4">
-                {product.seo?.description ? (
-                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                    {product.seo.description}
-                  </p>
-                ) : null}
-                {product.specs && Object.keys(product.specs).length > 0 && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-emerald-900/30">
-                    {Object.entries(product.specs).map(([key, val]) => (
-                      <div key={key} className="flex justify-between p-3 bg-[#161616] rounded-xl border border-emerald-900/30 font-mono text-xs">
-                        <span className="text-slate-400">{key}:</span>
-                        <span className="text-emerald-400 font-bold">{String(val)}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
             {activeTab === "specs" && (
-              <div className="space-y-6">
-                {(product.descriptionHtml || product.description) ? (
+              <div className="space-y-4">
+                <div className="relative">
                   <div
-                    className="product-description-content text-slate-300 leading-relaxed font-sans"
-                    dangerouslySetInnerHTML={{
-                      __html: product.descriptionHtml || product.description,
-                    }}
-                  />
-                ) : (
-                  <p className="text-slate-400 italic font-mono text-xs">No detailed specifications provided for this product.</p>
-                )}
+                    ref={specsContentRef}
+                    className={`transition-all duration-300 ${
+                      !isSpecsExpanded && canExpandSpecs
+                        ? "max-h-[300px] overflow-hidden"
+                        : "max-h-none overflow-visible"
+                    }`}
+                  >
+                    <div className="space-y-6">
+                      {(product.descriptionHtml || product.description) ? (
+                        <div
+                          className="product-description-content text-slate-300 leading-relaxed font-sans"
+                          dangerouslySetInnerHTML={{
+                            __html: product.descriptionHtml || product.description,
+                          }}
+                        />
+                      ) : (
+                        <p className="text-slate-400 italic font-mono text-xs">No detailed specifications provided for this product.</p>
+                      )}
 
-                {product.specs && Object.keys(product.specs).length > 0 && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4 border-t border-emerald-900/30 font-mono">
-                    {Object.entries(product.specs).map(([key, val]) => (
-                      <div key={key} className="flex justify-between p-3 bg-[#161616] rounded-xl border border-emerald-900/30">
-                        <span className="text-slate-400">{key}:</span>
-                        <span className="text-emerald-400 font-bold">{String(val)}</span>
-                      </div>
-                    ))}
+                      {product.specs && Object.keys(product.specs).length > 0 && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4 border-t border-emerald-900/30 font-mono">
+                          {Object.entries(product.specs).map(([key, val]) => (
+                            <div key={key} className="flex justify-between p-3 bg-[#161616] rounded-xl border border-emerald-900/30">
+                              <span className="text-slate-400">{key}:</span>
+                              <span className="text-emerald-400 font-bold">{String(val)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Gradient Fade Overlay when content is collapsed */}
+                  {!isSpecsExpanded && canExpandSpecs && (
+                    <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#1c1c1c] via-[#1c1c1c]/90 to-transparent" />
+                  )}
+                </div>
+
+                {/* Collapsible Expand / Show Less Button */}
+                {canExpandSpecs && (
+                  <div className="pt-2 flex justify-center">
+                    <button
+                      onClick={() => setIsSpecsExpanded((prev) => !prev)}
+                      className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#161616] hover:bg-[#222222] text-emerald-400 hover:text-emerald-300 border border-emerald-800/40 hover:border-emerald-500/60 text-xs sm:text-sm font-bold font-mono transition-all duration-200 cursor-pointer shadow-lg hover:shadow-emerald-950/30 active:scale-[0.98]"
+                    >
+                      <span>{isSpecsExpanded ? "Show Less" : "See Full Specification"}</span>
+                      <ChevronDown
+                        className={`w-4 h-4 transition-transform duration-300 ${
+                          isSpecsExpanded ? "rotate-180 text-emerald-300" : "text-emerald-400"
+                        }`}
+                      />
+                    </button>
                   </div>
                 )}
               </div>

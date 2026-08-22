@@ -180,9 +180,11 @@ export const QuickViewModal: React.FC = () => {
                 )}
               </div>
 
-              <p className="text-xs text-slate-300 leading-relaxed line-clamp-3">
-                {product.seo?.description || product.description}
-              </p>
+              {product.description && (
+                <p className="text-xs text-slate-300 leading-relaxed line-clamp-3">
+                  {product.description}
+                </p>
+              )}
 
               {/* Variant Selector - Only show if real variants exist */}
               {(() => {
