@@ -96,11 +96,14 @@ export const HeroSlider: React.FC = () => {
         <AnimatePresence initial={false}>
           <motion.div
             key={activeSlide.id}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
-            className="w-full h-full absolute inset-0"
+            initial={{ opacity: 0, scale: 1.08 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.05 }}
+            transition={{
+              duration: 1.3,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            className="w-full h-full absolute inset-0 will-change-transform"
           >
             <a
               href={activeSlide.url}
@@ -108,14 +111,14 @@ export const HeroSlider: React.FC = () => {
                 e.preventDefault();
                 navigateToCollection(activeSlide.handle);
               }}
-              className="block w-full h-full relative cursor-pointer"
+              className="block w-full h-full relative cursor-pointer overflow-hidden"
               title={`View ${activeSlide.alt}`}
             >
               <img
                 src={activeSlide.image}
                 alt={activeSlide.alt}
                 referrerPolicy="no-referrer"
-                className="w-full h-full object-cover object-center transition-transform duration-700 hover:scale-[1.01]"
+                className="w-full h-full object-cover object-center"
               />
             </a>
           </motion.div>

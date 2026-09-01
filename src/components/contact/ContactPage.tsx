@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { motion } from "framer-motion";
 import { YellowTape } from "../common/YellowTape";
 import { useShopify } from "../../context/ShopifyContext";
 import { 
@@ -241,6 +242,48 @@ export const ContactPage: React.FC = () => {
                   allowFullScreen
                   loading="lazy"
                 />
+
+                {/* Custom Animated Location Marker with Store Favicon */}
+                <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                  {/* Ground Radar/Pulse Glow */}
+                  <div className="absolute w-12 h-6 rounded-full bg-emerald-500/20 blur-sm translate-y-6 animate-pulse" />
+                  
+                  {/* Animated Floating Store Pin */}
+                  <motion.div
+                    animate={{
+                      y: [0, -10, 0],
+                    }}
+                    transition={{
+                      duration: 2.4,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                    className="relative flex flex-col items-center -translate-y-4"
+                  >
+                    {/* Store Title Badge on Pin */}
+                    <div className="mb-1.5 px-2.5 py-0.5 rounded-full bg-[#161616]/95 border border-emerald-500/80 shadow-[0_0_15px_rgba(16,185,129,0.3)] backdrop-blur-md flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                      <span className="text-[10px] font-mono font-bold text-white tracking-wider whitespace-nowrap">
+                        The Revive Tech
+                      </span>
+                    </div>
+
+                    {/* Custom Favicon Pin Body */}
+                    <div className="relative w-11 h-11 rounded-full p-0.5 bg-gradient-to-tr from-emerald-600 via-emerald-400 to-emerald-300 shadow-[0_4px_20px_rgba(16,185,129,0.5)] flex items-center justify-center">
+                      <div className="w-full h-full rounded-full overflow-hidden bg-[#161616] border border-black/40 flex items-center justify-center">
+                        <img
+                          src="https://cdn.shopify.com/s/files/1/0610/4642/3631/files/Final_Presentation_Momin_Bhai.jpg?v=1786431805"
+                          alt="The Revive Tech Store"
+                          referrerPolicy="no-referrer"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+
+                      {/* Pin Tip Arrow */}
+                      <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-emerald-500 drop-shadow-md" />
+                    </div>
+                  </motion.div>
+                </div>
               </div>
 
               <div className="flex items-center justify-between text-xs text-slate-400 pt-2 border-t border-emerald-900/40">
