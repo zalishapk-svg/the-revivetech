@@ -54,7 +54,7 @@ export const ContactPage: React.FC = () => {
             <div>
               <h4 className="font-bold text-white text-sm mb-1">Lahore Store & Center</h4>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Commercial Market, 96-D, Block D, DHA EME Sector, Lahore, Punjab, Pakistan
+                Commercial Market, 96-D, Block D, DHA EME Sector, Lahore, Pakistan
               </p>
             </div>
             <span className="text-[10px] text-emerald-400 font-mono">Main Distribution Hub</span>
@@ -231,10 +231,10 @@ export const ContactPage: React.FC = () => {
                 <MapPin className="w-5 h-5 text-emerald-400" /> Store & Service Center Location
               </h3>
               
-              <div className="w-full h-64 bg-[#161616] rounded-2xl overflow-hidden border border-emerald-900/60 relative group flex items-center justify-center p-4">
+              <div className="w-full h-64 bg-[#161616] rounded-2xl overflow-hidden border border-emerald-900/60 relative group flex items-center justify-center p-0">
                 <iframe
-                  title="ThereReviveTech Map Location"
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3401.378772392812!2d74.3432!3d31.5122!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3919045a2820a28b%3A0x62955f1f9e2b1!2sHafeez%20Centre!5e0!3m2!1sen!2spk!4v1700000000000"
+                  title="ThereReviveTech Map Location - Commercial Market, 96-D, Block D, DHA EME Sector, Lahore, Pakistan"
+                  src="https://maps.google.com/maps?q=Commercial+Market,+96-D,+Block+D,+DHA+EME+Sector,+Lahore,+Pakistan&t=&z=16&ie=UTF8&iwloc=&output=embed"
                   width="100%"
                   height="100%"
                   style={{ border: 0, filter: "invert(90%) hue-rotate(180deg)" }}
@@ -244,12 +244,12 @@ export const ContactPage: React.FC = () => {
               </div>
 
               <div className="flex items-center justify-between text-xs text-slate-400 pt-2 border-t border-emerald-900/40">
-                <span>DHA EME Sector, Lahore</span>
+                <span className="truncate max-w-[240px] sm:max-w-none">Commercial Market, 96-D, Block D, DHA EME Sector, Lahore, Pakistan</span>
                 <a
-                  href="https://maps.google.com/?q=DHA+EME+Sector+Lahore"
+                  href="https://maps.google.com/?q=Commercial+Market,+96-D,+Block+D,+DHA+EME+Sector,+Lahore,+Pakistan"
                   target="_blank"
                   rel="noreferrer"
-                  className="text-emerald-400 hover:underline flex items-center gap-1 font-mono"
+                  className="text-emerald-400 hover:underline flex items-center gap-1 font-mono shrink-0 ml-2"
                 >
                   Open in Google Maps <ExternalLink className="w-3 h-3" />
                 </a>

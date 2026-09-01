@@ -4,7 +4,7 @@ import { Layers, Sparkles, Tag } from "lucide-react";
 import { Collection } from "../../types";
 
 interface CollectionHeroProps {
-  collection: Collection;
+  collection?: Collection | null;
   handle: string;
   totalProductsCount: number;
 }
@@ -14,11 +14,24 @@ export const CollectionHero: React.FC<CollectionHeroProps> = ({
   handle,
   totalProductsCount,
 }) => {
-  // Get image of the CURRENT collection only
+  const fallbackTitle = handle
+    ? handle
+        .split("-")
+        .map((w) => (w ? w.charAt(0).toUpperCase() + w.slice(1) : ""))
+        .join(" ")
+    : "Hardware Collection";
+
+  const title = collection?.title || fallbackTitle;
+
+  // Safe image resolution: collection image -> first product image -> safe fallback
   const imageUrl =
-    collection.image?.url ||
-    collection.products?.[0]?.featuredImage?.url ||
+    collection?.image?.url ||
+    collection?.products?.[0]?.featuredImage?.url ||
     "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=80";
+
+  const description =
+    collection?.description ||
+    `Browse our official ${title} catalog featuring original high-performance gear, detailed specs, manufacturer warranty, and fast nationwide delivery across Pakistan.`;
 
   return (
     <div className="relative rounded-3xl bg-gradient-to-r from-[#1c1c1c] via-[#222222] to-[#161616] border border-emerald-900/50 overflow-hidden shadow-2xl mb-8 min-h-[320px] md:min-h-[360px] flex flex-col md:flex-row items-stretch">
@@ -40,12 +53,11 @@ export const CollectionHero: React.FC<CollectionHeroProps> = ({
         </div>
 
         <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight mb-4">
-          {collection.title}
+          {title}
         </h1>
 
         <p className="text-slate-300 text-xs sm:text-sm md:text-base leading-relaxed max-w-xl mb-6">
-          {collection.description ||
-            `Browse our official ${collection.title} catalog featuring original high-performance gear, detailed specs, manufacturer warranty, and fast nationwide delivery across Pakistan.`}
+          {description}
         </p>
 
         {/* Collection Stats Badges */}
@@ -73,7 +85,8 @@ export const CollectionHero: React.FC<CollectionHeroProps> = ({
           >
             <img
               src={imageUrl}
-              alt={collection.title}
+              alt={title}
+              referrerPolicy="no-referrer"
               className="w-full h-full object-cover object-center transform hover:scale-105 transition-transform duration-700"
             />
 
@@ -86,7 +99,7 @@ export const CollectionHero: React.FC<CollectionHeroProps> = ({
           <div className="absolute bottom-4 left-4 z-20">
             <span className="bg-[#161616]/85 backdrop-blur-md border border-emerald-500/40 text-emerald-400 px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold inline-flex items-center gap-2 shadow-lg">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              {collection.title} Collection
+              {title} Collection
             </span>
           </div>
         </div>

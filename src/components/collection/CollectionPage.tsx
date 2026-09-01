@@ -134,21 +134,18 @@ export const CollectionPage: React.FC<CollectionPageProps> = ({ handle }) => {
     return () => { isMounted = false; };
   }, [handle]);
 
-  const collection = liveCollection || collections.find((c) => c.handle === handle) || collections[0];
-  
-  // Use products specific to this collection
-  const baseProducts = (liveCollection?.products && liveCollection.products.length > 0)
-    ? liveCollection.products
-    : (collection?.products && collection.products.length > 0)
-    ? collection.products
-    : products;
+  const matchedCollection =
+    liveCollection || collections.find((c) => c.handle === handle) || null;
+
+  // Use products specific to this collection only
+  const baseProducts = matchedCollection?.products || [];
 
   const [selectedVendor, setSelectedVendor] = useState<string>("all");
   const [sortBy, setSortBy] = useState<"featured" | "price-asc" | "price-desc" | "rating">("featured");
 
   const maxProductPriceInCollection = useMemo(() => {
     if (baseProducts.length === 0) return 200000;
-    return Math.max(...baseProducts.map((p) => parseFloat(p.priceRange.minVariantPrice.amount) || 0));
+    return Math.max(...baseProducts.map((p) => parseFloat(p.priceRange?.minVariantPrice?.amount || "0") || 0));
   }, [baseProducts]);
 
   const [maxPrice, setMaxPrice] = useState<number>(1000000);
@@ -167,14 +164,22 @@ export const CollectionPage: React.FC<CollectionPageProps> = ({ handle }) => {
       list = list.filter((p) => p.vendor === selectedVendor);
     }
     list = list.filter(
-      (p) => parseFloat(p.priceRange.minVariantPrice.amount) <= maxPrice
+      (p) => parseFloat(p.priceRange?.minVariantPrice?.amount || "0") <= maxPrice
     );
 
     // Sorting
     if (sortBy === "price-asc") {
-      list.sort((a, b) => parseFloat(a.priceRange.minVariantPrice.amount) - parseFloat(b.priceRange.minVariantPrice.amount));
+      list.sort(
+        (a, b) =>
+          parseFloat(a.priceRange?.minVariantPrice?.amount || "0") -
+          parseFloat(b.priceRange?.minVariantPrice?.amount || "0")
+      );
     } else if (sortBy === "price-desc") {
-      list.sort((a, b) => parseFloat(b.priceRange.minVariantPrice.amount) - parseFloat(a.priceRange.minVariantPrice.amount));
+      list.sort(
+        (a, b) =>
+          parseFloat(b.priceRange?.minVariantPrice?.amount || "0") -
+          parseFloat(a.priceRange?.minVariantPrice?.amount || "0")
+      );
     } else if (sortBy === "rating") {
       list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
     }
@@ -197,7 +202,7 @@ export const CollectionPage: React.FC<CollectionPageProps> = ({ handle }) => {
     handlePageChange(1);
   };
 
-  const vendors = Array.from(new Set(baseProducts.map((p) => p.vendor)));
+  const vendors = Array.from(new Set(baseProducts.map((p) => p.vendor).filter(Boolean)));
 
   // Reusable Sidebar Form Controls
   const renderCollectionSidebar = (onItemSelect?: () => void) => (
@@ -288,7 +293,7 @@ export const CollectionPage: React.FC<CollectionPageProps> = ({ handle }) => {
         
         {/* Banner Header */}
         <CollectionHero
-          collection={collection}
+          collection={matchedCollection}
           handle={handle}
           totalProductsCount={baseProducts.length}
         />
