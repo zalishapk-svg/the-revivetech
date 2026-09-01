@@ -104,12 +104,12 @@ export const LegalPage: React.FC<LegalPageProps> = ({ handle }) => {
               text: "Lahore & Karachi Express: Same-Day or 24 Hours. Rest of Pakistan: 24 to 48 Hours via TCS, Trax, or Leopard tracked courier service."
             },
             {
-              heading: "3. Free Express Shipping Threshold",
-              text: "All orders over Rs. 15,000 qualify for FREE Express Shipping across Pakistan. Orders below Rs. 15,000 incur a flat delivery charge of Rs. 250."
+              heading: "3. Tracked Courier Services",
+              text: "All orders are shipped via premier tracked courier partners (TCS, Trax, or Leopard) with live tracking details sent upon dispatch."
             },
             {
-              heading: "4. Cash on Delivery (COD) Rules",
-              text: "COD is available for all standard hardware orders up to Rs. 100,000. Please ensure the exact cash amount is ready upon courier arrival."
+              heading: "4. Payment & Order Verification",
+              text: "We accept secure Bank Transfers, JazzCash, EasyPaisa, and major debit/credit cards. Please re-confirm product availability via WhatsApp (03375799958) prior to dispatch."
             }
           ]
         };
