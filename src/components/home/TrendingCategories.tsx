@@ -140,10 +140,10 @@ export const TrendingCategories: React.FC = () => {
             <div
               key={col.id}
               onClick={() => navigateToCollection(col.handle)}
-              className="w-[calc((100%-24px)/3)] sm:w-[calc((100%-48px)/4)] md:w-[calc((100%-60px)/4)] lg:w-[calc((100%-120px)/6)] shrink-0 group flex flex-col items-center text-center cursor-pointer snap-start"
+              className="w-[calc((100%-24px)/3)] sm:w-[calc((100%-48px)/4)] md:w-[calc((100%-60px)/4)] lg:w-[calc((100%-120px)/6)] 2xl:w-[calc((100%-144px)/7)] 3xl:w-[calc((100%-168px)/8)] shrink-0 group flex flex-col items-center text-center cursor-pointer snap-start"
             >
               {/* Circular Avatar Container */}
-              <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-30 lg:h-30 xl:w-36 xl:h-36 rounded-full overflow-hidden border-2 border-emerald-900/50 group-hover:border-emerald-400 bg-[#1c1c1c] relative transition-all duration-300 shadow-md group-hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] p-1">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-30 lg:h-30 xl:w-36 xl:h-36 2xl:w-40 2xl:h-40 3xl:w-44 3xl:h-44 rounded-full overflow-hidden border-2 border-emerald-900/50 group-hover:border-emerald-400 bg-[#1c1c1c] relative transition-all duration-300 shadow-md group-hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] p-1">
                 <div className="w-full h-full rounded-full overflow-hidden bg-[#161616] relative">
                   {col.image ? (
                     <img

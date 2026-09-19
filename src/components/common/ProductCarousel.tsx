@@ -121,7 +121,7 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({
               [...Array(initialLimit)].map((_, idx) => (
                 <div
                   key={`skeleton-${idx}`}
-                  className="flex-none w-[calc(50%-6px)] sm:w-[280px] md:w-[290px] lg:w-[295px]"
+                  className="flex-none w-[calc(50%-6px)] sm:w-[280px] md:w-[295px] lg:w-[310px] xl:w-[330px] 2xl:w-[360px] 3xl:w-[400px] 4xl:w-[440px]"
                 >
                   <ProductSkeletonCard />
                 </div>
@@ -130,7 +130,7 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({
               displayedProducts.map((product) => (
                 <div
                   key={product.id}
-                  className="flex-none w-[calc(50%-6px)] sm:w-[280px] md:w-[290px] lg:w-[295px]"
+                  className="flex-none w-[calc(50%-6px)] sm:w-[280px] md:w-[295px] lg:w-[310px] xl:w-[330px] 2xl:w-[360px] 3xl:w-[400px] 4xl:w-[440px]"
                 >
                   <ProductCard product={product} />
                 </div>

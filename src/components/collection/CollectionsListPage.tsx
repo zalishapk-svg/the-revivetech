@@ -32,7 +32,7 @@ export const CollectionsListPage: React.FC = () => {
         </div>
 
         {/* Collections Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5 gap-6 sm:gap-8">
           {collections.map((col) => {
             const itemCount = col.products?.length || col.productsCount || 0;
             const bgImage = col.image?.url || col.products?.[0]?.featuredImage?.url;

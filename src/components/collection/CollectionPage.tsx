@@ -302,7 +302,7 @@ export const CollectionPage: React.FC<CollectionPageProps> = ({ handle }) => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
           {/* Desktop Sticky Sidebar */}
-          <aside className="hidden lg:block lg:col-span-3 bg-[#1c1c1c] border border-emerald-800/40 p-6 rounded-3xl h-fit shadow-xl lg:sticky lg:top-24">
+          <aside className="hidden lg:block lg:col-span-3 3xl:col-span-2 bg-[#1c1c1c] border border-emerald-800/40 p-6 rounded-3xl h-fit shadow-xl lg:sticky lg:top-24">
             {renderCollectionSidebar()}
           </aside>
 
@@ -316,7 +316,7 @@ export const CollectionPage: React.FC<CollectionPageProps> = ({ handle }) => {
           </OffCanvasDrawer>
 
           {/* Product Grid Area */}
-          <main className="lg:col-span-9 space-y-6 w-full">
+          <main className="lg:col-span-9 3xl:col-span-10 space-y-6 w-full">
             
             {/* Top Toolbar */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#1c1c1c] border border-emerald-800/40 p-4 rounded-2xl text-xs font-mono shadow-md">
@@ -355,8 +355,8 @@ export const CollectionPage: React.FC<CollectionPageProps> = ({ handle }) => {
 
             {/* Products Grid */}
             {isLoadingCollection && baseProducts.length === 0 ? (
-              <div className="grid grid-cols-2 gap-3 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {[...Array(6)].map((_, i) => (
+              <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5">
+                {[...Array(10)].map((_, i) => (
                   <div key={i} className="bg-[#1c1c1c] border border-emerald-900/40 rounded-2xl p-4 space-y-3 animate-pulse">
                     <div className="aspect-square bg-emerald-950/60 rounded-xl" />
                     <div className="h-4 w-2/3 bg-emerald-950/50 rounded" />
@@ -377,7 +377,7 @@ export const CollectionPage: React.FC<CollectionPageProps> = ({ handle }) => {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-3 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5">
                 {paginatedProducts.map((product, idx) => (
                   <ProductCard key={product.id} product={product} priority={idx < 4} />
                 ))}

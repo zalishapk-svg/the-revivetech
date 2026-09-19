@@ -405,10 +405,10 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
         </div>
 
         {/* Main Content Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-6 gap-8 items-start">
           
           {/* Sticky Desktop Sidebar Filters */}
-          <aside className="hidden lg:block lg:col-span-1 space-y-6 bg-[#1c1c1c] border border-emerald-900/40 rounded-2xl p-6 shadow-xl lg:sticky lg:top-24">
+          <aside className="hidden lg:block lg:col-span-1 2xl:col-span-1 3xl:col-span-1 space-y-6 bg-[#1c1c1c] border border-emerald-900/40 rounded-2xl p-6 shadow-xl lg:sticky lg:top-24">
             {renderSidebarControls()}
           </aside>
 
@@ -422,10 +422,10 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
           </OffCanvasDrawer>
 
           {/* Product Grid / List Section */}
-          <main className="lg:col-span-3 w-full">
+          <main className="lg:col-span-3 2xl:col-span-4 3xl:col-span-5 w-full">
             {useShopify().isLoadingData ? (
-              <div className="grid grid-cols-2 gap-3 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {[...Array(9)].map((_, idx) => (
+              <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5">
+                {[...Array(12)].map((_, idx) => (
                   <ProductSkeletonCard key={`shop-skeleton-${idx}`} />
                 ))}
               </div>
@@ -446,7 +446,7 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
                 </button>
               </div>
             ) : viewMode === "grid" ? (
-              <div className="grid grid-cols-2 gap-3 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5">
                 {paginatedProducts.map((p, idx) => (
                   <ProductCard key={p.id} product={p} priority={idx < 4} />
                 ))}

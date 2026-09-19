@@ -26,6 +26,171 @@
   --color-neutral-900: #1c1c1c;
   --color-gray-950: #161616;
   --color-gray-900: #1c1c1c;
+
+  --breakpoint-3xl: 120rem; /* 1920px (21"-24") */
+  --breakpoint-4xl: 160rem; /* 2560px (27"-32" QHD/4K) */
+  --breakpoint-5xl: 240rem; /* 3840px (40"-50"+ 4K Displays) */
+}
+
+/* ==========================================================================
+   RESPONSIVE ROOT TYPOGRAPHY & SCALING (13" LAPTOPS TO 50"+ 4K DISPLAYS)
+   Ensures the entire store scales harmoniously without shrinking into a 
+   tiny centered area on large desktop monitors and large TV screens.
+   ========================================================================== */
+:root {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* 15" - 17" laptops & high-DPI displays (1440px - 1679px) */
+@media (min-width: 1440px) {
+  :root {
+    font-size: 16.5px;
+  }
+}
+
+/* 19" - 21" desktop displays (1680px - 1919px) */
+@media (min-width: 1680px) {
+  :root {
+    font-size: 17.5px;
+  }
+}
+
+/* 21" - 24" full-HD monitors (1920px - 2047px) */
+@media (min-width: 1920px) {
+  :root {
+    font-size: 18.5px;
+  }
+}
+
+/* 24" - 27" QHD (1440p) displays (2048px - 2559px) */
+@media (min-width: 2048px) {
+  :root {
+    font-size: 20px;
+  }
+}
+
+/* 27" - 32" QHD / 4K displays (2560px - 3199px) */
+@media (min-width: 2560px) {
+  :root {
+    font-size: 22px;
+  }
+}
+
+/* 34" ultrawide & 40" - 43" displays (3200px - 3839px) */
+@media (min-width: 3200px) {
+  :root {
+    font-size: 24.5px;
+  }
+}
+
+/* 50"+ 4K UHD and ultra-large displays (3840px+) */
+@media (min-width: 3840px) {
+  :root {
+    font-size: 28px;
+  }
+}
+
+/* 65"+ 8K or extreme wide displays (5120px+) */
+@media (min-width: 5120px) {
+  :root {
+    font-size: 32px;
+  }
+}
+
+/* ==========================================================================
+   FLUID CONTAINER EXPANSIONS
+   Allows main content containers to gracefully utilize available viewport
+   width while maintaining comfortable margins and pristine visual hierarchy.
+   ========================================================================== */
+@media (min-width: 1440px) {
+  .max-w-7xl {
+    max-width: min(94vw, 86rem);
+  }
+  .max-w-6xl {
+    max-width: min(92vw, 76rem);
+  }
+  .max-w-5xl {
+    max-width: min(90vw, 68rem);
+  }
+  .max-w-4xl {
+    max-width: min(88vw, 58rem);
+  }
+  .max-w-3xl {
+    max-width: min(86vw, 50rem);
+  }
+}
+
+@media (min-width: 1920px) {
+  .max-w-7xl {
+    max-width: min(93vw, 98rem);
+  }
+  .max-w-6xl {
+    max-width: min(90vw, 86rem);
+  }
+  .max-w-5xl {
+    max-width: min(88vw, 76rem);
+  }
+  .max-w-4xl {
+    max-width: min(85vw, 66rem);
+  }
+  .max-w-3xl {
+    max-width: min(82vw, 56rem);
+  }
+}
+
+@media (min-width: 2560px) {
+  .max-w-7xl {
+    max-width: min(92vw, 116rem);
+  }
+  .max-w-6xl {
+    max-width: min(89vw, 102rem);
+  }
+  .max-w-5xl {
+    max-width: min(86vw, 90rem);
+  }
+  .max-w-4xl {
+    max-width: min(82vw, 76rem);
+  }
+  .max-w-3xl {
+    max-width: min(78vw, 64rem);
+  }
+}
+
+@media (min-width: 3200px) {
+  .max-w-7xl {
+    max-width: min(90vw, 134rem);
+  }
+  .max-w-6xl {
+    max-width: min(87vw, 118rem);
+  }
+  .max-w-5xl {
+    max-width: min(84vw, 102rem);
+  }
+  .max-w-4xl {
+    max-width: min(80vw, 86rem);
+  }
+  .max-w-3xl {
+    max-width: min(75vw, 72rem);
+  }
+}
+
+@media (min-width: 3840px) {
+  .max-w-7xl {
+    max-width: min(88vw, 150rem);
+  }
+  .max-w-6xl {
+    max-width: min(85vw, 132rem);
+  }
+  .max-w-5xl {
+    max-width: min(82vw, 114rem);
+  }
+  .max-w-4xl {
+    max-width: min(78vw, 96rem);
+  }
+  .max-w-3xl {
+    max-width: min(72vw, 80rem);
+  }
 }
 
 @keyframes marquee-left {

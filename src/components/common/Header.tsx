@@ -42,7 +42,7 @@ export const Header: React.FC = () => {
   return (
     <header className="sticky top-0 z-50 bg-[#161616]/95 backdrop-blur-md border-b border-emerald-900/40 text-slate-100 transition-all">
       <div className="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 sm:h-20 gap-2">
+        <div className="flex items-center justify-between h-16 sm:h-20 2xl:h-22 3xl:h-24 gap-2">
           
           {/* LOGO */}
           <button
@@ -53,12 +53,12 @@ export const Header: React.FC = () => {
               src="https://cdn.shopify.com/s/files/1/0610/4642/3631/files/Artboard_1_copy.png?v=1786431651"
               alt="The Revive Tech Logo"
               referrerPolicy="no-referrer"
-              className="h-7 xs:h-8 sm:h-11 w-auto max-w-[120px] xs:max-w-[150px] sm:max-w-[240px] object-contain transition-transform duration-300 group-hover:scale-105"
+              className="h-7 xs:h-8 sm:h-11 2xl:h-13 3xl:h-14 w-auto max-w-[120px] xs:max-w-[150px] sm:max-w-[240px] 2xl:max-w-[280px] 3xl:max-w-[320px] object-contain transition-transform duration-300 group-hover:scale-105"
             />
           </button>
 
           {/* DESKTOP NAVIGATION LINKS */}
-          <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold">
+          <nav className="hidden lg:flex items-center gap-6 xl:gap-8 2xl:gap-10 3xl:gap-12 text-sm xl:text-base font-semibold">
             <button
               onClick={navigateToHome}
               className={`transition-colors hover:text-emerald-400 ${

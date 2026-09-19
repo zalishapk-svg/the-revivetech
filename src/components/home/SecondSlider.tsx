@@ -84,7 +84,7 @@ export const SecondSlider: React.FC = () => {
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      <div className="w-full relative min-h-[200px] sm:min-h-[320px] md:min-h-[440px] lg:min-h-[520px] xl:min-h-[600px] flex items-center justify-center">
+      <div className="w-full relative min-h-[200px] sm:min-h-[320px] md:min-h-[440px] lg:min-h-[520px] xl:min-h-[600px] 2xl:min-h-[720px] 3xl:min-h-[840px] flex items-center justify-center">
         <AnimatePresence initial={false}>
           <motion.div
             key={activeSlide.id}

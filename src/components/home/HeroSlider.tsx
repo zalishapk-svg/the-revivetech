@@ -92,7 +92,7 @@ export const HeroSlider: React.FC = () => {
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      <div className="w-full relative aspect-[16/7] sm:aspect-[21/8] md:aspect-[24/9] max-h-[75vh] min-h-[200px]">
+      <div className="w-full relative aspect-[16/7] sm:aspect-[21/8] md:aspect-[24/9] xl:aspect-[26/9] 2xl:aspect-[28/9] 3xl:aspect-[30/9] max-h-[75vh] 2xl:max-h-[70vh] min-h-[200px] sm:min-h-[280px] lg:min-h-[380px] xl:min-h-[460px] 2xl:min-h-[540px] 3xl:min-h-[640px]">
         <AnimatePresence initial={false}>
           <motion.div
             key={activeSlide.id}

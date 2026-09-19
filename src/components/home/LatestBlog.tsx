@@ -76,7 +76,7 @@ export const LatestBlog: React.FC = () => {
             <div
               key={art.id}
               onClick={() => navigateToArticle(art.handle)}
-              className="min-w-[280px] sm:min-w-[340px] max-w-[360px] bg-[#1c1c1c] border border-emerald-900/40 rounded-2xl overflow-hidden cursor-pointer group/blogcard hover:border-emerald-500/60 transition-all flex flex-col justify-between"
+              className="min-w-[280px] sm:min-w-[340px] xl:min-w-[380px] 2xl:min-w-[420px] 3xl:min-w-[460px] max-w-[360px] xl:max-w-[400px] 2xl:max-w-[460px] 3xl:max-w-[500px] bg-[#1c1c1c] border border-emerald-900/40 rounded-2xl overflow-hidden cursor-pointer group/blogcard hover:border-emerald-500/60 transition-all flex flex-col justify-between"
             >
               <div className="aspect-video bg-[#161616] overflow-hidden relative">
                 {art.image ? (

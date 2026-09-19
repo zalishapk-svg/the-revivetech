@@ -73,7 +73,7 @@ export const TechCategoriesSlider: React.FC = () => {
               <div
                 key={col.id}
                 onClick={() => navigateToCollection(col.handle)}
-                className="min-w-[240px] sm:min-w-[280px] group/colcard relative h-64 rounded-2xl overflow-hidden border border-emerald-900/40 bg-[#1c1c1c] cursor-pointer transition-all duration-300 hover:border-emerald-500/60 hover:shadow-[0_0_25px_rgba(16,185,129,0.25)] flex flex-col justify-end p-5"
+                className="min-w-[240px] sm:min-w-[280px] lg:min-w-[300px] xl:min-w-[330px] 2xl:min-w-[370px] 3xl:min-w-[420px] 4xl:min-w-[460px] group/colcard relative h-64 lg:h-72 xl:h-80 2xl:h-88 3xl:h-96 rounded-2xl overflow-hidden border border-emerald-900/40 bg-[#1c1c1c] cursor-pointer transition-all duration-300 hover:border-emerald-500/60 hover:shadow-[0_0_25px_rgba(16,185,129,0.25)] flex flex-col justify-end p-5"
               >
                 <img
                   src={bgImage}
