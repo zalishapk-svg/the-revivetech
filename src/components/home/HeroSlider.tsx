@@ -14,7 +14,7 @@ interface Slide {
 const HERO_SLIDES: Slide[] = [
   {
     id: 1,
-    image: "https://cdn.shopify.com/s/files/1/0610/4642/3631/files/iems.png?v=1786431342",
+    image: "https://cdn.shopify.com/s/files/1/0610/4642/3631/files/Gamesir_products.png?v=1789918812",
     url: "/collections/iems-1",
     handle: "iems-1",
     alt: "IEMs Collection Banner",
