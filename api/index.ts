@@ -15,6 +15,7 @@ import {
   fetchShopifyShippingRates,
 } from "./_lib/shopify-server.js";
 import { renderSeoPage, loadHtmlTemplate } from "./_lib/seo-renderer.js";
+import { generateSitemapXml } from "./_lib/sitemap-generator.js";
 
 /**
  * Normalizes the requested route path from Vercel query or url.
@@ -109,23 +110,76 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // -------------------------------------------------------------------------
+  // 0A. SITEMAP.XML & ROBOTS.TXT ROUTER (High Priority Technical SEO)
+  // -------------------------------------------------------------------------
+  const isSitemapRequest =
+    path === "sitemap" ||
+    path === "sitemap.xml" ||
+    path === "sitemap_index.xml" ||
+    rawUrl.startsWith("/sitemap") ||
+    rawUrl.includes("sitemap.xml");
+
+  if (isSitemapRequest) {
+    try {
+      const xml = await generateSitemapXml();
+      res.setHeader("Content-Type", "application/xml; charset=utf-8");
+      res.setHeader(
+        "Cache-Control",
+        "public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400"
+      );
+      return res.status(200).send(xml);
+    } catch (err: any) {
+      console.error("[Sitemap Generation Error in Vercel Function]", err);
+      const fallbackXml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>https://www.therevivetech.pk/</loc><priority>1.0</priority></url>\n  <url><loc>https://www.therevivetech.pk/shop</loc><priority>0.9</priority></url>\n  <url><loc>https://www.therevivetech.pk/collections</loc><priority>0.9</priority></url>\n</urlset>`;
+      res.setHeader("Content-Type", "application/xml; charset=utf-8");
+      return res.status(200).send(fallbackXml);
+    }
+  }
+
+  const isRobotsRequest =
+    path === "robots" ||
+    path === "robots.txt" ||
+    rawUrl.startsWith("/robots") ||
+    rawUrl.includes("robots.txt");
+
+  if (isRobotsRequest) {
+    const robotsTxt = `# The Revive Tech Robots TXT
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /account/
+Disallow: /cart
+Disallow: /checkout
+Disallow: /checkouts/
+
+Sitemap: https://www.therevivetech.pk/sitemap.xml
+`;
+    res.setHeader("Content-Type", "text/plain; charset=utf-8");
+    res.setHeader("Cache-Control", "public, max-age=86400");
+    return res.status(200).send(robotsTxt);
+  }
+
+  // -------------------------------------------------------------------------
   // 0B. TECHNICAL SEO & INITIAL HTML PRERENDERING ROUTER (Vercel Serverless)
   // -------------------------------------------------------------------------
   // Intercepts all page requests to render real Shopify SEO metadata and
   // crawlable semantic HTML before React hydrates on the client.
   const isHtmlRequest =
-    path === "__html__" ||
-    typeof req.query.html_path === "string" ||
-    req.query.render_html === "true" ||
-    (req.method === "GET" &&
-      Boolean(req.headers.accept?.includes("text/html")) &&
-      !path.startsWith("api/") &&
-      !path.startsWith("shopify/") &&
-      !path.startsWith("health") &&
-      !path.startsWith("debug") &&
-      !path.endsWith(".json") &&
-      !path.endsWith(".xml") &&
-      !path.endsWith(".txt"));
+    !isSitemapRequest &&
+    !isRobotsRequest &&
+    (path === "__html__" ||
+      typeof req.query.html_path === "string" ||
+      req.query.render_html === "true" ||
+      (req.method === "GET" &&
+        Boolean(req.headers.accept?.includes("text/html")) &&
+        !path.startsWith("api/") &&
+        !path.startsWith("shopify/") &&
+        !path.startsWith("health") &&
+        !path.startsWith("debug") &&
+        !path.endsWith(".json") &&
+        !path.endsWith(".xml") &&
+        !path.endsWith(".txt")));
 
   if (isHtmlRequest) {
     try {

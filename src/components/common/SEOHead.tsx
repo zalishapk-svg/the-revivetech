@@ -5,7 +5,8 @@ export const SEOHead: React.FC = () => {
   const { viewState, products, collections, articles } = useShopify();
 
   useEffect(() => {
-    const origin = window.location.origin || "https://therevivetech.pk";
+    // Canonical origin must always be https://www.therevivetech.pk as required for Google indexing
+    const origin = "https://www.therevivetech.pk";
     let title = "The Revive Tech | Original Gaming Hardware & Tech Store Pakistan";
     let description = "Buy 100% original gaming headsets, mechanical keyboards, mice, audio gear and computer peripherals in Pakistan with fast nationwide delivery and cash on delivery.";
     let image = `${origin}/og-image.png`;
@@ -32,9 +33,18 @@ export const SEOHead: React.FC = () => {
       "contactPoint": {
         "@type": "ContactPoint",
         "contactType": "customer service",
-        "telephone": "+92-300-1234567",
+        "telephone": "+92-347-5799958",
+        "email": "therevivetech@gmail.com",
         "areaServed": "PK",
         "availableLanguage": ["English", "Urdu"]
+      },
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Commercial Market, 96-D, Block D, DHA EME Sector",
+        "addressLocality": "Lahore",
+        "addressRegion": "Punjab",
+        "postalCode": "54000",
+        "addressCountry": "PK"
       }
     };
 
@@ -226,8 +236,8 @@ export const SEOHead: React.FC = () => {
         "mainEntity": {
           "@type": "Organization",
           "name": "The Revive Tech",
-          "telephone": "+92-300-1234567",
-          "email": "support@therevivetech.pk",
+          "telephone": "+92-347-5799958",
+          "email": "therevivetech@gmail.com",
           "address": {
             "@type": "PostalAddress",
             "streetAddress": "Commercial Market, 96-D, Block D, DHA EME Sector",
@@ -375,8 +385,27 @@ export const SEOHead: React.FC = () => {
       canonicalPath = "/account";
     } else if (currentType === "page") {
       const handle = "handle" in viewState ? viewState.handle : "";
-      title = `${handle.replace(/-/g, " ").toUpperCase()} | The Revive Tech`;
+      if (handle === "terms-of-service") {
+        title = "Terms of Service | The Revive Tech";
+        description = "Review the official terms of service, customer conditions, and store usage policies for The Revive Tech Pakistan.";
+      } else if (handle === "privacy-policy") {
+        title = "Privacy Policy | The Revive Tech";
+        description = "Read our comprehensive privacy policy detailing data encryption, payment security, and customer privacy protections.";
+      } else if (handle === "refund-policy") {
+        title = "Refund & Return Policy | The Revive Tech";
+        description = "Read our official return and refund policy covering brand warranty, RMA claims, and transit replacement guarantees.";
+      } else if (handle === "shipping-policy") {
+        title = "Shipping Policy & Delivery Timelines | The Revive Tech";
+        description = "Find complete shipping timelines, express domestic dispatch details, and cash on delivery coverage across Pakistan.";
+      } else {
+        title = `${handle.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())} | The Revive Tech`;
+      }
       canonicalPath = `/${handle}`;
+    } else if (currentType === "not_found") {
+      isUtilityPage = true; // Sets robots: noindex, follow
+      title = "404 - Page Not Found | The Revive Tech";
+      description = "The requested page or product could not be found. Browse Pakistan's premier gaming hardware store at The Revive Tech.";
+      canonicalPath = "path" in viewState && (viewState as any).path ? (viewState as any).path : "/404";
     }
 
     // Handle Pagination Cleanly (Prevent duplicate canonicals & filter parameters bloat)

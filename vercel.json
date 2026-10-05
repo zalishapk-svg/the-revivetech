@@ -10,11 +10,19 @@
   "rewrites": [
     {
       "source": "/sitemap.xml",
-      "destination": "/api/index?path=sitemap"
+      "destination": "/api/index?path=sitemap.xml"
+    },
+    {
+      "source": "/sitemap_index.xml",
+      "destination": "/api/index?path=sitemap.xml"
+    },
+    {
+      "source": "/sitemap",
+      "destination": "/api/index?path=sitemap.xml"
     },
     {
       "source": "/robots.txt",
-      "destination": "/api/index?path=robots"
+      "destination": "/api/index?path=robots.txt"
     },
     {
       "source": "/cart/c/:path*",

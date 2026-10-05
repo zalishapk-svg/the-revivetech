@@ -27,6 +27,7 @@ const CartPage = lazy(() => import("./components/cart/CartPage").then((m) => ({ 
 const SearchPage = lazy(() => import("./components/search/SearchPage").then((m) => ({ default: m.SearchPage })));
 const CheckoutPage = lazy(() => import("./components/CheckoutPage").then((m) => ({ default: m.CheckoutPage })));
 const OrderConfirmationPage = lazy(() => import("./components/OrderConfirmationPage").then((m) => ({ default: m.OrderConfirmationPage })));
+const NotFoundPage = lazy(() => import("./components/common/NotFoundPage").then((m) => ({ default: m.NotFoundPage })));
 
 // Dynamic lazy-loaded modals
 const QuickViewModal = lazy(() => import("./components/common/QuickViewModal").then((m) => ({ default: m.QuickViewModal })));
@@ -45,6 +46,7 @@ const MainLayout: React.FC = () => {
   const activeHandle = "handle" in viewState ? viewState.handle : "";
   const activeQuery = "query" in viewState ? viewState.query : "";
   const activeOrderRef = "orderReference" in viewState ? (viewState as any).orderReference : "";
+  const activePath = "path" in viewState ? (viewState as any).path : "";
 
   return (
     <div className="min-h-screen bg-[#161616] text-slate-100 flex flex-col font-sans selection:bg-[#C0FE2D] selection:text-[#161616]">
@@ -80,6 +82,7 @@ const MainLayout: React.FC = () => {
             <OrderConfirmationPage orderReference={activeOrderRef} />
           )}
           {currentType === "page" && <LegalPage handle={activeHandle} />}
+          {currentType === "not_found" && <NotFoundPage requestedPath={activePath} />}
         </Suspense>
       </main>
 

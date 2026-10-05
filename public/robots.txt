@@ -1,0 +1,11 @@
+# The Revive Tech Robots TXT
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /account/
+Disallow: /cart
+Disallow: /checkout
+Disallow: /checkouts/
+
+Sitemap: https://www.therevivetech.pk/sitemap.xml

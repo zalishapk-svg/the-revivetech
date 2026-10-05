@@ -262,4 +262,5 @@ export type ViewState =
   | { type: 'cart' }
   | { type: 'checkout' }
   | { type: 'order_confirmation'; orderReference: string }
-  | { type: 'page'; handle: string };
+  | { type: 'page'; handle: string }
+  | { type: 'not_found'; path?: string };

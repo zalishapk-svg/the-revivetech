@@ -455,7 +455,8 @@ export async function renderSeoPage(
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "customer service",
-      telephone: "+92-300-1234567",
+      telephone: "+92-347-5799958",
+      email: "therevivetech@gmail.com",
       areaServed: "PK",
       availableLanguage: ["English", "Urdu"],
     },
@@ -1156,8 +1157,8 @@ export async function renderSeoPage(
       mainEntity: {
         "@type": "Organization",
         name: "The Revive Tech",
-        telephone: "+92-300-1234567",
-        email: "support@therevivetech.pk",
+        telephone: "+92-347-5799958",
+        email: "therevivetech@gmail.com",
         address: {
           "@type": "PostalAddress",
           streetAddress: "Commercial Market, 96-D, Block D, DHA EME Sector",
@@ -1186,8 +1187,8 @@ export async function renderSeoPage(
         <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;padding:24px;margin-bottom:24px;">
           <h3 style="color:#C0FE2D;margin-top:0;">Fulfillment Hub & Headquarters</h3>
           <p style="margin:4px 0;">Commercial Market, 96-D, Block D, DHA EME Sector, Lahore, Pakistan</p>
-          <p style="margin:4px 0;">Email: <a href="mailto:support@therevivetech.pk" style="color:#fff;">support@therevivetech.pk</a></p>
-          <p style="margin:4px 0;">Phone / WhatsApp: <span style="color:#fff;">+92-300-1234567</span></p>
+          <p style="margin:4px 0;">Email: <a href="mailto:therevivetech@gmail.com" style="color:#fff;">therevivetech@gmail.com</a></p>
+          <p style="margin:4px 0;">Phone / WhatsApp: <a href="https://wa.me/923475799958" style="color:#C0FE2D;text-decoration:none;">0347 5799958 (+92-347-5799958)</a></p>
         </div>
       </main>
       ${ssrFooter}

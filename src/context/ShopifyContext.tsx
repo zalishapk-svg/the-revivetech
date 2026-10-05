@@ -37,6 +37,7 @@ interface ShopifyContextType {
   navigateToCheckout: () => void;
   navigateToOrderConfirmation: (orderReference: string) => void;
   navigateToPage: (handle: string) => void;
+  navigateToNotFound: (path?: string) => void;
 
   // Shopify Storefront Data
   products: Product[];
@@ -202,7 +203,8 @@ export function parseUrlToViewState(path: string, search: string): ViewState {
     const handle = cleanPath.replace(/^\/page\//, "").replace(/^\/+|\/+$/g, "");
     if (handle) return { type: "page", handle };
   }
-  return { type: "home" };
+  if (cleanPath === "/404") return { type: "not_found", path: "/404" };
+  return { type: "not_found", path: cleanPath };
 }
 
 export function viewStateToUrl(view: ViewState): string {
@@ -242,7 +244,9 @@ export function viewStateToUrl(view: ViewState): string {
     case "faq":
       return "/faq";
     case "page":
-      return `/page/${view.handle}`;
+      return `/${view.handle}`;
+    case "not_found":
+      return view.path || "/404";
     default:
       return "/";
   }
@@ -767,6 +771,7 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setViewState({ type: "order_confirmation", orderReference });
   };
   const navigateToPage = (handle: string) => setViewState({ type: "page", handle });
+  const navigateToNotFound = (path?: string) => setViewState({ type: "not_found", path });
 
   // ---------------------------------------------------------------------------
   // SHOPIFY STOREFRONT CART MANAGEMENT
@@ -1016,6 +1021,7 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
         navigateToCheckout,
         navigateToOrderConfirmation,
         navigateToPage,
+        navigateToNotFound,
         products,
         collections,
         articles,
