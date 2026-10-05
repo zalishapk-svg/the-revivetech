@@ -173,9 +173,15 @@ export function parseUrlToViewState(path: string, search: string): ViewState {
   }
   if (cleanPath === "/about") return { type: "about" };
   if (cleanPath === "/contact") return { type: "contact" };
-  if (cleanPath === "/blog") return { type: "blog" };
+  if (cleanPath === "/blogs" || cleanPath === "/blog") return { type: "blog" };
+  if (cleanPath.startsWith("/blogs/")) {
+    const parts = cleanPath.replace(/^\/blogs\//, "").split("/").filter(Boolean);
+    const handle = parts[parts.length - 1];
+    if (handle) return { type: "article", handle };
+  }
   if (cleanPath.startsWith("/blog/")) {
-    const handle = cleanPath.replace(/^\/blog\//, "").replace(/^\/+|\/+$/g, "");
+    const parts = cleanPath.replace(/^\/blog\//, "").split("/").filter(Boolean);
+    const handle = parts[parts.length - 1];
     if (handle) return { type: "article", handle };
   }
   if (cleanPath.startsWith("/article/")) {
@@ -184,6 +190,14 @@ export function parseUrlToViewState(path: string, search: string): ViewState {
   }
   if (cleanPath === "/account") return { type: "account" };
   if (cleanPath === "/faq") return { type: "faq" };
+  if (
+    cleanPath === "/terms-of-service" ||
+    cleanPath === "/privacy-policy" ||
+    cleanPath === "/refund-policy" ||
+    cleanPath === "/shipping-policy"
+  ) {
+    return { type: "page", handle: cleanPath.replace(/^\//, "") };
+  }
   if (cleanPath.startsWith("/page/")) {
     const handle = cleanPath.replace(/^\/page\//, "").replace(/^\/+|\/+$/g, "");
     if (handle) return { type: "page", handle };

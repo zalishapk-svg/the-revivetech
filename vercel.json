@@ -2,6 +2,11 @@
   "buildCommand": "vite build",
   "outputDirectory": "dist",
   "framework": "vite",
+  "functions": {
+    "api/index.ts": {
+      "includeFiles": "dist/**"
+    }
+  },
   "rewrites": [
     {
       "source": "/sitemap.xml",
@@ -32,9 +37,8 @@
       "destination": "/api/index?path=:path*"
     },
     {
-      "source": "/((?!api/).*)",
-      "destination": "/index.html"
+      "source": "/((?!assets/|favicon|.*\\.(?:js|css|png|jpg|jpeg|gif|svg|ico|webp|woff|woff2|ttf|eot)).*)",
+      "destination": "/api/index?path=__html__&html_path=/$1"
     }
   ]
 }
-

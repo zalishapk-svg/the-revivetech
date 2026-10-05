@@ -21,6 +21,7 @@ export const STOREFRONT_QUERIES = {
             productType
             tags
             availableForSale
+            seo { title description }
             priceRange {
               minVariantPrice { amount currencyCode }
               maxVariantPrice { amount currencyCode }
@@ -65,6 +66,7 @@ export const STOREFRONT_QUERIES = {
         productType
         tags
         availableForSale
+        seo { title description }
         priceRange {
           minVariantPrice { amount currencyCode }
           maxVariantPrice { amount currencyCode }
@@ -232,6 +234,7 @@ export const STOREFRONT_QUERIES = {
             excerpt
             publishedAt
             authorV2 { name }
+            seo { title description }
             image { id url altText }
             tags
           }
@@ -253,6 +256,7 @@ export const STOREFRONT_QUERIES = {
             excerpt
             publishedAt
             authorV2 { name }
+            seo { title description }
             image { id url altText }
             tags
           }
@@ -1166,6 +1170,7 @@ export async function getProductsFromShopify(options?: { first?: number; after?:
         featuredImage: node.featuredImage || (node.images?.edges[0]?.node ? node.images.edges[0].node : null),
         images: node.images?.edges?.map((e: any) => e.node) || [],
         options: node.options || [],
+        seo: node.seo ? { title: node.seo.title, description: node.seo.description } : undefined,
         variants: node.variants?.edges?.map((e: any) => ({
           id: e.node.id,
           title: e.node.title,
@@ -1200,6 +1205,7 @@ export async function getProductByHandleFromShopify(handle: string): Promise<Pro
       productType: node.productType || "Hardware",
       tags: node.tags || [],
       availableForSale: node.availableForSale,
+      seo: node.seo ? { title: node.seo.title, description: node.seo.description } : undefined,
       priceRange: {
         minVariantPrice: node.priceRange?.minVariantPrice || { amount: "0.00", currencyCode: "USD" },
         maxVariantPrice: node.priceRange?.maxVariantPrice || { amount: "0.00", currencyCode: "USD" },
@@ -1385,6 +1391,7 @@ export async function getBlogArticlesFromShopify(options?: { first?: number; aft
         author: node.authorV2?.name || "TheReviveTech Editorial",
         image: node.image,
         tags: node.tags || [],
+        seo: node.seo ? { title: node.seo.title, description: node.seo.description } : undefined,
         readingTimeMinutes: Math.max(2, Math.ceil((node.excerpt || node.title || "").split(" ").length / 50)),
       };
     });
@@ -1413,6 +1420,7 @@ export async function getBlogArticleByHandleFromShopify(handle: string): Promise
         author: node.authorV2?.name || "TheReviveTech Editorial",
         image: node.image,
         tags: node.tags || ["Tech", "Hardware"],
+        seo: node.seo ? { title: node.seo.title, description: node.seo.description } : undefined,
         readingTimeMinutes: Math.max(3, Math.ceil(wordCount / 200)),
       };
     }

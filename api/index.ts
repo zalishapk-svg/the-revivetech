@@ -14,6 +14,7 @@ import {
   getOrderConfirmationRecord,
   fetchShopifyShippingRates,
 } from "./_lib/shopify-server.js";
+import { renderSeoPage, loadHtmlTemplate } from "./_lib/seo-renderer.js";
 
 /**
  * Normalizes the requested route path from Vercel query or url.
@@ -105,6 +106,65 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const finalCheckoutUrl = `https://${targetHost}${targetPath}${searchParamsStr}`;
     console.log(`[Shopify Checkout Redirect] Redirecting browser to native Shopify Checkout: ${finalCheckoutUrl}`);
     return res.redirect(302, finalCheckoutUrl);
+  }
+
+  // -------------------------------------------------------------------------
+  // 0B. TECHNICAL SEO & INITIAL HTML PRERENDERING ROUTER (Vercel Serverless)
+  // -------------------------------------------------------------------------
+  // Intercepts all page requests to render real Shopify SEO metadata and
+  // crawlable semantic HTML before React hydrates on the client.
+  const isHtmlRequest =
+    path === "__html__" ||
+    typeof req.query.html_path === "string" ||
+    req.query.render_html === "true" ||
+    (req.method === "GET" &&
+      Boolean(req.headers.accept?.includes("text/html")) &&
+      !path.startsWith("api/") &&
+      !path.startsWith("shopify/") &&
+      !path.startsWith("health") &&
+      !path.startsWith("debug") &&
+      !path.endsWith(".json") &&
+      !path.endsWith(".xml") &&
+      !path.endsWith(".txt"));
+
+  if (isHtmlRequest) {
+    try {
+      let targetPath = "/";
+      if (typeof req.query.html_path === "string" && req.query.html_path.trim()) {
+        targetPath = req.query.html_path.trim();
+      } else if (req.headers["x-forwarded-uri"]) {
+        targetPath = (req.headers["x-forwarded-uri"] as string).split("?")[0];
+      } else if (req.headers["x-matched-path"]) {
+        targetPath = (req.headers["x-matched-path"] as string).split("?")[0];
+      } else if (rawUrl && !rawUrl.startsWith("/api/")) {
+        targetPath = rawUrl.split("?")[0];
+      } else if (path && path !== "__html__") {
+        targetPath = `/${path}`;
+      }
+
+      if (!targetPath.startsWith("/")) {
+        targetPath = `/${targetPath}`;
+      }
+
+      const template = loadHtmlTemplate();
+      const seoResult = await renderSeoPage(targetPath, template, req.headers.host);
+
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      if (seoResult.statusCode === 200) {
+        res.setHeader(
+          "Cache-Control",
+          "public, max-age=60, s-maxage=3600, stale-while-revalidate=86400"
+        );
+      } else {
+        res.setHeader("Cache-Control", "no-store");
+      }
+      return res.status(seoResult.statusCode).send(seoResult.html);
+    } catch (seoErr) {
+      console.error("[SEO Prerender Error in Vercel Function]", seoErr);
+      const fallbackTemplate = loadHtmlTemplate();
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      return res.status(200).send(fallbackTemplate);
+    }
   }
 
   try {
@@ -741,20 +801,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // 7. ROBOTS.TXT
     // -------------------------------------------------------------------------
     if (path === "robots" || path === "robots.txt") {
-      const host = req.headers.host || "therevivetech.pk";
-      const protocol = (req.headers["x-forwarded-proto"] as string) || "https";
-      const baseUrl = `${protocol}://${host}`;
-
       const robotsTxt = `# The Revive Tech Robots TXT
 User-agent: *
 Allow: /
 Disallow: /api/
 Disallow: /admin/
 Disallow: /account/
+Disallow: /cart
+Disallow: /checkout
+Disallow: /checkouts/
 
-Sitemap: ${baseUrl}/sitemap.xml
+Sitemap: https://www.therevivetech.pk/sitemap.xml
 `;
       res.setHeader("Content-Type", "text/plain; charset=utf-8");
+      res.setHeader("Cache-Control", "public, max-age=86400");
       return res.status(200).send(robotsTxt);
     }
 
@@ -762,9 +822,7 @@ Sitemap: ${baseUrl}/sitemap.xml
     // 8. SITEMAP.XML
     // -------------------------------------------------------------------------
     if (path === "sitemap" || path === "sitemap.xml") {
-      const host = req.headers.host || "therevivetech.pk";
-      const protocol = (req.headers["x-forwarded-proto"] as string) || "https";
-      const baseUrl = `${protocol}://${host}`;
+      const canonicalBaseUrl = "https://www.therevivetech.pk";
 
       const staticRoutes = [
         "",
@@ -774,12 +832,11 @@ Sitemap: ${baseUrl}/sitemap.xml
         "/contact",
         "/blog",
         "/faq",
-        "/cart",
-        "/search",
       ];
 
       let collectionHandles: string[] = [];
       let productHandles: string[] = [];
+      let articleHandles: string[] = [];
 
       try {
         const domain = config.storeDomain || "dbbys1-nd.myshopify.com";
@@ -794,10 +851,13 @@ Sitemap: ${baseUrl}/sitemap.xml
 
         const query = `
           query getSitemapData {
-            collections(first: 50) {
+            collections(first: 100) {
               edges { node { handle } }
             }
-            products(first: 100) {
+            products(first: 200) {
+              edges { node { handle } }
+            }
+            articles(first: 50) {
               edges { node { handle } }
             }
           }
@@ -817,6 +877,9 @@ Sitemap: ${baseUrl}/sitemap.xml
           if (data.data?.products?.edges) {
             productHandles = data.data.products.edges.map((e: any) => e.node.handle);
           }
+          if (data.data?.articles?.edges) {
+            articleHandles = data.data.articles.edges.map((e: any) => e.node.handle);
+          }
         }
       } catch (err) {
         console.warn("[Sitemap Warning] Could not fetch dynamic catalog items:", err);
@@ -829,7 +892,7 @@ Sitemap: ${baseUrl}/sitemap.xml
 
       for (const route of staticRoutes) {
         xml += `  <url>\n`;
-        xml += `    <loc>${baseUrl}${route}</loc>\n`;
+        xml += `    <loc>${canonicalBaseUrl}${route}</loc>\n`;
         xml += `    <lastmod>${today}</lastmod>\n`;
         xml += `    <changefreq>${route === "" ? "daily" : "weekly"}</changefreq>\n`;
         xml += `    <priority>${route === "" ? "1.0" : "0.8"}</priority>\n`;
@@ -838,7 +901,7 @@ Sitemap: ${baseUrl}/sitemap.xml
 
       for (const handle of collectionHandles) {
         xml += `  <url>\n`;
-        xml += `    <loc>${baseUrl}/collection/${handle}</loc>\n`;
+        xml += `    <loc>${canonicalBaseUrl}/collections/${handle}</loc>\n`;
         xml += `    <lastmod>${today}</lastmod>\n`;
         xml += `    <changefreq>daily</changefreq>\n`;
         xml += `    <priority>0.9</priority>\n`;
@@ -847,10 +910,19 @@ Sitemap: ${baseUrl}/sitemap.xml
 
       for (const handle of productHandles) {
         xml += `  <url>\n`;
-        xml += `    <loc>${baseUrl}/product/${handle}</loc>\n`;
+        xml += `    <loc>${canonicalBaseUrl}/products/${handle}</loc>\n`;
         xml += `    <lastmod>${today}</lastmod>\n`;
         xml += `    <changefreq>daily</changefreq>\n`;
         xml += `    <priority>0.9</priority>\n`;
+        xml += `  </url>\n`;
+      }
+
+      for (const handle of articleHandles) {
+        xml += `  <url>\n`;
+        xml += `    <loc>${canonicalBaseUrl}/blog/${handle}</loc>\n`;
+        xml += `    <lastmod>${today}</lastmod>\n`;
+        xml += `    <changefreq>weekly</changefreq>\n`;
+        xml += `    <priority>0.7</priority>\n`;
         xml += `  </url>\n`;
       }
 

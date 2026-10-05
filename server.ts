@@ -1,4 +1,5 @@
 import express from "express";
+import fs from "fs";
 import path from "path";
 import crypto from "crypto";
 import { createServer as createViteServer } from "vite";
@@ -8,6 +9,8 @@ import {
   checkFirebaseAdminHealth, checkShopifyStorefrontHealth,
   validateShopifyCartItems, createShopifyAdminOrder, getOrderConfirmationRecord, fetchShopifyShippingRates
 } from "./api/_lib/shopify-server.js";
+import { renderSeoPage, loadHtmlTemplate } from "./api/_lib/seo-renderer.js";
+import vercelHandler from "./api/index.js";
 
 const app = express();
 const PORT = 3000;
@@ -21,6 +24,11 @@ app.use(
   })
 );
 app.use(express.urlencoded({ extended: true }));
+
+// Handle direct /api/index serverless invocation in Express
+app.all(["/api/index", "/api/index.ts"], (req, res) => {
+  return (vercelHandler as any)(req, res);
+});
 
 // Health Check Endpoint
 app.get("/api/health", async (req, res) => {
@@ -163,30 +171,28 @@ app.get("/api/debug/shopify-storefront", async (req, res) => {
 });
 
 // Robots.txt Handler
-app.get("/robots.txt", (req, res) => {
-  const host = req.headers.host || "therevivetech.pk";
-  const protocol = req.headers["x-forwarded-proto"] || "https";
-  const baseUrl = `${protocol}://${host}`;
-
+app.get("/robots.txt", (_req, res) => {
   const robotsTxt = `# The Revive Tech Robots TXT
 User-agent: *
 Allow: /
 Disallow: /api/
 Disallow: /admin/
 Disallow: /account/
+Disallow: /cart
+Disallow: /checkout
+Disallow: /checkouts/
 
-Sitemap: ${baseUrl}/sitemap.xml
+Sitemap: https://www.therevivetech.pk/sitemap.xml
 `;
 
   res.setHeader("Content-Type", "text/plain; charset=utf-8");
+  res.setHeader("Cache-Control", "public, max-age=86400");
   res.status(200).send(robotsTxt);
 });
 
 // Sitemap.xml Handler
-app.get("/sitemap.xml", async (req, res) => {
-  const host = req.headers.host || "therevivetech.pk";
-  const protocol = req.headers["x-forwarded-proto"] || "https";
-  const baseUrl = `${protocol}://${host}`;
+app.get("/sitemap.xml", async (_req, res) => {
+  const canonicalBaseUrl = "https://www.therevivetech.pk";
 
   const staticRoutes = [
     "",
@@ -196,12 +202,11 @@ app.get("/sitemap.xml", async (req, res) => {
     "/contact",
     "/blog",
     "/faq",
-    "/cart",
-    "/search",
   ];
 
   let collectionHandles: string[] = [];
   let productHandles: string[] = [];
+  let articleHandles: string[] = [];
 
   try {
     const config = getConfig();
@@ -218,10 +223,13 @@ app.get("/sitemap.xml", async (req, res) => {
 
     const query = `
       query getSitemapData {
-        collections(first: 50) {
+        collections(first: 100) {
           edges { node { handle } }
         }
-        products(first: 100) {
+        products(first: 200) {
+          edges { node { handle } }
+        }
+        articles(first: 50) {
           edges { node { handle } }
         }
       }
@@ -241,6 +249,9 @@ app.get("/sitemap.xml", async (req, res) => {
       if (data.data?.products?.edges) {
         productHandles = data.data.products.edges.map((e: any) => e.node.handle);
       }
+      if (data.data?.articles?.edges) {
+        articleHandles = data.data.articles.edges.map((e: any) => e.node.handle);
+      }
     }
   } catch (err) {
     console.error("Failed to fetch sitemap handles from Shopify:", err);
@@ -253,7 +264,7 @@ app.get("/sitemap.xml", async (req, res) => {
 
   for (const route of staticRoutes) {
     xml += `  <url>\n`;
-    xml += `    <loc>${baseUrl}${route}</loc>\n`;
+    xml += `    <loc>${canonicalBaseUrl}${route}</loc>\n`;
     xml += `    <lastmod>${currentDate}</lastmod>\n`;
     xml += `    <changefreq>${route === "" ? "daily" : "weekly"}</changefreq>\n`;
     xml += `    <priority>${route === "" ? "1.0" : "0.8"}</priority>\n`;
@@ -262,25 +273,35 @@ app.get("/sitemap.xml", async (req, res) => {
 
   for (const handle of collectionHandles) {
     xml += `  <url>\n`;
-    xml += `    <loc>${baseUrl}/collections/${handle}</loc>\n`;
-    xml += `    <lastmod>${currentDate}</lastmod>\n`;
-    xml += `    <changefreq>daily</changefreq>\n`;
-    xml += `    <priority>0.8</priority>\n`;
-    xml += `  </url>\n`;
-  }
-
-  for (const handle of productHandles) {
-    xml += `  <url>\n`;
-    xml += `    <loc>${baseUrl}/products/${handle}</loc>\n`;
+    xml += `    <loc>${canonicalBaseUrl}/collections/${handle}</loc>\n`;
     xml += `    <lastmod>${currentDate}</lastmod>\n`;
     xml += `    <changefreq>daily</changefreq>\n`;
     xml += `    <priority>0.9</priority>\n`;
     xml += `  </url>\n`;
   }
 
+  for (const handle of productHandles) {
+    xml += `  <url>\n`;
+    xml += `    <loc>${canonicalBaseUrl}/products/${handle}</loc>\n`;
+    xml += `    <lastmod>${currentDate}</lastmod>\n`;
+    xml += `    <changefreq>daily</changefreq>\n`;
+    xml += `    <priority>0.9</priority>\n`;
+    xml += `  </url>\n`;
+  }
+
+  for (const handle of articleHandles) {
+    xml += `  <url>\n`;
+    xml += `    <loc>${canonicalBaseUrl}/blog/${handle}</loc>\n`;
+    xml += `    <lastmod>${currentDate}</lastmod>\n`;
+    xml += `    <changefreq>weekly</changefreq>\n`;
+    xml += `    <priority>0.7</priority>\n`;
+    xml += `  </url>\n`;
+  }
+
   xml += `</urlset>`;
 
   res.setHeader("Content-Type", "application/xml; charset=utf-8");
+  res.setHeader("Cache-Control", "public, max-age=3600, s-maxage=86400, stale-while-revalidate");
   res.status(200).send(xml);
 });
 
@@ -769,14 +790,51 @@ async function startServer() {
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },
-      appType: "spa",
+      appType: "custom",
     });
     app.use(vite.middlewares);
+
+    app.get("*", async (req, res, next) => {
+      // Don't intercept API routes or static asset requests
+      if (
+        req.path.startsWith("/api/") ||
+        req.path.startsWith("/@") ||
+        req.path.startsWith("/src/") ||
+        req.path.startsWith("/node_modules/") ||
+        req.path.includes(".")
+      ) {
+        return next();
+      }
+
+      try {
+        const rawIndex = fs.readFileSync(path.join(process.cwd(), "index.html"), "utf-8");
+        const transformedHtml = await vite.transformIndexHtml(req.originalUrl, rawIndex);
+        const result = await renderSeoPage(req.path, transformedHtml, req.headers.host);
+        res
+          .status(result.statusCode)
+          .setHeader("Content-Type", "text/html; charset=utf-8")
+          .send(result.html);
+      } catch (e) {
+        vite.ssrFixStacktrace(e as Error);
+        next(e);
+      }
+    });
   } else {
     const distPath = path.join(process.cwd(), "dist");
-    app.use(express.static(distPath));
-    app.get("*", (_req, res) => {
-      res.sendFile(path.join(distPath, "index.html"));
+    app.use(express.static(distPath, { index: false }));
+
+    app.get("*", async (req, res) => {
+      try {
+        const template = loadHtmlTemplate();
+        const result = await renderSeoPage(req.path, template, req.headers.host);
+        res
+          .status(result.statusCode)
+          .setHeader("Content-Type", "text/html; charset=utf-8")
+          .send(result.html);
+      } catch (err) {
+        console.error("[SSR Production Error in Express]", err);
+        res.sendFile(path.join(distPath, "index.html"));
+      }
     });
   }
 
