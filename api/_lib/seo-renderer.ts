@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { getConfig, STABLE_STOREFRONT_API_VERSION } from "./shopify-server.js";
+import { fetchHomepageDataFromShopify, buildHomepageSemanticHtml } from "./homepage-html-generator.js";
 
 /**
  * Loads the base HTML template from dist/index.html or index.html
@@ -1527,171 +1528,19 @@ export async function renderSeoPage(
     const title = "The Revive Tech | Original Gaming Hardware & Tech Store Pakistan";
     const description = "Shop 100% genuine gaming keyboards, wireless headsets, ultralight mice, and PC accessories in Pakistan at best prices with nationwide Cash on Delivery.";
 
-    const [featuredProducts, collectionsList] = await Promise.all([
-      fetchProductsListForSeo(12),
-      fetchCollectionsListForSeo(),
-    ]);
+    const homeData = await fetchHomepageDataFromShopify();
+    const crawlableHtml = buildHomepageSemanticHtml(homeData);
 
     const homeItemListSchema = {
       "@context": "https://schema.org",
       "@type": "ItemList",
-      itemListElement: (featuredProducts || []).map((prod, idx) => ({
+      itemListElement: (homeData.featuredProducts || []).map((prod, idx) => ({
         "@type": "ListItem",
         position: idx + 1,
         url: `${siteUrl}/products/${prod.handle}`,
         name: prod.title,
       })),
     };
-
-    const productsGridHtml = (featuredProducts || [])
-      .map((p) => {
-        const pPrice = formatPricePKR(p.priceRange?.minVariantPrice?.amount || "0");
-        const pImg = p.featuredImage?.url || `${siteUrl}/og-image.png`;
-        return `
-          <div style="background:#181818;border:1px solid #262626;border-radius:12px;padding:16px;display:flex;flex-direction:column;justify-content:space-between;">
-            <a href="/products/${p.handle}" style="text-decoration:none;color:#fff;display:block;">
-              <div style="text-align:center;background:#141414;border-radius:8px;padding:12px;margin-bottom:12px;">
-                <img src="${escapeHtml(pImg)}" alt="${escapeHtml(p.title)}" width="240" height="240" style="max-width:100%;height:180px;object-fit:contain;border-radius:6px;" loading="lazy" />
-              </div>
-              <div style="font-size:11px;font-weight:700;color:#C0FE2D;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">${escapeHtml(p.vendor || "The Revive Tech")}</div>
-              <h3 style="color:#fff;font-size:14px;font-weight:700;margin:0 0 8px 0;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${escapeHtml(p.title)}</h3>
-              <div style="color:#C0FE2D;font-weight:800;font-size:17px;margin-top:6px;">${pPrice}</div>
-              <div style="display:inline-block;margin-top:6px;font-size:11px;font-weight:700;color:#55efc4;background:rgba(85,239,196,0.1);padding:2px 8px;border-radius:4px;">In Stock • Nationwide Delivery</div>
-            </a>
-          </div>
-        `;
-      })
-      .join("");
-
-    const collectionsGridHtml = (collectionsList || [])
-      .slice(0, 8)
-      .map((c) => `
-        <a href="/collections/${c.handle}" style="background:#181818;border:1px solid #262626;border-radius:12px;padding:20px;text-decoration:none;color:#fff;display:block;text-align:center;">
-          <h3 style="color:#C0FE2D;margin:0 0 6px 0;font-size:16px;font-weight:800;">${escapeHtml(c.title)}</h3>
-          <p style="color:#aaa;font-size:12px;margin:0;line-height:1.4;">${cleanExcerpt(c.description, 80) || "Browse genuine hardware"}</p>
-        </a>
-      `)
-      .join("");
-
-    const crawlableHtml = `
-      ${ssrHeader}
-      <main style="max-width:1200px;margin:0 auto;padding:40px 20px;color:#eee;">
-        {/* Main Hero Header */}
-        <div style="text-align:center;padding:20px 0 50px 0;">
-          <div style="display:inline-block;background:rgba(192,254,45,0.12);color:#C0FE2D;border:1px solid rgba(192,254,45,0.3);font-size:12px;font-weight:700;padding:6px 16px;border-radius:999px;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;">
-            Pakistan's Premier Esports & Gaming Gear Store
-          </div>
-          <h1 style="font-size:clamp(30px,4.5vw,48px);font-weight:900;color:#fff;line-height:1.2;margin:0 auto 18px;max-width:900px;">
-            100% Original Gaming Hardware & Tech Store Pakistan
-          </h1>
-          <p style="font-size:clamp(15px,2vw,18px);color:#aaa;max-width:780px;margin:0 auto 28px;line-height:1.6;">
-            Pakistan's trusted destination for genuine mechanical keyboards, 8000Hz ultralight gaming mice, audiophile planar magnetic headsets, Hi-Res IEMs, and competitive esports gear. Sourced directly from authorized distributors with nationwide Cash on Delivery and official manufacturer warranty.
-          </p>
-          <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
-            <a href="/shop" style="background:#C0FE2D;color:#111;font-weight:800;padding:14px 32px;border-radius:12px;text-decoration:none;font-size:15px;">
-              Explore All Hardware &rarr;
-            </a>
-            <a href="/collections" style="background:#222;color:#fff;font-weight:700;padding:14px 28px;border-radius:12px;text-decoration:none;font-size:15px;border:1px solid #333;">
-              Browse Collections
-            </a>
-          </div>
-        </div>
-
-        {/* Trending Categories Section */}
-        <section style="margin-top:20px;margin-bottom:48px;">
-          <h2 style="font-size:22px;font-weight:800;color:#fff;margin-bottom:18px;">Trending Hardware Categories</h2>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">
-            <a href="/collections/keyboard" style="background:#181818;border:1px solid #262626;border-radius:12px;padding:20px;text-decoration:none;color:#fff;text-align:center;">
-              <h3 style="color:#C0FE2D;margin:0 0 6px 0;font-size:17px;font-weight:800;">Mechanical Keyboards</h3>
-              <p style="color:#aaa;font-size:12px;margin:0;">Rapid Trigger, Hall Effect, Gasket Mount</p>
-            </a>
-            <a href="/collections/mouse" style="background:#181818;border:1px solid #262626;border-radius:12px;padding:20px;text-decoration:none;color:#fff;text-align:center;">
-              <h3 style="color:#C0FE2D;margin:0 0 6px 0;font-size:17px;font-weight:800;">Gaming Mice</h3>
-              <p style="color:#aaa;font-size:12px;margin:0;">Ultralight, 8000Hz Polling, Wireless PAW3395</p>
-            </a>
-            <a href="/collections/headsets" style="background:#181818;border:1px solid #262626;border-radius:12px;padding:20px;text-decoration:none;color:#fff;text-align:center;">
-              <h3 style="color:#C0FE2D;margin:0 0 6px 0;font-size:17px;font-weight:800;">Esports Headsets</h3>
-              <p style="color:#aaa;font-size:12px;margin:0;">Spatial Audio, Planar Magnetic, Low-Latency</p>
-            </a>
-            <a href="/collections/iems" style="background:#181818;border:1px solid #262626;border-radius:12px;padding:20px;text-decoration:none;color:#fff;text-align:center;">
-              <h3 style="color:#C0FE2D;margin:0 0 6px 0;font-size:17px;font-weight:800;">IEMs & Audio Gear</h3>
-              <p style="color:#aaa;font-size:12px;margin:0;">Hi-Res Studio In-Ear Monitors & Cables</p>
-            </a>
-            <a href="/collections/accessories" style="background:#181818;border:1px solid #262626;border-radius:12px;padding:20px;text-decoration:none;color:#fff;text-align:center;">
-              <h3 style="color:#C0FE2D;margin:0 0 6px 0;font-size:17px;font-weight:800;">Battlestation Gear</h3>
-              <p style="color:#aaa;font-size:12px;margin:0;">Desk Mats, Monitor Arms, Coiled Cables</p>
-            </a>
-          </div>
-        </section>
-
-        {/* Featured Hardware Products Grid */}
-        <section style="margin-bottom:48px;">
-          <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px;flex-wrap:wrap;gap:12px;">
-            <div>
-              <h2 style="font-size:24px;font-weight:800;color:#fff;margin:0 0 4px 0;">Featured Gaming Gear</h2>
-              <p style="color:#aaa;font-size:14px;margin:0;">Top-rated hardware selected for competitive performance.</p>
-            </div>
-            <a href="/shop" style="color:#C0FE2D;font-weight:700;font-size:14px;text-decoration:none;">View All Hardware &rarr;</a>
-          </div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:20px;">
-            ${productsGridHtml}
-          </div>
-        </section>
-
-        {/* Hardware Collections Directory */}
-        <section style="margin-bottom:48px;">
-          <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px;flex-wrap:wrap;gap:12px;">
-            <div>
-              <h2 style="font-size:24px;font-weight:800;color:#fff;margin:0 0 4px 0;">Browse Collections</h2>
-              <p style="color:#aaa;font-size:14px;margin:0;">Find gear categorized by brand, switch type, and hardware form factor.</p>
-            </div>
-            <a href="/collections" style="color:#C0FE2D;font-weight:700;font-size:14px;text-decoration:none;">All Collections &rarr;</a>
-          </div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;">
-            ${collectionsGridHtml}
-          </div>
-        </section>
-
-        {/* Why Choose Us Trust Section */}
-        <section style="margin-bottom:48px;background:#181818;border:1px solid #262626;border-radius:16px;padding:32px 24px;">
-          <h2 style="font-size:22px;font-weight:800;color:#fff;margin-bottom:20px;text-align:center;">Why Pakistani Gamers Trust The Revive Tech</h2>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px;">
-            <div>
-              <h3 style="color:#C0FE2D;font-size:16px;margin:0 0 8px 0;">100% Original Products Guaranteed</h3>
-              <p style="color:#aaa;font-size:13px;line-height:1.6;margin:0;">Every unit has verifiable serial numbers that register on official brand software. Zero fakes, copies, or replicas.</p>
-            </div>
-            <div>
-              <h3 style="color:#C0FE2D;font-size:16px;margin:0 0 8px 0;">Cash on Delivery Nationwide</h3>
-              <p style="color:#aaa;font-size:13px;line-height:1.6;margin:0;">Fast courier dispatch across Karachi, Lahore, Islamabad, Rawalpindi, Faisalabad, Multan, and all cities of Pakistan.</p>
-            </div>
-            <div>
-              <h3 style="color:#C0FE2D;font-size:16px;margin:0 0 8px 0;">Official Local Warranty & RMA</h3>
-              <p style="color:#aaa;font-size:13px;line-height:1.6;margin:0;">Hassle-free brand warranty coverage and direct hardware specialist support based in Lahore.</p>
-            </div>
-          </div>
-        </section>
-
-        {/* FAQ Section */}
-        <section style="margin-bottom:32px;">
-          <h2 style="font-size:22px;font-weight:800;color:#fff;margin-bottom:18px;">Frequently Asked Questions</h2>
-          <div style="display:flex;flex-direction:column;gap:14px;">
-            <div style="background:#181818;border:1px solid #262626;border-radius:10px;padding:16px 20px;">
-              <h3 style="color:#fff;font-size:15px;margin:0 0 6px 0;">Are all gaming products 100% authentic?</h3>
-              <p style="color:#aaa;font-size:13px;line-height:1.6;margin:0;">Yes. All peripherals are sourced directly from brand authorized distributors with genuine manufacturer packaging and warranty.</p>
-            </div>
-            <div style="background:#181818;border:1px solid #262626;border-radius:10px;padding:16px 20px;">
-              <h3 style="color:#fff;font-size:15px;margin:0 0 6px 0;">How long does delivery take in Pakistan?</h3>
-              <p style="color:#aaa;font-size:13px;line-height:1.6;margin:0;">Orders placed before 2 PM PST are dispatched same-day from Lahore. Express shipping typically takes 1-2 business days with real-time tracking.</p>
-            </div>
-            <div style="background:#181818;border:1px solid #262626;border-radius:10px;padding:16px 20px;">
-              <h3 style="color:#fff;font-size:15px;margin:0 0 6px 0;">What payment options are available?</h3>
-              <p style="color:#aaa;font-size:13px;line-height:1.6;margin:0;">We accept Cash on Delivery (COD), Visa & Mastercard Credit/Debit Cards, JazzCash, EasyPaisa, and Direct Bank Transfers.</p>
-            </div>
-          </div>
-        </section>
-      </main>
-      ${ssrFooter}
-    `;
 
     return {
       statusCode: 200,

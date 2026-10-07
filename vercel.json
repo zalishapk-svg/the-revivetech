@@ -1,5 +1,5 @@
 {
-  "buildCommand": "vite build",
+  "buildCommand": "npm run build:sitemap && npm run build:prerender && vite build && npm run build:prerender",
   "outputDirectory": "dist",
   "framework": "vite",
   "functions": {
