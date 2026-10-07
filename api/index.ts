@@ -146,6 +146,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const robotsTxt = `# The Revive Tech Robots TXT
 User-agent: *
 Allow: /
+Allow: /api/shopify/config
+Allow: /api/shopify/graphql
 Disallow: /api/
 Disallow: /admin/
 Disallow: /account/
@@ -858,6 +860,8 @@ Sitemap: https://www.therevivetech.pk/sitemap.xml
       const robotsTxt = `# The Revive Tech Robots TXT
 User-agent: *
 Allow: /
+Allow: /api/shopify/config
+Allow: /api/shopify/graphql
 Disallow: /api/
 Disallow: /admin/
 Disallow: /account/

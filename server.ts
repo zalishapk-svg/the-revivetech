@@ -176,6 +176,8 @@ app.get("/robots.txt", (_req, res) => {
   const robotsTxt = `# The Revive Tech Robots TXT
 User-agent: *
 Allow: /
+Allow: /api/shopify/config
+Allow: /api/shopify/graphql
 Disallow: /api/
 Disallow: /admin/
 Disallow: /account/
