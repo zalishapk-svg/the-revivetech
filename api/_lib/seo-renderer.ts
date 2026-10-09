@@ -7,25 +7,29 @@ import { fetchHomepageDataFromShopify, buildHomepageSemanticHtml } from "./homep
  * Loads the base HTML template from dist/index.html or index.html
  */
 export function loadHtmlTemplate(): string {
+  let template = "";
   try {
     const distIndex = path.join(process.cwd(), "dist", "index.html");
     if (fs.existsSync(distIndex)) {
-      return fs.readFileSync(distIndex, "utf-8");
+      template = fs.readFileSync(distIndex, "utf-8");
     }
   } catch (e) {
     // Continue
   }
 
-  try {
-    const rootIndex = path.join(process.cwd(), "index.html");
-    if (fs.existsSync(rootIndex)) {
-      return fs.readFileSync(rootIndex, "utf-8");
+  if (!template) {
+    try {
+      const rootIndex = path.join(process.cwd(), "index.html");
+      if (fs.existsSync(rootIndex)) {
+        template = fs.readFileSync(rootIndex, "utf-8");
+      }
+    } catch (e) {
+      // Continue
     }
-  } catch (e) {
-    // Continue
   }
 
-  return `<!doctype html>
+  if (!template) {
+    template = `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -38,6 +42,15 @@ export function loadHtmlTemplate(): string {
     <div id="root"></div>
   </body>
 </html>`;
+  }
+
+  // Guarantee that whatever template was loaded has an empty <div id="root"></div>
+  // so that route-specific SSR content (blog articles, products, collections, 404s)
+  // is never contaminated by pre-rendered homepage HTML.
+  return template.replace(
+    /<div\s+id=["']root["']>[\s\S]*?<\/div>(?=\s*(?:<script|<\/body>))/i,
+    '<div id="root"></div>'
+  );
 }
 
 interface ShopifySeoData {
@@ -390,9 +403,11 @@ export async function fetchProductsListForSeo(first = 36): Promise<any[]> {
  */
 export async function fetchArticleForSeo(handle: string): Promise<ShopifyArticleSEO | null> {
   const cleanHandle = handle.trim().toLowerCase();
+
+  // 1. First attempt: Query with search term
   const query = `
     query getArticleForSEO($handle: String!) {
-      articles(first: 10, query: $handle) {
+      articles(first: 50, query: $handle) {
         edges {
           node {
             id
@@ -421,7 +436,43 @@ export async function fetchArticleForSeo(handle: string): Promise<ShopifyArticle
   const data = await executeStorefrontQuery(query, { handle: cleanHandle });
   const edges = data?.articles?.edges || [];
   const exact = edges.find((e: any) => e.node?.handle?.toLowerCase() === cleanHandle);
-  return exact?.node || edges[0]?.node || null;
+  if (exact?.node) {
+    return exact.node;
+  }
+
+  // 2. Second attempt: Fetch recent catalog (all published articles in store)
+  const catalogQuery = `
+    query getAllArticlesCatalog {
+      articles(first: 100) {
+        edges {
+          node {
+            id
+            handle
+            title
+            content
+            contentHtml
+            excerpt
+            publishedAt
+            authorV2 { name }
+            seo {
+              title
+              description
+            }
+            image {
+              url
+              altText
+            }
+            tags
+          }
+        }
+      }
+    }
+  `;
+
+  const catalogData = await executeStorefrontQuery(catalogQuery);
+  const catalogEdges = catalogData?.articles?.edges || [];
+  const catalogExact = catalogEdges.find((e: any) => e.node?.handle?.toLowerCase() === cleanHandle);
+  return catalogExact?.node || null;
 }
 
 /**
@@ -1020,7 +1071,14 @@ export async function renderSeoPage(
       };
     }
 
-    const rawTitle = article.seo?.title || `${article.title} | The Revive Tech Blog`;
+    let rawTitle = (article.seo?.title || "").trim();
+    if (!rawTitle) {
+      rawTitle = `${article.title} | The Revive Tech Blog`;
+    }
+    // Clean up any known typo where leading 'I' was omitted in store SEO title (e.g., "s Razer Available in Pakistan...")
+    if (/^s\s+/i.test(rawTitle)) {
+      rawTitle = "Is " + rawTitle.slice(2);
+    }
     const title = rawTitle.includes("The Revive Tech") ? rawTitle : `${rawTitle} | The Revive Tech`;
 
     const description =
@@ -1651,11 +1709,19 @@ ${JSON.stringify(jsonLdSchemas, null, 2)}
   html = html.replace(/<\/head>/i, `${tags}\n  </head>`);
 
   // 3. Inject crawlable semantic HTML into <div id="root">
-  if (crawlableHtml && /<div\s+id=["']root["']>\s*<\/div>/i.test(html)) {
-    html = html.replace(
-      /<div\s+id=["']root["']>\s*<\/div>/i,
-      `<div id="root">\n${crawlableHtml}\n    </div>`
-    );
+  if (crawlableHtml) {
+    const rootRegex = /<div\s+id=["']root["']>[\s\S]*?<\/div>(?=\s*(?:<script|<\/body>))/i;
+    if (rootRegex.test(html)) {
+      html = html.replace(
+        rootRegex,
+        `<div id="root">\n${crawlableHtml}\n    </div>`
+      );
+    } else if (/<div\s+id=["']root["']\s*\/?>/i.test(html)) {
+      html = html.replace(
+        /<div\s+id=["']root["']\s*\/?>/i,
+        `<div id="root">\n${crawlableHtml}\n    </div>`
+      );
+    }
   }
 
   return html;

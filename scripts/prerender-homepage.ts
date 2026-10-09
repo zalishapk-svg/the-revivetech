@@ -16,9 +16,8 @@ async function prerenderHomepage() {
 
     const crawlableHtml = buildHomepageSemanticHtml(homeData);
 
-    // Target files to inject pre-rendered content into
+    // Target build output artifact only (never mutate source index.html)
     const filesToUpdate = [
-      path.join(process.cwd(), "index.html"),
       path.join(process.cwd(), "dist", "index.html"),
     ];
 

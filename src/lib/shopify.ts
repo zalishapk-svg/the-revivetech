@@ -1405,7 +1405,8 @@ export async function getBlogArticlesFromShopify(options?: { first?: number; aft
 export async function getBlogArticleByHandleFromShopify(handle: string): Promise<BlogArticle | null> {
   const result = await fetchShopifyGraphQL(STOREFRONT_QUERIES.GET_ARTICLE_BY_HANDLE, { handle });
   if (result && result.data && result.data.articles && result.data.articles.edges) {
-    const edge = result.data.articles.edges.find((e: any) => e.node.handle === handle) || result.data.articles.edges[0];
+    const targetHandle = handle.toLowerCase();
+    const edge = result.data.articles.edges.find((e: any) => e.node?.handle?.toLowerCase() === targetHandle);
     if (edge) {
       const node = edge.node;
       const wordCount = (node.content || node.excerpt || "").split(/\s+/).length;

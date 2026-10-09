@@ -7,7 +7,7 @@
     "dev": "tsx server.ts",
     "build:sitemap": "tsx scripts/build-sitemap.ts",
     "build:prerender": "tsx scripts/prerender-homepage.ts",
-    "build": "npm run build:sitemap && npm run build:prerender && vite build && npm run build:prerender && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
+    "build": "npm run build:sitemap && vite build && npm run build:prerender && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
     "start": "node dist/server.cjs",
     "clean": "rm -rf dist server.cjs",
     "lint": "tsc --noEmit"
