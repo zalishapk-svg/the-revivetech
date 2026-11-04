@@ -392,19 +392,47 @@ app.get("/api/shopify/auth/callback", async (req, res) => {
 const storefrontCache = new Map<string, { timestamp: number; data: any }>();
 const STOREFRONT_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
-app.post("/api/shopify/graphql", async (req, res) => {
+app.all(["/api/shopify/graphql"], async (req, res) => {
   try {
-    const { query, variables } = req.body || {};
+    let query = "";
+    let variables: any = {};
+
+    if (req.method === "GET") {
+      query = typeof req.query.query === "string" ? req.query.query : "";
+      if (typeof req.query.variables === "string") {
+        try {
+          variables = JSON.parse(req.query.variables);
+        } catch {
+          variables = {};
+        }
+      } else if (req.query.variables && typeof req.query.variables === "object") {
+        variables = req.query.variables;
+      }
+    } else if (req.method === "POST") {
+      query = req.body?.query || "";
+      variables = req.body?.variables || {};
+    } else {
+      return res.status(405).json({ error: "Method not allowed. Use GET or POST." });
+    }
+
     if (!query) {
       return res.status(400).json({ error: "Missing GraphQL query" });
     }
 
     const isMutation = query.trim().startsWith("mutation");
+    if (req.method === "GET" && isMutation) {
+      return res.status(400).json({ error: "GraphQL mutations must use POST." });
+    }
+
     const cacheKey = JSON.stringify({ query, variables: variables || {} });
 
     if (!isMutation && storefrontCache.has(cacheKey)) {
       const cached = storefrontCache.get(cacheKey)!;
       if (Date.now() - cached.timestamp < STOREFRONT_CACHE_TTL_MS) {
+        res.setHeader(
+          "Cache-Control",
+          "public, max-age=120, s-maxage=3600, stale-while-revalidate=86400"
+        );
         return res.status(200).json(cached.data);
       } else {
         storefrontCache.delete(cacheKey);
@@ -435,6 +463,15 @@ app.post("/api/shopify/graphql", async (req, res) => {
 
     if (!isMutation && response.ok && data && !data.errors) {
       storefrontCache.set(cacheKey, { timestamp: Date.now(), data });
+    }
+
+    if (isMutation) {
+      res.setHeader("Cache-Control", "no-store, no-cache, private, must-revalidate");
+    } else {
+      res.setHeader(
+        "Cache-Control",
+        "public, max-age=120, s-maxage=3600, stale-while-revalidate=86400"
+      );
     }
 
     return res.status(response.status).json(data);

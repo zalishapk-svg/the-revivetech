@@ -12,7 +12,7 @@ interface BlogPageProps {
 export const BlogPage: React.FC<BlogPageProps> = ({ articleHandle }) => {
   const { 
     articles, isLoadingData, navigateToArticle, showToast,
-    hasMoreArticles, isFetchingMoreArticles, fetchAllArticles
+    hasMoreArticles, isFetchingMoreArticles, fetchAllArticles, fetchMoreArticles
   } = useShopify();
   
   const [searchQuery, setSearchQuery] = useState("");
@@ -57,15 +57,19 @@ export const BlogPage: React.FC<BlogPageProps> = ({ articleHandle }) => {
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
     updatePageUrl(newPage);
+    if (newPage * postsPerPage > articles.length && hasMoreArticles && !isFetchingMoreArticles) {
+      fetchMoreArticles();
+    }
     window.scrollTo({ top: 200, behavior: "smooth" });
   };
 
-  // Automatically fetch remaining blog articles from Shopify when blog page is active
+  // Fetch next batch of blog articles on demand when pagination requires more items
   useEffect(() => {
-    if (hasMoreArticles && !isFetchingMoreArticles) {
-      fetchAllArticles();
+    const neededCount = currentPage * postsPerPage;
+    if (articles.length < neededCount && hasMoreArticles && !isFetchingMoreArticles) {
+      fetchMoreArticles();
     }
-  }, [hasMoreArticles, isFetchingMoreArticles]);
+  }, [currentPage, articles.length, hasMoreArticles, isFetchingMoreArticles]);
 
   // Requirement: EXACTLY 12 posts per page
   const postsPerPage = 12;
@@ -92,7 +96,10 @@ export const BlogPage: React.FC<BlogPageProps> = ({ articleHandle }) => {
     });
   }, [articles, searchQuery, selectedTag]);
 
-  const totalPages = Math.ceil(filteredArticles.length / postsPerPage) || 1;
+  const totalPages = Math.max(
+    Math.ceil(filteredArticles.length / postsPerPage) || 1,
+    hasMoreArticles ? currentPage + 1 : 1
+  );
 
   // Only render the 12 posts belonging to the current page
   const paginatedArticles = useMemo(() => {
@@ -271,8 +278,8 @@ export const BlogPage: React.FC<BlogPageProps> = ({ articleHandle }) => {
                 ))}
 
                 <button
-                  disabled={currentPage === totalPages}
-                  onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
+                  disabled={currentPage >= totalPages && !hasMoreArticles}
+                  onClick={() => handlePageChange(currentPage + 1)}
                   className="px-4 py-2 rounded-xl bg-[#1c1c1c] border border-emerald-900/60 text-xs font-mono font-bold text-slate-300 hover:bg-emerald-500 hover:text-slate-950 disabled:opacity-30 transition-all cursor-pointer disabled:cursor-not-allowed"
                 >
                   Next →

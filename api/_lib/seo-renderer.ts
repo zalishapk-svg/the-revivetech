@@ -166,6 +166,10 @@ function setCached(key: string, data: any): void {
   seoCache.set(key, { timestamp: Date.now(), data });
 }
 
+export function clearSeoCache(): void {
+  seoCache.clear();
+}
+
 /**
  * Execute GraphQL against Shopify Storefront API with caching
  */

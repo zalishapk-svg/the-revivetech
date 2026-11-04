@@ -17,6 +17,10 @@ interface CacheItem {
 let cachedSitemap: CacheItem | null = null;
 const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour in-memory cache
 
+export function clearSitemapCache(): void {
+  cachedSitemap = null;
+}
+
 /**
  * Normalizes ISO date string to YYYY-MM-DD
  */

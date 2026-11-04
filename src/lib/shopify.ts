@@ -1111,9 +1111,36 @@ export const MOCK_BLOG_ARTICLES: BlogArticle[] = [
   },
 ];
 
-// Helper: Fetch Shopify Storefront API GraphQL or return fallback tech dataset
+// Helper: Fetch Shopify Storefront API GraphQL with Edge CDN GET Caching
 export async function fetchShopifyGraphQL(query: string, variables: Record<string, any> = {}) {
+  const clean = query.trim().replace(/^#[^\n]*\n/g, "").trim().toLowerCase();
+  const isMutation = clean.startsWith("mutation");
+  const isPrivateOrCart =
+    clean.includes("cart(") ||
+    clean.includes("customer(") ||
+    clean.includes("checkout(");
+
   try {
+    // Only public, read-only catalog queries use HTTP GET so Vercel's Edge CDN caches them globally
+    if (!isMutation && !isPrivateOrCart) {
+      const params = new URLSearchParams();
+      params.set("query", query);
+      if (variables && Object.keys(variables).length > 0) {
+        params.set("variables", JSON.stringify(variables));
+      }
+      const queryString = params.toString();
+      // Browsers and Vercel support up to 8KB URLs; keep well within 6000 characters
+      if (queryString.length < 6000) {
+        const response = await fetch(`/api/shopify/graphql?${queryString}`, {
+          method: "GET",
+          headers: { Accept: "application/json" },
+        });
+        const result = await response.json();
+        return result;
+      }
+    }
+
+    // Mutations, cart operations, customer data, and large payloads always use POST with no-store cache
     const response = await fetch("/api/shopify/graphql", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

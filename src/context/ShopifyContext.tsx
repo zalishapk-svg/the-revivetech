@@ -592,6 +592,8 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
         currentHasMore = res.pageInfo.hasNextPage;
         setProductCursor(currentCursor);
         setHasMoreProducts(currentHasMore);
+        // Non-blocking yield delay to keep UI and network smooth
+        await new Promise((resolve) => setTimeout(resolve, 250));
       } catch (err) {
         console.error("Error fetching all products:", err);
         break;
@@ -642,6 +644,8 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
         currentHasMore = res.pageInfo.hasNextPage;
         setArticleCursor(currentCursor);
         setHasMoreArticles(currentHasMore);
+        // Non-blocking yield delay
+        await new Promise((resolve) => setTimeout(resolve, 250));
       } catch (err) {
         console.error("Error fetching all articles:", err);
         break;

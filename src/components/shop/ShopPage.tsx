@@ -22,13 +22,6 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
     hasMoreProducts, isFetchingMoreProducts, fetchMoreProducts, fetchAllProducts
   } = useShopify();
 
-  // Accelerate fetching all remaining catalog products when shop page is opened
-  useEffect(() => {
-    if (hasMoreProducts && !isFetchingMoreProducts) {
-      fetchAllProducts();
-    }
-  }, [hasMoreProducts, isFetchingMoreProducts]);
-
   const isExplore = isExploreAll || viewState.type === "explore_all";
   const isSale = isSalePage || viewState.type === "sale";
 
@@ -69,6 +62,14 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
     return 1;
   });
 
+  // Smart on-demand pagination: fetch next batch only when current page requires more items
+  useEffect(() => {
+    const neededCount = currentPage * itemsPerPage;
+    if (products.length < neededCount && hasMoreProducts && !isFetchingMoreProducts) {
+      fetchMoreProducts();
+    }
+  }, [currentPage, products.length, hasMoreProducts, isFetchingMoreProducts]);
+
   // Keep page number in sync with URL search parameter
   useEffect(() => {
     const syncPageFromUrl = () => {
@@ -97,6 +98,9 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
     updatePageUrl(newPage);
+    if (newPage * itemsPerPage > products.length && hasMoreProducts && !isFetchingMoreProducts) {
+      fetchMoreProducts();
+    }
     window.scrollTo({ top: 350, behavior: "smooth" });
   };
 
@@ -169,7 +173,10 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
     handlePageChange(1);
   };
 
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage) || 1;
+  const totalPages = Math.max(
+    Math.ceil(filteredProducts.length / itemsPerPage) || 1,
+    hasMoreProducts ? currentPage + 1 : 1
+  );
 
   // Only render the 12 products belonging to current page
   const paginatedProducts = useMemo(() => {
@@ -551,8 +558,8 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
                 ))}
 
                 <button
-                  disabled={currentPage === totalPages}
-                  onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
+                  disabled={currentPage >= totalPages && !hasMoreProducts}
+                  onClick={() => handlePageChange(currentPage + 1)}
                   className="px-4 py-2 rounded-xl bg-[#1c1c1c] border border-emerald-900/60 text-xs font-mono font-bold text-slate-300 hover:bg-emerald-500 hover:text-slate-950 disabled:opacity-30 transition-all disabled:hover:bg-[#1c1c1c] disabled:hover:text-slate-300 cursor-pointer disabled:cursor-not-allowed"
                 >
                   Next →

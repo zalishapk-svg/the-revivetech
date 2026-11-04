@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import crypto from "crypto";
+import zlib from "zlib";
 import {
   getConfig,
   shopifyStorage,
@@ -14,8 +15,56 @@ import {
   getOrderConfirmationRecord,
   fetchShopifyShippingRates,
 } from "./_lib/shopify-server.js";
-import { renderSeoPage, loadHtmlTemplate } from "./_lib/seo-renderer.js";
-import { generateSitemapXml } from "./_lib/sitemap-generator.js";
+import { renderSeoPage, loadHtmlTemplate, clearSeoCache } from "./_lib/seo-renderer.js";
+import { generateSitemapXml, clearSitemapCache } from "./_lib/sitemap-generator.js";
+
+/**
+ * Sends response with GZIP compression when client supports it and body >= 1024 bytes.
+ * Includes safeguards against double-compression, non-compressible binary data,
+ * and sets the standard HTTP 'Vary: Accept-Encoding' header.
+ */
+function sendCompressed(
+  req: VercelRequest,
+  res: VercelResponse,
+  statusCode: number,
+  contentType: string,
+  body: string | Buffer
+) {
+  res.setHeader("Content-Type", contentType);
+  res.setHeader("Vary", "Accept-Encoding");
+
+  const buffer = Buffer.isBuffer(body) ? body : Buffer.from(body, "utf-8");
+  const acceptEncoding = (req.headers["accept-encoding"] as string) || "";
+  const existingEncoding = res.getHeader("content-encoding");
+
+  // Only compress text, JSON, XML, SVG, and script payloads
+  const isCompressible =
+    contentType.includes("text/") ||
+    contentType.includes("application/json") ||
+    contentType.includes("application/xml") ||
+    contentType.includes("+xml") ||
+    contentType.includes("javascript");
+
+  if (
+    !existingEncoding &&
+    isCompressible &&
+    buffer.length >= 1024 &&
+    acceptEncoding.includes("gzip")
+  ) {
+    try {
+      const gzipped = zlib.gzipSync(buffer, { level: 6 });
+      res.setHeader("Content-Encoding", "gzip");
+      res.setHeader("Content-Length", gzipped.length.toString());
+      return res.status(statusCode).end(gzipped);
+    } catch {
+      // fallback to uncompressed
+    }
+  }
+
+  res.removeHeader("Content-Encoding");
+  res.setHeader("Content-Length", buffer.length.toString());
+  return res.status(statusCode).end(buffer);
+}
 
 /**
  * Normalizes the requested route path from Vercel query or url.
@@ -122,17 +171,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (isSitemapRequest) {
     try {
       const xml = await generateSitemapXml();
-      res.setHeader("Content-Type", "application/xml; charset=utf-8");
       res.setHeader(
         "Cache-Control",
-        "public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400"
+        "public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800"
       );
-      return res.status(200).send(xml);
+      return sendCompressed(req, res, 200, "application/xml; charset=utf-8", xml);
     } catch (err: any) {
       console.error("[Sitemap Generation Error in Vercel Function]", err);
       const fallbackXml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>https://www.therevivetech.pk/</loc><priority>1.0</priority></url>\n  <url><loc>https://www.therevivetech.pk/shop</loc><priority>0.9</priority></url>\n  <url><loc>https://www.therevivetech.pk/collections</loc><priority>0.9</priority></url>\n</urlset>`;
-      res.setHeader("Content-Type", "application/xml; charset=utf-8");
-      return res.status(200).send(fallbackXml);
+      return sendCompressed(req, res, 200, "application/xml; charset=utf-8", fallbackXml);
     }
   }
 
@@ -157,9 +204,11 @@ Disallow: /checkouts/
 
 Sitemap: https://www.therevivetech.pk/sitemap.xml
 `;
-    res.setHeader("Content-Type", "text/plain; charset=utf-8");
-    res.setHeader("Cache-Control", "public, max-age=86400");
-    return res.status(200).send(robotsTxt);
+    res.setHeader(
+      "Cache-Control",
+      "public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800"
+    );
+    return sendCompressed(req, res, 200, "text/plain; charset=utf-8", robotsTxt);
   }
 
   // -------------------------------------------------------------------------
@@ -205,21 +254,20 @@ Sitemap: https://www.therevivetech.pk/sitemap.xml
       const template = loadHtmlTemplate();
       const seoResult = await renderSeoPage(targetPath, template, req.headers.host);
 
-      res.setHeader("Content-Type", "text/html; charset=utf-8");
       if (seoResult.statusCode === 200) {
         res.setHeader(
           "Cache-Control",
-          "public, max-age=60, s-maxage=3600, stale-while-revalidate=86400"
+          "public, max-age=120, s-maxage=1800, stale-while-revalidate=86400"
         );
       } else {
-        res.setHeader("Cache-Control", "no-store");
+        res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
       }
-      return res.status(seoResult.statusCode).send(seoResult.html);
+      return sendCompressed(req, res, seoResult.statusCode, "text/html; charset=utf-8", seoResult.html);
     } catch (seoErr) {
       console.error("[SEO Prerender Error in Vercel Function]", seoErr);
       const fallbackTemplate = loadHtmlTemplate();
-      res.setHeader("Content-Type", "text/html; charset=utf-8");
-      return res.status(200).send(fallbackTemplate);
+      res.setHeader("Cache-Control", "public, max-age=60, s-maxage=3600");
+      return sendCompressed(req, res, 200, "text/html; charset=utf-8", fallbackTemplate);
     }
   }
 
@@ -373,24 +421,60 @@ Sitemap: https://www.therevivetech.pk/sitemap.xml
     // 2. SHOPIFY STOREFRONT & ADMIN GRAPHQL PROXIES
     // -------------------------------------------------------------------------
 
-    // 2a. Storefront GraphQL Proxy with Cache
+    // 2a. Storefront GraphQL Proxy with Edge Cache & GET/POST Support
     if (path === "shopify/graphql") {
-      if (req.method !== "POST") {
-        return res.status(405).json({ error: "Method not allowed. Use POST." });
+      let query = "";
+      let variables: any = {};
+
+      if (req.method === "GET") {
+        query = typeof req.query.query === "string" ? req.query.query : "";
+        if (typeof req.query.variables === "string") {
+          try {
+            variables = JSON.parse(req.query.variables);
+          } catch {
+            variables = {};
+          }
+        } else if (req.query.variables && typeof req.query.variables === "object") {
+          variables = req.query.variables;
+        }
+      } else if (req.method === "POST") {
+        query = req.body?.query || "";
+        variables = req.body?.variables || {};
+      } else {
+        return res.status(405).json({ error: "Method not allowed. Use GET or POST." });
       }
 
-      const { query, variables } = req.body || {};
-      if (!query) {
+      if (!query || !query.trim()) {
         return res.status(400).json({ error: "Missing GraphQL query" });
       }
 
-      const isMutation = query.trim().startsWith("mutation");
-      const cacheKey = JSON.stringify({ query, variables: variables || {} });
+      const cleanQuery = query.trim().replace(/^#[^\n]*\n/g, "").trim().toLowerCase();
+      const isMutation = cleanQuery.startsWith("mutation");
+      const isPrivateOrCart =
+        cleanQuery.includes("cart(") ||
+        cleanQuery.includes("customer(") ||
+        cleanQuery.includes("checkout(");
 
-      if (!isMutation && storefrontCache.has(cacheKey)) {
+      if (req.method === "GET" && (isMutation || isPrivateOrCart)) {
+        return res.status(400).json({ error: "GraphQL mutations and customer/cart queries must use POST." });
+      }
+
+      const cacheKey = JSON.stringify({ query: query.trim(), variables: variables || {} });
+
+      if (!isMutation && !isPrivateOrCart && storefrontCache.has(cacheKey)) {
         const cached = storefrontCache.get(cacheKey)!;
         if (Date.now() - cached.timestamp < STOREFRONT_CACHE_TTL_MS) {
-          return res.status(200).json(cached.data);
+          res.setHeader(
+            "Cache-Control",
+            "public, max-age=120, s-maxage=3600, stale-while-revalidate=86400"
+          );
+          return sendCompressed(
+            req,
+            res,
+            200,
+            "application/json; charset=utf-8",
+            JSON.stringify(cached.data)
+          );
         } else {
           storefrontCache.delete(cacheKey);
         }
@@ -416,11 +500,26 @@ Sitemap: https://www.therevivetech.pk/sitemap.xml
 
       const data = await response.json();
 
-      if (!isMutation && response.ok && data && !data.errors) {
+      if (!isMutation && !isPrivateOrCart && response.ok && data && !data.errors) {
         storefrontCache.set(cacheKey, { timestamp: Date.now(), data });
       }
 
-      return res.status(response.status).json(data);
+      if (isMutation || isPrivateOrCart) {
+        res.setHeader("Cache-Control", "no-store, no-cache, private, must-revalidate");
+      } else {
+        res.setHeader(
+          "Cache-Control",
+          "public, max-age=120, s-maxage=3600, stale-while-revalidate=86400"
+        );
+      }
+
+      return sendCompressed(
+        req,
+        res,
+        response.status,
+        "application/json; charset=utf-8",
+        JSON.stringify(data)
+      );
     }
 
     // 2b. Admin GraphQL Proxy
@@ -506,6 +605,7 @@ Sitemap: https://www.therevivetech.pk/sitemap.xml
         const updatedToken = await shopifyStorage.getOrFetchAdminToken(targetDomain);
         const updatedSession = await shopifyStorage.getSession(targetDomain);
 
+        res.setHeader("Cache-Control", "no-store, no-cache, private, must-revalidate");
         return res.status(200).json({
           status: "updated",
           config: {
@@ -522,7 +622,11 @@ Sitemap: https://www.therevivetech.pk/sitemap.xml
         });
       }
 
-      return res.status(200).json({
+      res.setHeader(
+        "Cache-Control",
+        "public, max-age=300, s-maxage=86400, stale-while-revalidate=604800"
+      );
+      const configPayload = {
         status: "ok",
         config: {
           storeDomain: domain,
@@ -537,7 +641,14 @@ Sitemap: https://www.therevivetech.pk/sitemap.xml
           tokenUpdatedAt: session?.updatedAt || null,
           isMockShop: domain === "mock.shop",
         },
-      });
+      };
+      return sendCompressed(
+        req,
+        res,
+        200,
+        "application/json; charset=utf-8",
+        JSON.stringify(configPayload)
+      );
     }
 
     // 3b. Token Status
@@ -845,6 +956,20 @@ Sitemap: https://www.therevivetech.pk/sitemap.xml
         await shopifyStorage.deleteSession(shop);
       }
 
+      // Invalidate relevant caches when Shopify catalog or inventory changes
+      if (
+        topic.startsWith("products/") ||
+        topic.startsWith("collections/") ||
+        topic.startsWith("inventory_") ||
+        topic.startsWith("articles/") ||
+        topic.startsWith("blogs/")
+      ) {
+        console.log(`[Shopify Webhook] Invalidating cache for topic: ${topic}`);
+        storefrontCache.clear();
+        clearSeoCache();
+        clearSitemapCache();
+      }
+
       return res.status(200).json({
         received: true,
         topic,
@@ -871,9 +996,11 @@ Disallow: /checkouts/
 
 Sitemap: https://www.therevivetech.pk/sitemap.xml
 `;
-      res.setHeader("Content-Type", "text/plain; charset=utf-8");
-      res.setHeader("Cache-Control", "public, max-age=86400");
-      return res.status(200).send(robotsTxt);
+      res.setHeader(
+        "Cache-Control",
+        "public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800"
+      );
+      return sendCompressed(req, res, 200, "text/plain; charset=utf-8", robotsTxt);
     }
 
     // -------------------------------------------------------------------------
@@ -882,17 +1009,15 @@ Sitemap: https://www.therevivetech.pk/sitemap.xml
     if (path === "sitemap" || path === "sitemap.xml" || path === "sitemap_index.xml") {
       try {
         const xml = await generateSitemapXml();
-        res.setHeader("Content-Type", "application/xml; charset=utf-8");
         res.setHeader(
           "Cache-Control",
-          "public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400"
+          "public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800"
         );
-        return res.status(200).send(xml);
+        return sendCompressed(req, res, 200, "application/xml; charset=utf-8", xml);
       } catch (err: any) {
         console.error("[Sitemap Error in API Handler]", err);
         const fallbackXml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>https://www.therevivetech.pk/</loc><priority>1.0</priority></url>\n</urlset>`;
-        res.setHeader("Content-Type", "application/xml; charset=utf-8");
-        return res.status(200).send(fallbackXml);
+        return sendCompressed(req, res, 200, "application/xml; charset=utf-8", fallbackXml);
       }
     }
 
