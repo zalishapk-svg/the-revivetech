@@ -4,6 +4,7 @@ import { useShopify } from "../../context/ShopifyContext";
 import { SingleBlogPostPage } from "./SingleBlogPostPage";
 import { BlogSidebar } from "./BlogSidebar";
 import { OffCanvasDrawer } from "../common/OffCanvasDrawer";
+import { searchArticles } from "../../lib/search";
 
 interface BlogPageProps {
   articleHandle?: string;
@@ -79,21 +80,11 @@ export const BlogPage: React.FC<BlogPageProps> = ({ articleHandle }) => {
     return <SingleBlogPostPage handle={articleHandle} />;
   }
 
-  // Filter articles based on query and topic tag
+  // Filter articles based on normalized query and topic tag
   const filteredArticles = useMemo(() => {
-    return articles.filter((a) => {
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const matchTitle = a.title.toLowerCase().includes(q);
-        const matchExcerpt = a.excerpt.toLowerCase().includes(q);
-        const matchTag = a.tags?.some((t) => t.toLowerCase().includes(q));
-        if (!matchTitle && !matchExcerpt && !matchTag) return false;
-      }
-      if (selectedTag !== "all") {
-        if (!a.tags?.includes(selectedTag)) return false;
-      }
-      return true;
-    });
+    const queryFiltered = searchQuery.trim() ? searchArticles(articles, searchQuery) : articles;
+    if (selectedTag === "all") return queryFiltered;
+    return queryFiltered.filter((a) => a.tags?.includes(selectedTag));
   }, [articles, searchQuery, selectedTag]);
 
   const totalPages = Math.max(

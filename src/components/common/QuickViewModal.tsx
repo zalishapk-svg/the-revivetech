@@ -26,6 +26,13 @@ export const QuickViewModal: React.FC = () => {
     if (productFromList) {
       setFetchedProduct(productFromList);
       setIsLoading(false);
+      if (productFromList._isIndexSummary) {
+        fetchProductByHandle(quickViewHandle)
+          .then((p) => {
+            if (p) setFetchedProduct(p);
+          })
+          .catch(() => {});
+      }
       return;
     }
 

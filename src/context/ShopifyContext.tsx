@@ -1,7 +1,9 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { Product, Collection, BlogArticle, CartLineItem, ViewState, Customer } from "../types";
 import { 
   getProductsFromShopify, 
+  getFullSearchCatalogFromShopify,
+  clearSearchCatalogCache,
   getProductByHandleFromShopify,
   getCollectionsFromShopify, 
   getBlogArticlesFromShopify, 
@@ -52,6 +54,9 @@ interface ShopifyContextType {
   isFetchingMoreProducts: boolean;
   fetchMoreProducts: () => Promise<void>;
   fetchAllProducts: () => Promise<void>;
+  isCatalogIndexLoaded: boolean;
+  isLoadingCatalogIndex: boolean;
+  ensureFullCatalogLoaded: () => Promise<void>;
 
   hasMoreArticles: boolean;
   isFetchingMoreArticles: boolean;
@@ -422,6 +427,8 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [productCursor, setProductCursor] = useState<string | null>(null);
   const [hasMoreProducts, setHasMoreProducts] = useState<boolean>(false);
   const [isFetchingMoreProducts, setIsFetchingMoreProducts] = useState<boolean>(false);
+  const [isCatalogIndexLoaded, setIsCatalogIndexLoaded] = useState<boolean>(false);
+  const [isLoadingCatalogIndex, setIsLoadingCatalogIndex] = useState<boolean>(false);
 
   const [articleCursor, setArticleCursor] = useState<string | null>(null);
   const [hasMoreArticles, setHasMoreArticles] = useState<boolean>(false);
@@ -528,11 +535,11 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
     loadShopifyData();
   }, []);
 
-  // Fetch a single product by handle directly from Shopify (with caching)
-  const fetchProductByHandle = async (handle: string): Promise<Product | null> => {
+  // Fetch a single product by handle directly from Shopify (with caching, hydrating index summaries)
+  const fetchProductByHandle = useCallback(async (handle: string): Promise<Product | null> => {
     if (!handle) return null;
     const existing = products.find((p) => p.handle === handle);
-    if (existing) return existing;
+    if (existing && !existing._isIndexSummary) return existing;
 
     try {
       const fetched = await getProductByHandleFromShopify(handle);
@@ -548,8 +555,51 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
     } catch (err) {
       console.error(`Error fetching product by handle ${handle}:`, err);
     }
-    return null;
-  };
+    return existing || null;
+  }, [products]);
+
+  // Load compact search catalog across all Shopify pages (250 items per request)
+  const ensureFullCatalogLoaded = useCallback(async () => {
+    if (isCatalogIndexLoaded || isLoadingCatalogIndex) return;
+    setIsLoadingCatalogIndex(true);
+    try {
+      const catalogProducts = await getFullSearchCatalogFromShopify();
+      if (catalogProducts.length > 0) {
+        setProducts((prev) => {
+          const fullByHandle = new Map<string, Product>();
+          for (const p of prev) {
+            if (!p._isIndexSummary) {
+              fullByHandle.set(p.handle, p);
+            }
+          }
+          const merged: Product[] = [];
+          const seenHandles = new Set<string>();
+
+          // Preserve initial/direct-loaded full products first if already present, or place in canonical catalog order
+          for (const item of catalogProducts) {
+            seenHandles.add(item.handle);
+            const fullExisting = fullByHandle.get(item.handle);
+            merged.push(fullExisting ? fullExisting : item);
+          }
+
+          // Keep any previously loaded item not returned in catalog snapshot (safety)
+          for (const existing of prev) {
+            if (!seenHandles.has(existing.handle)) {
+              merged.push(existing);
+            }
+          }
+
+          return merged;
+        });
+        setHasMoreProducts(false);
+        setIsCatalogIndexLoaded(true);
+      }
+    } catch (err) {
+      console.warn("Full catalog index load note:", err);
+    } finally {
+      setIsLoadingCatalogIndex(false);
+    }
+  }, [isCatalogIndexLoaded, isLoadingCatalogIndex]);
 
   // Fetch Next Products Batch
   const fetchMoreProducts = async () => {
@@ -707,12 +757,33 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Non-blocking background prefetch task after initial critical load finishes
   useEffect(() => {
-    if (!isLoadingData && (hasMoreProducts || hasMoreArticles || hasMoreCollections)) {
+    if (isLoadingData) return;
+    if (!isCatalogIndexLoaded && !isLoadingCatalogIndex && hasMoreProducts) {
       const timer = setTimeout(() => {
-        const runBackgroundPrefetch = async () => {
-          if (hasMoreProducts && !isFetchingMoreProducts) {
-            await fetchMoreProducts();
-          }
+        ensureFullCatalogLoaded();
+      }, 800);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoadingData, isCatalogIndexLoaded, isLoadingCatalogIndex, hasMoreProducts, ensureFullCatalogLoaded]);
+
+  // Immediately load full catalog index when search modal or catalog views open
+  useEffect(() => {
+    if (isCatalogIndexLoaded || isLoadingCatalogIndex) return;
+    if (
+      isSearchOpen ||
+      viewState.type === "search" ||
+      viewState.type === "shop" ||
+      viewState.type === "explore_all" ||
+      viewState.type === "sale"
+    ) {
+      ensureFullCatalogLoaded();
+    }
+  }, [isSearchOpen, viewState.type, isCatalogIndexLoaded, isLoadingCatalogIndex, ensureFullCatalogLoaded]);
+
+  useEffect(() => {
+    if (!isLoadingData && (hasMoreArticles || hasMoreCollections)) {
+      const timer = setTimeout(() => {
+        const runSecondaryPrefetch = async () => {
           if (hasMoreArticles && !isFetchingMoreArticles) {
             await fetchMoreArticles();
           }
@@ -720,11 +791,11 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
             await fetchMoreCollections();
           }
         };
-        runBackgroundPrefetch();
-      }, 1000);
+        runSecondaryPrefetch();
+      }, 1200);
       return () => clearTimeout(timer);
     }
-  }, [isLoadingData, hasMoreProducts, hasMoreArticles, hasMoreCollections, isFetchingMoreProducts, isFetchingMoreArticles, isFetchingMoreCollections]);
+  }, [isLoadingData, hasMoreArticles, hasMoreCollections, isFetchingMoreArticles, isFetchingMoreCollections]);
 
   const updateStoreConfig = async (domain: string, token: string): Promise<boolean> => {
     try {
@@ -735,6 +806,8 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
       });
       const result = await res.json();
       if (result.status === "updated") {
+        clearSearchCatalogCache();
+        setIsCatalogIndexLoaded(false);
         setStoreDomain(domain);
         setIsMockShop(domain === "mock.shop");
         showToast(`Connected to Shopify store: ${domain}`);
@@ -1036,6 +1109,9 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
         isFetchingMoreProducts,
         fetchMoreProducts,
         fetchAllProducts,
+        isCatalogIndexLoaded,
+        isLoadingCatalogIndex,
+        ensureFullCatalogLoaded,
         hasMoreArticles,
         isFetchingMoreArticles,
         fetchMoreArticles,

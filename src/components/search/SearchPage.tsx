@@ -1,36 +1,35 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useDeferredValue } from "react";
 import { useShopify } from "../../context/ShopifyContext";
 import { Search, ChevronRight } from "lucide-react";
 import { ProductCard } from "../common/ProductCard";
+import { searchProducts, searchArticles } from "../../lib/search";
 
 interface SearchPageProps {
   initialQuery?: string;
 }
 
 export const SearchPage: React.FC<SearchPageProps> = ({ initialQuery = "" }) => {
-  const { products, articles, addToCart, navigateToProduct, setQuickViewHandle } = useShopify();
+  const { products, articles, ensureFullCatalogLoaded } = useShopify();
   const [query, setQuery] = useState(initialQuery);
+  const deferredQuery = useDeferredValue(query.trim());
+
+  useEffect(() => {
+    setQuery(initialQuery);
+  }, [initialQuery]);
+
+  useEffect(() => {
+    ensureFullCatalogLoaded();
+  }, [ensureFullCatalogLoaded]);
 
   const matchedProducts = useMemo(() => {
-    if (!query.trim()) return products;
-    const q = query.toLowerCase();
-    return products.filter((p) => {
-      return (
-        p.title.toLowerCase().includes(q) ||
-        p.vendor.toLowerCase().includes(q) ||
-        p.productType.toLowerCase().includes(q) ||
-        p.tags?.some((t) => t.toLowerCase().includes(q))
-      );
-    });
-  }, [products, query]);
+    if (!deferredQuery) return products;
+    return searchProducts(products, deferredQuery);
+  }, [products, deferredQuery]);
 
   const matchedArticles = useMemo(() => {
-    if (!query.trim()) return articles;
-    const q = query.toLowerCase();
-    return articles.filter((a) => {
-      return a.title.toLowerCase().includes(q) || a.content.toLowerCase().includes(q);
-    });
-  }, [articles, query]);
+    if (!deferredQuery) return articles;
+    return searchArticles(articles, deferredQuery);
+  }, [articles, deferredQuery]);
 
   return (
     <div className="w-full bg-[#161616] text-slate-100 min-h-screen py-10 px-4 sm:px-6 lg:px-8">

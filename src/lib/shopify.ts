@@ -54,6 +54,55 @@ export const STOREFRONT_QUERIES = {
     }
   `,
 
+  GET_SEARCH_CATALOG: `
+    query getSearchCatalog($first: Int = 250, $after: String) {
+      products(first: $first, after: $after) {
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+        edges {
+          node {
+            id
+            handle
+            title
+            description
+            vendor
+            productType
+            tags
+            availableForSale
+            priceRange {
+              minVariantPrice { amount currencyCode }
+              maxVariantPrice { amount currencyCode }
+            }
+            compareAtPriceRange {
+              minVariantPrice { amount currencyCode }
+              maxVariantPrice { amount currencyCode }
+            }
+            featuredImage { id url altText width height }
+            images(first: 2) {
+              edges { node { id url altText width height } }
+            }
+            options { id name values }
+            variants(first: 5) {
+              edges {
+                node {
+                  id
+                  title
+                  sku
+                  availableForSale
+                  price { amount currencyCode }
+                  compareAtPrice { amount currencyCode }
+                  selectedOptions { name value }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  `,
+
   GET_PRODUCT_BY_HANDLE: `
     query getProductByHandle($handle: String!) {
       product(handle: $handle) {
@@ -1216,6 +1265,107 @@ export async function getProductsFromShopify(options?: { first?: number; after?:
   }
 
   return { products: [], pageInfo: { hasNextPage: false, endCursor: null } };
+}
+
+let inFlightSearchCatalogPromise: Promise<Product[]> | null = null;
+let cachedSearchCatalog: Product[] | null = null;
+
+export function clearSearchCatalogCache() {
+  cachedSearchCatalog = null;
+  inFlightSearchCatalogPromise = null;
+}
+
+/**
+ * Fetches the entire published Shopify product catalog in compact 250-item pages
+ * over Edge-cached GET /api/shopify/graphql so search and catalog filtering
+ * cover 100% of products without heavy descriptionHtml/30-image payloads.
+ */
+export async function getFullSearchCatalogFromShopify(forceRefresh = false): Promise<Product[]> {
+  if (!forceRefresh && cachedSearchCatalog && cachedSearchCatalog.length > 0) {
+    return cachedSearchCatalog;
+  }
+  if (!forceRefresh && inFlightSearchCatalogPromise) {
+    return inFlightSearchCatalogPromise;
+  }
+
+  inFlightSearchCatalogPromise = (async () => {
+    const allProducts: Product[] = [];
+    const seenIds = new Set<string>();
+    let hasNextPage = true;
+    let cursor: string | null = null;
+    let pageCount = 0;
+    const maxPages = 15; // Up to 3,750 products safely
+
+    try {
+      while (hasNextPage && pageCount < maxPages) {
+        pageCount++;
+        const result: any = await fetchShopifyGraphQL(STOREFRONT_QUERIES.GET_SEARCH_CATALOG, {
+          first: 250,
+          after: cursor,
+        });
+
+        const conn = result?.data?.products;
+        if (!conn || !Array.isArray(conn.edges) || conn.edges.length === 0) {
+          break;
+        }
+
+        for (const edge of conn.edges) {
+          const node = edge?.node;
+          if (!node || !node.id || seenIds.has(node.id)) continue;
+          seenIds.add(node.id);
+
+          allProducts.push({
+            id: node.id,
+            handle: node.handle,
+            title: node.title,
+            description: node.description || "",
+            descriptionHtml: "",
+            vendor: node.vendor || "TheReviveTech",
+            productType: node.productType || "Hardware",
+            tags: node.tags || [],
+            availableForSale: node.availableForSale,
+            priceRange: {
+              minVariantPrice: node.priceRange?.minVariantPrice || { amount: "0.00", currencyCode: "USD" },
+              maxVariantPrice: node.priceRange?.maxVariantPrice || { amount: "0.00", currencyCode: "USD" },
+            },
+            compareAtPriceRange: node.compareAtPriceRange,
+            featuredImage: node.featuredImage || (node.images?.edges?.[0]?.node ? node.images.edges[0].node : null),
+            images: node.images?.edges?.map((e: any) => e.node) || [],
+            options: node.options || [],
+            variants:
+              node.variants?.edges?.map((e: any) => ({
+                id: e.node.id,
+                title: e.node.title,
+                sku: e.node.sku,
+                availableForSale: e.node.availableForSale,
+                price: e.node.price,
+                compareAtPrice: e.node.compareAtPrice,
+                selectedOptions: e.node.selectedOptions,
+              })) || [],
+            rating: 4.8,
+            reviewsCount: 12,
+            _isIndexSummary: true,
+          });
+        }
+
+        hasNextPage = Boolean(conn.pageInfo?.hasNextPage);
+        cursor = conn.pageInfo?.endCursor || null;
+        if (!cursor) break;
+      }
+
+      if (allProducts.length > 0) {
+        cachedSearchCatalog = allProducts;
+      }
+      return allProducts;
+    } catch (err) {
+      console.warn("Error loading full search catalog:", err);
+      return allProducts;
+    } finally {
+      inFlightSearchCatalogPromise = null;
+    }
+  })();
+
+  return inFlightSearchCatalogPromise;
 }
 
 export async function getProductByHandleFromShopify(handle: string): Promise<Product | null> {

@@ -56,7 +56,20 @@ export const ProductPage: React.FC<ProductPageProps> = ({ handle }) => {
       setDirectProduct(productFromList);
       setIsLoading(false);
       setIsNotFound(false);
-      return;
+      if (!productFromList._isIndexSummary) {
+        return;
+      }
+      // Hydrate full descriptionHtml, 30 images, and up to 20 variants in background
+      fetchProductByHandle(handle)
+        .then((p) => {
+          if (isMounted && p) {
+            setDirectProduct(p);
+          }
+        })
+        .catch(() => {});
+      return () => {
+        isMounted = false;
+      };
     }
 
     setIsLoading(true);

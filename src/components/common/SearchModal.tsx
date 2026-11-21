@@ -1,24 +1,38 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useDeferredValue } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Search, X, ArrowRight, Tag, BookOpen, Layers, Sparkles } from "lucide-react";
+import { Search, X, ArrowRight, Tag, BookOpen, Layers } from "lucide-react";
 import { useShopify } from "../../context/ShopifyContext";
 import { formatMoney } from "../../lib/utils";
+import { searchProducts, searchCollections, searchArticles } from "../../lib/search";
 
 export const SearchModal: React.FC = () => {
-  const { isSearchOpen, setIsSearchOpen, products, collections, articles, navigateToProduct, navigateToCollection, navigateToArticle } = useShopify();
+  const {
+    isSearchOpen,
+    setIsSearchOpen,
+    products,
+    collections,
+    articles,
+    isLoadingCatalogIndex,
+    ensureFullCatalogLoaded,
+    navigateToProduct,
+    navigateToCollection,
+    navigateToArticle,
+  } = useShopify();
   const [searchTerm, setSearchTerm] = useState("");
+  const deferredTerm = useDeferredValue(searchTerm.trim());
 
   useEffect(() => {
     if (!isSearchOpen) {
       setSearchTerm("");
     } else {
+      ensureFullCatalogLoaded();
       const originalOverflow = document.body.style.overflow;
       document.body.style.overflow = "hidden";
       return () => {
         document.body.style.overflow = originalOverflow;
       };
     }
-  }, [isSearchOpen]);
+  }, [isSearchOpen, ensureFullCatalogLoaded]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -30,36 +44,25 @@ export const SearchModal: React.FC = () => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isSearchOpen, setIsSearchOpen]);
 
+  const matchingProducts = useMemo(() => {
+    if (!isSearchOpen) return [];
+    return deferredTerm ? searchProducts(products, deferredTerm) : products.slice(0, 4);
+  }, [isSearchOpen, products, deferredTerm]);
+
+  const matchingCollections = useMemo(() => {
+    if (!isSearchOpen) return [];
+    return deferredTerm ? searchCollections(collections, deferredTerm) : collections.slice(0, 3);
+  }, [isSearchOpen, collections, deferredTerm]);
+
+  const matchingArticles = useMemo(() => {
+    if (!isSearchOpen) return [];
+    return deferredTerm ? searchArticles(articles, deferredTerm) : articles.slice(0, 2);
+  }, [isSearchOpen, articles, deferredTerm]);
+
   if (!isSearchOpen) return null;
 
-  const term = searchTerm.toLowerCase().trim();
-
-  const matchingProducts = term
-    ? products.filter(
-        (p) =>
-          p.title.toLowerCase().includes(term) ||
-          p.description.toLowerCase().includes(term) ||
-          p.vendor.toLowerCase().includes(term) ||
-          p.tags.some((t) => t.toLowerCase().includes(term))
-      )
-    : products.slice(0, 4);
-
-  const matchingCollections = term
-    ? collections.filter(
-        (c) =>
-          c.title.toLowerCase().includes(term) ||
-          (c.description && c.description.toLowerCase().includes(term))
-      )
-    : collections.slice(0, 3);
-
-  const matchingArticles = term
-    ? articles.filter(
-        (a) =>
-          a.title.toLowerCase().includes(term) ||
-          a.content.toLowerCase().includes(term) ||
-          a.tags?.some((t) => t.toLowerCase().includes(term))
-      )
-    : articles.slice(0, 2);
+  const term = deferredTerm;
+  const displayedProducts = matchingProducts.slice(0, 40);
 
   return (
     <AnimatePresence>
@@ -116,10 +119,14 @@ export const SearchModal: React.FC = () => {
               </div>
 
               {matchingProducts.length === 0 ? (
-                <p className="text-xs text-slate-400 italic py-2">No products found matching "{searchTerm}"</p>
+                <p className="text-xs text-slate-400 italic py-2">
+                  {isLoadingCatalogIndex
+                    ? `Searching full catalog for "${searchTerm}"...`
+                    : `No products found matching "${searchTerm}"`}
+                </p>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {matchingProducts.map((product) => (
+                  {displayedProducts.map((product) => (
                     <button
                       key={product.id}
                       onClick={() => {

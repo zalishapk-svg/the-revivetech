@@ -1,6 +1,7 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useDeferredValue } from "react";
 import { useShopify } from "../../context/ShopifyContext";
 import { formatMoney, calculateDiscount, hasCompareAtDiscount } from "../../lib/utils";
+import { parseSearchQuery, scoreProductSearch } from "../../lib/search";
 import { ShopHero } from "./ShopHero";
 import { ProductCard } from "../common/ProductCard";
 import { ProductSkeletonCard } from "../common/ProductSkeletonCard";
@@ -19,7 +20,7 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
   const { 
     viewState, products, collections, addToCart, toggleWishlist, isInWishlist, 
     toggleCompare, isInCompare, setQuickViewHandle, navigateToProduct, navigateToCollection,
-    hasMoreProducts, isFetchingMoreProducts, fetchMoreProducts, fetchAllProducts
+    hasMoreProducts, isFetchingMoreProducts, fetchMoreProducts, ensureFullCatalogLoaded, isLoadingData
   } = useShopify();
 
   const isExplore = isExploreAll || viewState.type === "explore_all";
@@ -62,7 +63,14 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
     return 1;
   });
 
-  // Smart on-demand pagination: fetch next batch only when current page requires more items
+  const deferredSearchQuery = useDeferredValue(searchQuery);
+
+  // Ensure full catalog is available for Shop search, filters, and pagination
+  useEffect(() => {
+    ensureFullCatalogLoaded();
+  }, [ensureFullCatalogLoaded]);
+
+  // Fallback pagination guard if catalog index hasn't completed yet
   useEffect(() => {
     const neededCount = currentPage * itemsPerPage;
     if (products.length < neededCount && hasMoreProducts && !isFetchingMoreProducts) {
@@ -117,49 +125,66 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
     return Array.from(set).sort();
   }, [baseProducts]);
 
-  // Filter and Sort Logic
+  // Filter and Sort Logic (with universal normalized search & relevance scoring)
   const filteredProducts = useMemo(() => {
-    return baseProducts.filter((p) => {
-      // Search
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const matchTitle = p.title.toLowerCase().includes(q);
-        const matchVendor = p.vendor.toLowerCase().includes(q);
-        const matchTags = p.tags?.some((t) => t.toLowerCase().includes(q));
-        if (!matchTitle && !matchVendor && !matchTags) return false;
-      }
+    const parsedQuery = deferredSearchQuery.trim() ? parseSearchQuery(deferredSearchQuery) : null;
+    const hasActiveSearch = Boolean(parsedQuery && parsedQuery.tokens.length > 0);
+
+    const scoredMatches: { product: typeof baseProducts[number]; score: number }[] = [];
+
+    for (let i = 0; i < baseProducts.length; i++) {
+      const p = baseProducts[i];
 
       // Category / Type
-      if (selectedCategory !== "all" && p.productType !== selectedCategory) return false;
+      if (selectedCategory !== "all" && p.productType !== selectedCategory) continue;
 
       // Vendor / Brand
-      if (selectedVendor !== "all" && p.vendor !== selectedVendor) return false;
+      if (selectedVendor !== "all" && p.vendor !== selectedVendor) continue;
 
       // Stock
-      if (inStockOnly && !p.availableForSale) return false;
+      if (inStockOnly && !p.availableForSale) continue;
 
       // Sale
-      if (onSaleOnly && !hasCompareAtDiscount(p.priceRange.minVariantPrice.amount, p.compareAtPriceRange?.minVariantPrice?.amount)) return false;
+      if (onSaleOnly && !hasCompareAtDiscount(p.priceRange.minVariantPrice.amount, p.compareAtPriceRange?.minVariantPrice?.amount)) continue;
 
       // Price limit
       const priceNum = parseFloat(p.priceRange.minVariantPrice.amount);
-      if (priceNum > maxPrice) return false;
+      if (priceNum > maxPrice) continue;
 
-      return true;
-    }).sort((a, b) => {
-      const priceA = parseFloat(a.priceRange.minVariantPrice.amount);
-      const priceB = parseFloat(b.priceRange.minVariantPrice.amount);
+      // Normalized multi-field Search
+      let score = 0;
+      if (hasActiveSearch && parsedQuery) {
+        score = scoreProductSearch(p, parsedQuery);
+        if (score <= 0) continue;
+      }
 
-      if (sortBy === "price-asc") return priceA - priceB;
-      if (sortBy === "price-desc") return priceB - priceA;
-      if (sortBy === "alpha-asc") return a.title.localeCompare(b.title);
-      if (sortBy === "alpha-desc") return b.title.localeCompare(a.title);
-      if (sortBy === "best-selling") return (b.isBestSeller ? 1 : 0) - (a.isBestSeller ? 1 : 0);
-      if (sortBy === "newest") return (b.isNewArrival ? 1 : 0) - (a.isNewArrival ? 1 : 0);
-      
-      return 0;
-    });
-  }, [baseProducts, searchQuery, selectedCategory, selectedVendor, inStockOnly, onSaleOnly, maxPrice, sortBy]);
+      scoredMatches.push({ product: p, score });
+    }
+
+    if (sortBy === "featured") {
+      if (hasActiveSearch) {
+        scoredMatches.sort((a, b) => b.score - a.score);
+      }
+    } else {
+      scoredMatches.sort((aObj, bObj) => {
+        const a = aObj.product;
+        const b = bObj.product;
+        const priceA = parseFloat(a.priceRange.minVariantPrice.amount);
+        const priceB = parseFloat(b.priceRange.minVariantPrice.amount);
+
+        if (sortBy === "price-asc") return priceA - priceB;
+        if (sortBy === "price-desc") return priceB - priceA;
+        if (sortBy === "alpha-asc") return a.title.localeCompare(b.title);
+        if (sortBy === "alpha-desc") return b.title.localeCompare(a.title);
+        if (sortBy === "best-selling") return (b.isBestSeller ? 1 : 0) - (a.isBestSeller ? 1 : 0);
+        if (sortBy === "newest") return (b.isNewArrival ? 1 : 0) - (a.isNewArrival ? 1 : 0);
+
+        return 0;
+      });
+    }
+
+    return scoredMatches.map((m) => m.product);
+  }, [baseProducts, deferredSearchQuery, selectedCategory, selectedVendor, inStockOnly, onSaleOnly, maxPrice, sortBy]);
 
   // Reset filters
   const resetFilters = () => {
@@ -430,7 +455,7 @@ export const ShopPage: React.FC<ShopPageProps> = ({ isExploreAll = false, isSale
 
           {/* Product Grid / List Section */}
           <main className="lg:col-span-3 2xl:col-span-4 3xl:col-span-5 w-full">
-            {useShopify().isLoadingData ? (
+            {isLoadingData ? (
               <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5">
                 {[...Array(12)].map((_, idx) => (
                   <ProductSkeletonCard key={`shop-skeleton-${idx}`} />

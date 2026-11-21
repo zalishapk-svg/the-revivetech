@@ -77,6 +77,7 @@ export interface Product {
   isFlashDeal?: boolean;
   discountPercentage?: number;
   seo?: { title?: string; description?: string };
+  _isIndexSummary?: boolean;
 }
 
 export interface Collection {
