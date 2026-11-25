@@ -4,18 +4,16 @@ import { formatMoney, getOptimizedImageUrl } from "../../lib/utils";
 import { YellowTape } from "../common/YellowTape";
 import { 
   ShoppingBag, Trash2, Plus, Minus, ArrowRight, ShieldCheck, 
-  Truck, Tag, ChevronRight, Lock, Loader2
+  Truck, ChevronRight, Lock, Loader2
 } from "lucide-react";
 
 export const CartPage: React.FC = () => {
   const { 
     cartLines, updateQuantity, removeFromCart, clearCart, 
-    cartSubtotal, freeShippingThreshold, discountCode, applyDiscountCode, 
-    discountPercentage, navigateToShop, handleCheckout, isCheckingOut
+    cartSubtotal, freeShippingThreshold, navigateToShop, handleCheckout, isCheckingOut
   } = useShopify();
 
-  const discountAmount = (cartSubtotal * discountPercentage) / 100;
-  const finalTotal = Math.max(0, cartSubtotal - discountAmount);
+  const finalTotal = cartSubtotal;
   const remainingForFreeShipping = Math.max(0, freeShippingThreshold - cartSubtotal);
   const freeShippingPct = Math.min(100, (cartSubtotal / freeShippingThreshold) * 100);
 
@@ -136,44 +134,12 @@ export const CartPage: React.FC = () => {
           <div className="bg-[#1c1c1c] border border-emerald-900/40 rounded-3xl p-6 space-y-6 h-fit shadow-2xl">
             <h3 className="font-bold text-white text-lg border-b border-emerald-900/40 pb-4">Order Summary</h3>
 
-            {/* Discount Code Input */}
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-slate-300 block">Promo Code</label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Enter REVIVE10"
-                  defaultValue={discountCode}
-                  onChange={(e) => applyDiscountCode(e.target.value)}
-                  className="flex-1 bg-[#161616] border border-emerald-900/60 rounded-xl px-3 py-2 text-xs text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500 uppercase font-mono"
-                />
-                <button 
-                  onClick={() => applyDiscountCode(discountCode || "REVIVE10")}
-                  className="bg-emerald-950 border border-emerald-800 text-emerald-400 px-4 py-2 rounded-xl text-xs font-bold hover:bg-emerald-900 transition-colors cursor-pointer"
-                >
-                  Apply
-                </button>
-              </div>
-              {discountPercentage > 0 && (
-                <p className="text-[10px] text-emerald-400 font-mono">
-                  ✓ Promo applied ({discountPercentage}% discount)
-                </p>
-              )}
-            </div>
-
             {/* Calculations */}
-            <div className="space-y-3 pt-2 text-xs border-t border-emerald-900/40">
+            <div className="space-y-3 text-xs">
               <div className="flex justify-between text-slate-300">
                 <span>Subtotal</span>
                 <span className="font-mono font-bold text-white">{formatMoney(cartSubtotal)}</span>
               </div>
-
-              {discountPercentage > 0 && (
-                <div className="flex justify-between text-emerald-400 font-mono">
-                  <span>Discount ({discountPercentage}%)</span>
-                  <span>-{formatMoney(discountAmount)}</span>
-                </div>
-              )}
 
               <div className="flex justify-between text-slate-300">
                 <span>Shipping</span>

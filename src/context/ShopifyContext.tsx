@@ -83,9 +83,6 @@ interface ShopifyContextType {
   setIsCartOpen: (open: boolean) => void;
   cartSubtotal: number;
   cartCount: number;
-  discountCode: string;
-  applyDiscountCode: (code: string) => void;
-  discountPercentage: number;
   freeShippingThreshold: number;
   handleCheckout: () => Promise<void>;
   isCheckingOut: boolean;
@@ -332,8 +329,6 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
   });
   const [cartCheckoutUrl, setCartCheckoutUrl] = useState<string>("");
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
-  const [discountCode, setDiscountCode] = useState<string>("");
-  const [discountPercentage, setDiscountPercentage] = useState<number>(0);
   const [isCheckingOut, setIsCheckingOut] = useState<boolean>(false);
   const freeShippingThreshold = 200;
 
@@ -940,21 +935,6 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const cartCount = cartLines.reduce((sum, item) => sum + item.quantity, 0);
 
-  const applyDiscountCode = (code: string) => {
-    const upper = code.trim().toUpperCase();
-    if (upper === "REVIVE10" || upper === "GAMER10") {
-      setDiscountCode(upper);
-      setDiscountPercentage(10);
-      showToast("Coupon REVIVE10 applied: 10% OFF!");
-    } else if (upper === "VIP20") {
-      setDiscountCode(upper);
-      setDiscountPercentage(20);
-      showToast("VIP Promo VIP20 applied: 20% OFF!");
-    } else {
-      showToast("Invalid discount code. Try 'REVIVE10'");
-    }
-  };
-
   /**
    * Official Headless Shopify Checkout Redirect
    * 1. Generates/Retrieves real Shopify Cart from Storefront Cart API
@@ -1132,9 +1112,6 @@ export const ShopifyProvider: React.FC<{ children: React.ReactNode }> = ({ child
         setIsCartOpen,
         cartSubtotal,
         cartCount,
-        discountCode,
-        applyDiscountCode,
-        discountPercentage,
         freeShippingThreshold,
         handleCheckout,
         isCheckingOut,

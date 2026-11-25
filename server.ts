@@ -604,7 +604,7 @@ app.all(["/api/shopify/shipping-rates", "/api/shipping-rates", "/api/checkout/sh
 // Headless Checkout Order Creation Endpoint (Shopify Admin API + Cash on Delivery)
 app.post(["/api/checkout/create", "/api/shopify/order/create", "/api/order/create"], async (req, res) => {
   try {
-    const { customer, shippingAddress, items, shippingMethodId, discountCode, notes } = req.body || {};
+    const { customer, shippingAddress, items, shippingMethodId, notes } = req.body || {};
 
     if (!customer?.firstName?.trim() || !customer?.lastName?.trim()) {
       return res.status(400).json({ error: "First and last name are required." });
@@ -640,18 +640,9 @@ app.post(["/api/checkout/create", "/api/shopify/order/create", "/api/order/creat
       });
     }
 
-    const validatedSubtotal = inventoryResult.subtotal;
     const availableShippingRates = await fetchShopifyShippingRates(items, shippingAddress, config.storeDomain);
     const selectedRate =
       availableShippingRates.find((r) => r.id === shippingMethodId) || availableShippingRates[0];
-
-    let discountAmount = 0;
-    const upperCode = (discountCode || "").trim().toUpperCase();
-    if (upperCode === "REVIVE10" || upperCode === "WELCOME10") {
-      discountAmount = Math.round(validatedSubtotal * 0.1);
-    } else if (upperCode === "REVIVE5") {
-      discountAmount = Math.round(validatedSubtotal * 0.05);
-    }
 
     const orderCreationResult = await createShopifyAdminOrder({
       customer: {
@@ -673,8 +664,6 @@ app.post(["/api/checkout/create", "/api/shopify/order/create", "/api/order/creat
         price: selectedRate.price,
         code: selectedRate.id,
       },
-      discountCode: discountAmount > 0 ? upperCode : undefined,
-      discountAmount,
       notes: notes?.trim(),
       storeDomain: config.storeDomain,
       reqHost: req.headers?.host,

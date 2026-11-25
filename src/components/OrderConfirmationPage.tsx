@@ -354,13 +354,6 @@ export const OrderConfirmationPage: React.FC<OrderConfirmationPageProps> = ({
               </span>
             </div>
 
-            {(order?.discount || 0) > 0 && (
-              <div className="flex justify-between text-emerald-400">
-                <span>Promo Discount ({order?.discountCode || "PROMO"}):</span>
-                <span className="font-semibold">-Rs. {(order?.discount || 0).toLocaleString()}</span>
-              </div>
-            )}
-
             <div className="flex justify-between text-slate-300">
               <span>Shipping Fee:</span>
               <span className="font-semibold text-white">

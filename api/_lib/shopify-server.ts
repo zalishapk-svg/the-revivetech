@@ -1052,8 +1052,6 @@ export async function createShopifyAdminOrder(orderPayload: {
     price: number;
     code?: string;
   };
-  discountCode?: string;
-  discountAmount?: number;
   notes?: string;
   storeDomain?: string;
   reqHost?: string;
@@ -1081,10 +1079,10 @@ export async function createShopifyAdminOrder(orderPayload: {
     };
   }
 
-  const { customer, shippingAddress, validatedItems, shippingMethod, discountCode, discountAmount = 0, notes } = orderPayload;
+  const { customer, shippingAddress, validatedItems, shippingMethod, notes } = orderPayload;
 
   const subtotal = validatedItems.reduce((acc, it) => acc + it.price * it.quantity, 0);
-  const total = Math.max(0, subtotal - discountAmount + shippingMethod.price);
+  const total = Math.max(0, subtotal + shippingMethod.price);
 
   const shopifyOrderPayload: any = {
     order: {
@@ -1138,16 +1136,6 @@ export async function createShopifyAdminOrder(orderPayload: {
       ],
     },
   };
-
-  if (discountAmount > 0 && discountCode) {
-    shopifyOrderPayload.order.discount_codes = [
-      {
-        code: discountCode.toUpperCase(),
-        amount: discountAmount.toFixed(2),
-        type: "fixed_amount",
-      },
-    ];
-  }
 
   const endpoint = `https://${domain}/admin/api/${STABLE_ADMIN_API_VERSION}/orders.json`;
 
@@ -1247,8 +1235,6 @@ export async function createShopifyAdminOrder(orderPayload: {
       price: shippingMethod.price,
     },
     subtotal,
-    discount: discountAmount,
-    discountCode: discountAmount > 0 ? discountCode : undefined,
     total: parseFloat(createdOrder.total_price || total.toFixed(2)),
     currency: createdOrder.currency || "PKR",
     paymentMethod: "Cash on Delivery (COD)",

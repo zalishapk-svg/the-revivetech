@@ -801,7 +801,7 @@ Sitemap: https://www.therevivetech.pk/sitemap.xml
         return res.status(405).json({ error: "Method not allowed. Use POST." });
       }
 
-      const { customer, shippingAddress, items, shippingMethodId, discountCode, notes } = req.body || {};
+      const { customer, shippingAddress, items, shippingMethodId, notes } = req.body || {};
 
       if (!customer?.firstName?.trim() || !customer?.lastName?.trim()) {
         return res.status(400).json({ error: "First and last name are required." });
@@ -836,18 +836,9 @@ Sitemap: https://www.therevivetech.pk/sitemap.xml
         });
       }
 
-      const validatedSubtotal = inventoryResult.subtotal;
       const availableShippingRates = await fetchShopifyShippingRates(items, shippingAddress, config.storeDomain);
       const selectedRate =
         availableShippingRates.find((r) => r.id === shippingMethodId) || availableShippingRates[0];
-
-      let discountAmount = 0;
-      const upperCode = (discountCode || "").trim().toUpperCase();
-      if (upperCode === "REVIVE10" || upperCode === "WELCOME10") {
-        discountAmount = Math.round(validatedSubtotal * 0.1);
-      } else if (upperCode === "REVIVE5") {
-        discountAmount = Math.round(validatedSubtotal * 0.05);
-      }
 
       // Step 2: Create Real Order in Shopify Admin
       const orderCreationResult = await createShopifyAdminOrder({
@@ -870,8 +861,6 @@ Sitemap: https://www.therevivetech.pk/sitemap.xml
           price: selectedRate.price,
           code: selectedRate.id,
         },
-        discountCode: discountAmount > 0 ? upperCode : undefined,
-        discountAmount,
         notes: notes?.trim(),
         storeDomain: config.storeDomain,
         reqHost: req.headers?.host,

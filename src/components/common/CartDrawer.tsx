@@ -7,7 +7,6 @@ import {
   Minus,
   ShoppingBag,
   Truck,
-  Tag,
   ExternalLink,
   ArrowRight,
   ShieldCheck,
@@ -27,9 +26,6 @@ export const CartDrawer: React.FC = () => {
     updateQuantity,
     cartSubtotal,
     cartCount,
-    discountCode,
-    applyDiscountCode,
-    discountPercentage,
     freeShippingThreshold,
     products,
     navigateToProduct,
@@ -38,8 +34,6 @@ export const CartDrawer: React.FC = () => {
     handleCheckout,
     isCheckingOut,
   } = useShopify();
-
-  const [inputCode, setInputCode] = useState("");
 
   // Lock body scroll when cart is open
   useEffect(() => {
@@ -68,8 +62,7 @@ export const CartDrawer: React.FC = () => {
 
   if (!isCartOpen) return null;
 
-  const discountAmount = (cartSubtotal * discountPercentage) / 100;
-  const finalTotal = Math.max(0, cartSubtotal - discountAmount);
+  const finalTotal = cartSubtotal;
   const remainingForFreeShipping = Math.max(0, freeShippingThreshold - cartSubtotal);
   const freeShippingProgressPercent = Math.min(100, (cartSubtotal / freeShippingThreshold) * 100);
 
@@ -250,49 +243,12 @@ export const CartDrawer: React.FC = () => {
           {/* Cart Footer / Checkout Summary */}
           {cartLines.length > 0 && (
             <div className="p-4 sm:p-5 bg-emerald-950/60 border-t border-emerald-900/40 space-y-3 shrink-0">
-              
-              {/* Discount Code Input */}
-              <div className="flex items-center gap-2">
-                <div className="relative flex-1">
-                  <Tag className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    value={inputCode}
-                    onChange={(e) => setInputCode(e.target.value)}
-                    placeholder="Discount code (e.g. REVIVE10)"
-                    className="w-full pl-8 pr-2 py-1.5 bg-[#161616] border border-emerald-800/40 rounded-lg text-xs text-white uppercase placeholder:normal-case focus:outline-none focus:border-emerald-500"
-                  />
-                </div>
-                <button
-                  onClick={() => {
-                    applyDiscountCode(inputCode);
-                    setInputCode("");
-                  }}
-                  className="px-3 py-1.5 bg-emerald-900/60 hover:bg-emerald-800 text-emerald-300 font-bold text-xs rounded-lg border border-emerald-700/40 cursor-pointer"
-                >
-                  Apply
-                </button>
-              </div>
-
-              {discountCode && (
-                <div className="flex items-center justify-between text-xs text-emerald-400 bg-emerald-950/80 px-2.5 py-1 rounded border border-emerald-500/30">
-                  <span>Code {discountCode} ({discountPercentage}% OFF)</span>
-                  <span>-${discountAmount.toFixed(2)}</span>
-                </div>
-              )}
-
               {/* Subtotal Calculation */}
               <div className="space-y-1 text-xs">
                 <div className="flex justify-between text-slate-400">
                   <span>Subtotal</span>
                   <span className="font-mono text-slate-200">{formatMoney(cartSubtotal)}</span>
                 </div>
-                {discountAmount > 0 && (
-                  <div className="flex justify-between text-emerald-400">
-                    <span>Discount</span>
-                    <span className="font-mono">-${discountAmount.toFixed(2)}</span>
-                  </div>
-                )}
                 <div className="flex justify-between text-slate-400">
                   <span>Shipping</span>
                   <span className="text-emerald-400 font-medium">

@@ -9,7 +9,7 @@ export const NewsletterSection: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (email) {
-      showToast("VIP Access Granted! Coupon code REVIVE15 activated.");
+      showToast("Subscribed! You're now on the list for exclusive hardware drops.");
       setEmail("");
     }
   };
@@ -28,7 +28,7 @@ export const NewsletterSection: React.FC = () => {
           </h2>
 
           <p className="text-xs sm:text-sm text-slate-300 max-w-lg mx-auto leading-relaxed">
-            Get instant priority notifications on limited carbon fiber production drops, experimental firmware builds, and a <strong>$15 OFF welcome voucher</strong>.
+            Get instant priority notifications on limited carbon fiber production drops, restocks, and new esports hardware releases.
           </p>
 
           <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">

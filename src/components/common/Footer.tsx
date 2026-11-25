@@ -20,7 +20,7 @@ export const Footer: React.FC = () => {
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
     if (emailInput) {
-      showToast("Subscribed! Check your inbox for Rs. 1,500 OFF discount code REVIVE15");
+      showToast("Subscribed! Thanks for joining TheReviveTech updates.");
       setEmailInput("");
     }
   };
@@ -188,7 +188,7 @@ export const Footer: React.FC = () => {
           <div className="md:col-span-3 space-y-3">
             <h4 className="text-xs font-bold text-white uppercase tracking-wider font-mono">Stay Connected</h4>
             <p className="text-xs text-slate-400">
-              Subscribe for exclusive hardware drops, early access, and a Rs. 1,500 discount coupon.
+              Subscribe for exclusive hardware drops, restock alerts, and early product updates.
             </p>
             <form onSubmit={handleSubscribe} className="space-y-2">
               <div className="flex gap-2">

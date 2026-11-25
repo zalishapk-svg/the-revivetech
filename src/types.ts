@@ -236,8 +236,6 @@ export interface OrderConfirmationData {
     price: number;
   };
   subtotal: number;
-  discount: number;
-  discountCode?: string;
   total: number;
   currency: string;
   paymentMethod: string;
